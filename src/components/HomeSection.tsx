@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SystemSettings, StockTicker } from '../types';
 import { formatIndianCurrency, INITIAL_TICKERS } from '../data';
+import { CryptixLogo } from './Header';
 import { 
   TrendingUp, 
   Sparkles, 
@@ -114,16 +115,18 @@ export default function HomeSection({
         <div className="absolute bottom-10 right-10 w-20 h-20 border-b-2 border-r-2 border-amber-500/20 rounded-br-3xl"></div>
 
         {/* 1. CryptixOne Website Name */}
-        <div className="space-y-3 relative z-10">
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white font-sans text-center">
-            Cryptix<span className="text-amber-500">One</span>
-          </h1>
-          <div className="flex items-center justify-center space-x-4">
-            <div className="h-[1px] w-12 bg-amber-500/30"></div>
-            <p className="text-[10px] md:text-xs font-bold text-amber-500/80 tracking-[0.5em] uppercase font-sans">
-              Leading Digital Asset Management Platform
-            </p>
-            <div className="h-[1px] w-12 bg-amber-500/30"></div>
+        <div className="space-y-4 relative z-10 flex flex-col items-center">
+          <div className="space-y-3">
+            <h1 className="text-5xl md:text-8xl font-black tracking-tight text-white font-sans text-center">
+              Cryptix<span className="text-amber-500">One</span>
+            </h1>
+            <div className="flex items-center justify-center space-x-4">
+              <div className="h-[1px] w-12 md:w-20 bg-amber-500/30"></div>
+              <p className="text-[10px] md:text-sm font-black text-amber-400 tracking-[0.35em] md:tracking-[0.5em] uppercase font-sans text-center">
+                Leading Digital Asset Management Platform
+              </p>
+              <div className="h-[1px] w-12 md:w-20 bg-amber-500/30"></div>
+            </div>
           </div>
         </div>
 

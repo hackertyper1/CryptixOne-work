@@ -8,13 +8,25 @@ import TradeSection from './components/TradeSection';
 import WalletSection from './components/WalletSection';
 import AccountSection from './components/AccountSection';
 import AdminPanel from './components/AdminPanel';
+import MarketSection from './components/MarketSection';
 import { User, ActiveTrade, Transaction, SystemSettings, ActivityLog, InvestmentPlan, InvestmentRequest, AdminMessage } from './types';
 import { DEFAULT_SETTINGS, encryptPayload, INVESTMENT_PLANS } from './data';
 
 export default function App() {
-  // Navigation State: 'home' | 'trade' | 'account' | 'admin'
+  // Navigation State: 'home' | 'plan' | 'trade' | 'market' | 'wallet' | 'account' | 'admin'
   const [activeTab, setActiveTab] = useState<string>('home');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [mobileShowHome, setMobileShowHome] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Core Data Registries
   const [users, setUsers] = useState<User[]>([]);
@@ -564,6 +576,89 @@ export default function App() {
     addLog(`Manually modified balances and assigned trader support for client ID: ${userId}`, 'admin');
   };
 
+  // 9.5. Market Trade Action: Update current user wallets
+  const handleUpdateWallet = (depositChange: number, profitChange: number) => {
+    if (!currentUser) return;
+    const updatedUsers = users.map(u => {
+      if (u.id === currentUser.id) {
+        const updated = {
+          ...u,
+          depositWallet: Math.max(0, u.depositWallet + depositChange),
+          profitWallet: Math.max(0, u.profitWallet + profitChange),
+        };
+        setCurrentUser(updated);
+        localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
+        return updated;
+      }
+      return u;
+    });
+    saveUsersToStorage(updatedUsers);
+  };
+
+  // 9.6. Real Asset Live Trade Action
+  const handleExecuteTrade = (amount: number, estimatedProfit: number, assetName: string, durationLabel: string) => {
+    if (!currentUser) return;
+    
+    // Check balance and deduct from deposit wallet first, then profit wallet if needed
+    const totalBalanceAvailable = currentUser.depositWallet + currentUser.profitWallet;
+    if (totalBalanceAvailable < amount) return;
+
+    let depositDeduction = 0;
+    let profitDeduction = 0;
+
+    if (currentUser.depositWallet >= amount) {
+      depositDeduction = amount;
+    } else {
+      depositDeduction = currentUser.depositWallet;
+      profitDeduction = amount - depositDeduction;
+    }
+
+    const updatedUsers = users.map(u => {
+      if (u.id === currentUser.id) {
+        const updated = {
+          ...u,
+          depositWallet: Math.max(0, u.depositWallet - depositDeduction),
+          profitWallet: Math.max(0, u.profitWallet - profitDeduction),
+          activeInvestment: u.activeInvestment + amount,
+        };
+        setCurrentUser(updated);
+        localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
+        return updated;
+      }
+      return u;
+    });
+
+    saveUsersToStorage(updatedUsers);
+
+    // Set simulated countdown durations:
+    let durationMs = 60 * 60 * 1000; // default 1 hour
+    if (durationLabel === '60s') durationMs = 60 * 1000;
+    else if (durationLabel === '3m') durationMs = 3 * 60 * 1000;
+    else if (durationLabel === '5m') durationMs = 5 * 60 * 1000;
+    else if (durationLabel === '15m') durationMs = 15 * 60 * 1000;
+    else if (durationLabel === '1h') durationMs = 60 * 60 * 1000;
+    else if (durationLabel === '1D') durationMs = 24 * 60 * 60 * 1000;
+
+    const newActiveTrade: ActiveTrade = {
+      id: `TRD-${Math.floor(10000 + Math.random() * 90000)}`,
+      userId: currentUser.id,
+      username: currentUser.username,
+      amount: amount,
+      estimatedProfit: estimatedProfit,
+      planName: `${assetName} Trade`,
+      duration: durationLabel,
+      startTime: Date.now(),
+      endTime: Date.now() + durationMs,
+      status: 'active',
+      currentProfit: 0
+    };
+
+    const freshTrades = [newActiveTrade, ...activeTrades];
+    saveTradesToStorage(freshTrades);
+
+    addLog(`Deducted ₹${amount} and launched active ${assetName} trade contract for ${durationLabel}.`, currentUser.username);
+  };
+
   // 10. Admin Action: Save Website Setting Configurations
   const handleUpdateSettings = (newSettings: SystemSettings) => {
     setSystemSettings(newSettings);
@@ -691,101 +786,119 @@ export default function App() {
         currentUser={currentUser}
         onLogout={handleLogout}
         supportPhone={systemSettings.supportPhone}
+        mobileShowHome={mobileShowHome}
+        setMobileShowHome={setMobileShowHome}
+        isMobile={isMobile}
       />
 
       <div className="flex-grow w-full">
         {/* Main Content Area */}
         <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
-          {activeTab === 'home' && (
-            <HomeSection
-              systemSettings={systemSettings}
-              isLoggedIn={!!currentUser}
-              onNavigateToAuth={(mode) => {
-                setAuthMode(mode || 'signup');
-                setActiveTab('account');
-                setSelectedPlanForInvestment(null);
-              }}
-              onNavigateToPlans={() => {
-                if (currentUser) {
-                  setActiveTab('plan');
-                } else {
-                  setAuthMode('signup');
+          {/* Desktop or Mobile view */}
+          <>
+            {activeTab === 'home' && (
+              <HomeSection
+                systemSettings={systemSettings}
+                isLoggedIn={!!currentUser}
+                onNavigateToAuth={(mode) => {
+                  setAuthMode(mode || 'signup');
                   setActiveTab('account');
-                }
-              }}
-            />
-          )}
+                  setSelectedPlanForInvestment(null);
+                }}
+                onNavigateToPlans={() => {
+                  if (currentUser) {
+                    setActiveTab('plan');
+                  } else {
+                    setAuthMode('signup');
+                    setActiveTab('account');
+                  }
+                }}
+              />
+            )}
 
-          {activeTab === 'plan' && (
-            <PlanSection
-              onInvestSelect={handleInvestSelect}
-              systemSettings={systemSettings}
-            />
-          )}
+            {activeTab === 'plan' && (
+              <PlanSection
+                onInvestSelect={handleInvestSelect}
+                systemSettings={systemSettings}
+              />
+            )}
 
-          {activeTab === 'trade' && (
-            <TradeSection
-              activeTrades={activeTrades}
-              isLoggedIn={!!currentUser}
-              onNavigateToHome={() => {
-                setActiveTab('account');
-                setSelectedPlanForInvestment(null);
-              }}
-              onInvestSelect={handleInvestSelect}
-              systemSettings={systemSettings}
-            />
-          )}
+            {activeTab === 'trade' && (
+              <TradeSection
+                activeTrades={activeTrades}
+                isLoggedIn={!!currentUser}
+                currentUser={currentUser}
+                onExecuteTrade={handleExecuteTrade}
+                onNavigateToHome={() => {
+                  setActiveTab('account');
+                  setSelectedPlanForInvestment(null);
+                }}
+                onInvestSelect={handleInvestSelect}
+                systemSettings={systemSettings}
+                onChangeTab={setActiveTab}
+              />
+            )}
 
-          {activeTab === 'wallet' && (
-            <WalletSection
-              isLoggedIn={!!currentUser}
-              currentUser={currentUser}
-              systemSettings={systemSettings}
-              transactions={transactions}
-              onSubmitDeposit={handleDepositSubmit}
-              onSubmitWithdrawal={handleWithdrawalSubmit}
-              selectedPlanForInvestment={selectedPlanForInvestment}
-              setSelectedPlanForInvestment={setSelectedPlanForInvestment}
-              onNavigateToAuth={() => {
-                setActiveTab('account');
-                setSelectedPlanForInvestment(null);
-              }}
-              onNavigateToTrade={() => setActiveTab('plan')}
-              onInvestmentRequestSubmit={handleInvestmentRequestSubmit}
-            />
-          )}
+            {activeTab === 'market' && (
+              <MarketSection
+                currentUser={currentUser}
+                onUpdateWallet={handleUpdateWallet}
+                addLog={addLog}
+                systemSettings={systemSettings}
+              />
+            )}
 
-          {activeTab === 'account' && (
-            <AccountSection
-              isLoggedIn={!!currentUser}
-              currentUser={currentUser}
-              onLogin={handleUserLogin}
-              onSignup={handleUserSignup}
-              systemSettings={systemSettings}
-              onLogout={handleLogout}
-              users={users}
-              adminMessages={adminMessages}
-              initialMode={authMode}
-            />
-          )}
+            {activeTab === 'wallet' && (
+              <WalletSection
+                isLoggedIn={!!currentUser}
+                currentUser={currentUser}
+                systemSettings={systemSettings}
+                transactions={transactions}
+                onSubmitDeposit={handleDepositSubmit}
+                onSubmitWithdrawal={handleWithdrawalSubmit}
+                selectedPlanForInvestment={selectedPlanForInvestment}
+                setSelectedPlanForInvestment={setSelectedPlanForInvestment}
+                onNavigateToAuth={() => {
+                  setActiveTab('account');
+                  setSelectedPlanForInvestment(null);
+                }}
+                onNavigateToTrade={() => setActiveTab('plan')}
+                onInvestmentRequestSubmit={handleInvestmentRequestSubmit}
+              />
+            )}
 
-          {activeTab === 'admin' && (
-            <AdminPanel
-              users={users}
-              transactions={transactions}
-              systemSettings={systemSettings}
-              activityLogs={activityLogs}
-              onUpdateSettings={handleUpdateSettings}
-              onApproveTransaction={handleApproveTransaction}
-              onRejectTransaction={handleRejectTransaction}
-              onUpdateUserBalance={handleUpdateUserBalance}
-              investmentRequests={investmentRequests}
-              onApproveInvestmentRequest={handleApproveInvestmentRequest}
-              onRejectInvestmentRequest={handleRejectInvestmentRequest}
-              adminMessages={adminMessages}
-              onSendMessage={handleSendMessage}
-            />
-          )}
+            {activeTab === 'account' && (
+              <AccountSection
+                isLoggedIn={!!currentUser}
+                currentUser={currentUser}
+                onLogin={handleUserLogin}
+                onSignup={handleUserSignup}
+                systemSettings={systemSettings}
+                onLogout={handleLogout}
+                users={users}
+                adminMessages={adminMessages}
+                initialMode={authMode}
+              />
+            )}
+
+            {activeTab === 'admin' && (
+              <AdminPanel
+                users={users}
+                transactions={transactions}
+                systemSettings={systemSettings}
+                activityLogs={activityLogs}
+                onUpdateSettings={handleUpdateSettings}
+                onApproveTransaction={handleApproveTransaction}
+                onRejectTransaction={handleRejectTransaction}
+                onUpdateUserBalance={handleUpdateUserBalance}
+                investmentRequests={investmentRequests}
+                onApproveInvestmentRequest={handleApproveInvestmentRequest}
+                onRejectInvestmentRequest={handleRejectInvestmentRequest}
+                adminMessages={adminMessages}
+                onSendMessage={handleSendMessage}
+              />
+            )}
+          </>
         </main>
       </div>
 

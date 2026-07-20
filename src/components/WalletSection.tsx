@@ -364,12 +364,15 @@ export default function WalletSection({
             </button>
             <button
               onClick={() => {
-                const element = document.getElementById('withdrawal-request-form');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                  setInternalTab('withdraw');
-                }
+                setInternalTab('withdraw');
+                setTimeout(() => {
+                  const element = document.getElementById('withdrawal-request-form');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                  } else {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                  }
+                }, 100);
               }}
               className="bg-transparent border border-white/20 text-white font-black text-[11px] py-4 rounded-2xl uppercase tracking-widest transition-all hover:bg-white/5 flex items-center justify-center space-x-2"
             >
@@ -382,18 +385,6 @@ export default function WalletSection({
 
       {/* Desktop Wallet Balance Cards Bar - Hidden on mobile */}
       <section className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6" id="wallet-statistics-bar">
-        {/* Deposit Wallet */}
-        <div className="bg-[#0b101f] border border-slate-800 rounded-3xl p-6 flex items-center justify-center shadow-2xl group hover:border-emerald-500/30 transition-all duration-500">
-          <div className="flex flex-col items-center text-center space-y-1">
-            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Trading Wallet</span>
-            <p className="text-3xl font-black text-white tabular-nums">{formatIndianCurrency(currentUser?.depositWallet || 0)}</p>
-            <div className="flex items-center space-x-1.5 text-emerald-500 mt-1">
-              <Wallet className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Main Principal</span>
-            </div>
-          </div>
-        </div>
-
         {/* Profit Wallet */}
         <div className="bg-[#0b101f] border-2 border-emerald-500/40 rounded-3xl p-6 flex items-center justify-center shadow-2xl relative overflow-hidden group hover:border-emerald-500/60 transition-all duration-500">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full" />
@@ -403,6 +394,18 @@ export default function WalletSection({
             <div className="flex items-center space-x-1.5 text-emerald-400 mt-1">
               <TrendingUp className="w-3.5 h-3.5" />
               <span className="text-[10px] font-bold uppercase tracking-widest">Available to Withdraw</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Deposit Wallet */}
+        <div className="bg-[#0b101f] border border-slate-800 rounded-3xl p-6 flex items-center justify-center shadow-2xl group hover:border-emerald-500/30 transition-all duration-500">
+          <div className="flex flex-col items-center text-center space-y-1">
+            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Trading Wallet</span>
+            <p className="text-3xl font-black text-white tabular-nums">{formatIndianCurrency(currentUser?.depositWallet || 0)}</p>
+            <div className="flex items-center space-x-1.5 text-emerald-500 mt-1">
+              <Wallet className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Main Principal</span>
             </div>
           </div>
         </div>
@@ -433,7 +436,18 @@ export default function WalletSection({
         </button>
         <button
           id="btn-sub-withdraw"
-          onClick={() => { setInternalTab('withdraw'); setWithdrawSuccess(false); }}
+          onClick={() => {
+            setInternalTab('withdraw');
+            setWithdrawSuccess(false);
+            setTimeout(() => {
+              const element = document.getElementById('withdrawal-request-form');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+              } else {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+              }
+            }, 100);
+          }}
           className={`flex-1 py-3 rounded-xl transition-all ${
             internalTab === 'withdraw' ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'
           }`}
@@ -453,27 +467,27 @@ export default function WalletSection({
       {/* SUB TAB VIEW: DEPOSIT FUNDS */}
       {internalTab === 'deposit' && (
         !selectedPlanForInvestment ? (
-          // NO PLAN SELECTED - Show beautiful Selection prompt with a gorgeous dropdown or slots list
-          <section className="bg-[#0b101f] border border-slate-800 rounded-[2.5rem] p-8 md:p-12 space-y-8 text-center relative overflow-hidden" id="deposit-select-plan-first">
-            <div className="absolute top-0 left-1/2 w-64 h-64 bg-emerald-500/5 blur-[100px] -translate-x-1/2 -mt-32" />
+          // NO PLAN SELECTED - Show compact Selection prompt with a gorgeous dropdown or slots list
+          <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 text-center relative overflow-hidden" id="deposit-select-plan-first">
+            <div className="absolute top-0 left-1/2 w-48 h-48 bg-emerald-500/5 blur-[80px] -translate-x-1/2 -mt-24" />
             
             <div className="flex justify-center relative z-10">
-              <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-3xl flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.1)]">
-                <TrendingUp className="w-10 h-10 animate-pulse" />
+              <div className="w-12 h-12 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                <TrendingUp className="w-6 h-6 animate-pulse" />
               </div>
             </div>
-            <div className="space-y-4 max-w-md mx-auto relative z-10">
-              <h3 className="text-2xl md:text-4xl font-black text-white font-display uppercase tracking-tight">Institutional <span className="text-emerald-500">Allocation</span></h3>
-              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+            <div className="space-y-2 max-w-md mx-auto relative z-10">
+              <h3 className="text-lg md:text-xl font-black text-white font-display uppercase tracking-tight">Institutional <span className="text-emerald-500">Allocation</span></h3>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
                 Please select a verified trading contract slot from the registry below to initialize the sovereign capital settlement protocol.
               </p>
             </div>
             
             <div className="max-w-md mx-auto relative z-10">
-              <label className="text-[9px] uppercase font-mono tracking-[0.2em] text-slate-600 font-black block mb-3 text-left">Registry Identification</label>
+              <label className="text-[8px] uppercase font-mono tracking-[0.2em] text-slate-500 font-black block mb-2 text-left">Registry Identification</label>
               <div className="relative group">
                 <select
-                  className="w-full bg-[#070b14] border border-slate-800 text-white font-mono font-black py-4 px-5 rounded-2xl text-[11px] outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer shadow-inner"
+                  className="w-full bg-[#070b14]/80 border border-slate-800 text-slate-250 font-mono font-bold py-3 px-4 rounded-xl text-[11px] outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer shadow-inner"
                   onChange={(e) => {
                     const matched = INVESTMENT_PLANS.find(p => p.id === e.target.value);
                     if (matched) {
@@ -497,29 +511,29 @@ export default function WalletSection({
           </section>
         ) : (
           // PLAN SELECTED - Show multi-step secure payment flow
-          <section className="bg-[#0b101f] border border-slate-800 rounded-[2rem] p-8 md:p-10 space-y-8 relative overflow-hidden" id="custom-investment-gateway">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] -mr-32 -mt-32" />
+          <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 relative overflow-hidden" id="custom-investment-gateway">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 blur-[80px] -mr-24 -mt-24" />
             
             {/* Header with plan details */}
-            <div className="border-b border-slate-800/60 pb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-              <div className="space-y-2">
-                <div className="inline-flex items-center space-x-2 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.2em] font-mono">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+            <div className="border-b border-slate-800/60 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+              <div className="space-y-1">
+                <div className="inline-flex items-center space-x-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] font-mono">
+                  <ShieldCheck className="w-3 h-3" />
                   <span>Sovereign Settlement Gateway</span>
                 </div>
-                <h4 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight font-display">
+                <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">
                   {selectedPlanForInvestment.category} <span className="text-amber-500">PROTOCOL</span>
                 </h4>
-                <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest font-black">Audit Framework: HFT-LEDGER-V4</p>
+                <p className="text-[9px] text-slate-500 font-mono uppercase tracking-widest font-black">Audit: HFT-LEDGER-V4</p>
               </div>
-              <div className="bg-[#060b17] border border-slate-800/50 p-6 rounded-3xl font-mono text-xs flex items-center justify-between md:space-x-12 shadow-inner">
-                <div className="space-y-1">
-                  <span className="text-[9px] text-slate-500 uppercase font-black tracking-widest block">Deployment Capital</span>
-                  <span className="text-xl font-black text-white">₹{selectedPlanForInvestment.amount.toLocaleString()}</span>
+              <div className="bg-[#060b17] border border-slate-800/50 p-4 rounded-2xl font-mono text-xs flex items-center justify-between md:space-x-8 shadow-inner">
+                <div className="space-y-0.5">
+                  <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Deployment Capital</span>
+                  <span className="text-base font-black text-white">₹{selectedPlanForInvestment.amount.toLocaleString()}</span>
                 </div>
-                <div className="space-y-1 text-right">
-                  <span className="text-[9px] text-amber-500 uppercase font-black tracking-widest block">Projected Yield</span>
-                  <span className="text-xl font-black text-emerald-400">₹{selectedPlanForInvestment.estimatedProfit.toLocaleString()}</span>
+                <div className="space-y-0.5 text-right pl-4 border-l border-slate-800/50">
+                  <span className="text-[8px] text-amber-500 uppercase font-black tracking-widest block">Projected Yield</span>
+                  <span className="text-base font-black text-emerald-400">₹{selectedPlanForInvestment.estimatedProfit.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -616,33 +630,33 @@ export default function WalletSection({
 
             {/* STEP 2: Scan QR & Validity CountDown */}
             {paymentStep === 'scan_qr' && selectedPaymentMethod && (
-              <div className="space-y-6 animate-fadeIn">
-                <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+              <div className="space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between border-b border-slate-800/40 pb-2.5">
                   <button
                     onClick={() => {
                       setPaymentStep('select_method');
                       setSelectedPaymentMethod(null);
                     }}
-                    className="text-[11px] font-mono font-bold text-slate-400 hover:text-white flex items-center space-x-1 transition-all"
+                    className="text-[10px] font-mono font-bold text-slate-400 hover:text-white flex items-center space-x-1 transition-all"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <ArrowLeft className="w-3 h-3" />
                     <span>Change Method</span>
                   </button>
-                  <span className="text-[10px] font-mono text-slate-500 font-bold">
-                    Gateway: <b className="text-white">{selectedPaymentMethod}</b>
+                  <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider">
+                    Gateway: <b className="text-amber-400 font-black">{selectedPaymentMethod}</b>
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#060a15]/60 border border-white/[0.03] p-4 rounded-xl">
                   {/* Left: Dynamic QR with Validity Scanning effect */}
-                  <div className="md:col-span-5 flex flex-col items-center space-y-4">
-                    <div className="w-48 h-48 bg-white p-2.5 rounded-2xl flex flex-col items-center justify-center shadow-inner relative border border-slate-850">
-                      <div className="absolute inset-x-2.5 h-0.5 bg-cyan-500 animate-scan"></div>
+                  <div className="flex-shrink-0 flex flex-col items-center space-y-2">
+                    <div className="w-32 h-32 bg-white p-1.5 rounded-xl flex flex-col items-center justify-center shadow-lg relative border border-amber-500/30">
+                      <div className="absolute inset-x-1.5 h-0.5 bg-amber-500 animate-scan"></div>
                       <img 
                         src={systemSettings.qrCodeImage || systemSettings.qrCodeUrl}
                         alt="Secure Payment QR Scanner"
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-full object-cover rounded-md"
                       />
                     </div>
 
@@ -651,23 +665,23 @@ export default function WalletSection({
                       download="payment_qr.jpg"
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center space-x-1.5 text-xs text-amber-500 hover:text-amber-400 font-mono font-bold transition-all"
+                      className="inline-flex items-center space-x-1 text-[9px] text-amber-500 hover:text-amber-400 font-mono font-black transition-all"
                     >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Download QR Code Image</span>
+                      <Download className="w-3 h-3" />
+                      <span>Download QR</span>
                     </a>
                   </div>
 
                   {/* Right: Timer details and Copy buttons */}
-                  <div className="md:col-span-7 space-y-4 text-left">
+                  <div className="flex-grow w-full space-y-3 text-left">
                     {/* Countdown Tracker Box */}
-                    <div className="bg-[#050812] border border-slate-800 p-4 rounded-xl space-y-2.5">
+                    <div className="bg-[#03060c] border border-slate-850 p-3 rounded-lg space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono font-bold text-slate-300 flex items-center space-x-1.5">
-                          <Clock className={`w-4 h-4 animate-spin ${timeLeft <= 30 ? 'text-amber-500' : 'text-emerald-400'}`} />
-                          <span>QR Code Validity Session</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center space-x-1">
+                          <Clock className={`w-3.5 h-3.5 animate-spin ${timeLeft <= 30 ? 'text-amber-500' : 'text-emerald-400'}`} />
+                          <span>QR Validity Session</span>
                         </span>
-                        <span className={`text-xs font-mono font-black px-2 py-0.5 rounded ${
+                        <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${
                           timeLeft <= 30 ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
                         }`}>
                           {timeLeft}s
@@ -675,7 +689,7 @@ export default function WalletSection({
                       </div>
                       
                       {/* Dynamic visual progress bar */}
-                      <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                      <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
                         <div 
                           className={`h-full transition-all duration-1000 ${
                             timeLeft <= 30 ? 'bg-amber-500' : 'bg-emerald-400'
@@ -684,51 +698,51 @@ export default function WalletSection({
                         ></div>
                       </div>
 
-                      <p className="text-[10px] text-slate-400 font-mono leading-normal">
-                        This verified QR scan code session terminates in <b className="text-white">{timeLeft} seconds</b>. The system will automatically reset if the contract remains unpaid after this window.
+                      <p className="text-[9px] text-slate-500 font-mono leading-tight">
+                        Terminates in <b className="text-slate-300">{timeLeft} seconds</b>. The system resets if unpaid after this window.
                       </p>
                     </div>
 
                     {/* Copy UPI Address Details */}
-                    <div className="bg-[#050812] border border-slate-800 p-3 rounded-xl flex justify-between items-center font-mono">
-                      <div>
-                        <span className="text-[9px] text-slate-500 uppercase block">Secure UPI Address</span>
-                        <span className="text-slate-200 font-black text-[11px]">{systemSettings.upiId}</span>
+                    <div className="bg-[#03060c] border border-slate-850 p-2.5 rounded-lg flex justify-between items-center font-mono">
+                      <div className="min-w-0">
+                        <span className="text-[8px] text-slate-500 uppercase block tracking-wider">Secure UPI Address</span>
+                        <span className="text-slate-300 font-black text-[10px] truncate block">{systemSettings.upiId}</span>
                       </div>
                       <button
                         onClick={handleCopyUpi}
-                        className="p-2 bg-[#090e1c] border border-slate-800 hover:text-white rounded transition-all text-amber-500 flex items-center space-x-1"
+                        className="p-1.5 bg-[#090e1c] border border-slate-800 hover:text-white rounded transition-all text-amber-500 flex items-center space-x-1 flex-shrink-0 ml-2"
                       >
-                        {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span className="text-[9px] font-bold">{copiedUpi ? 'Copied' : 'Copy'}</span>
+                        {copiedUpi ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        <span className="text-[8px] font-black uppercase">{copiedUpi ? 'Copied' : 'Copy'}</span>
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Secure Flow submission Lock Constraint */}
-                <div className="bg-[#060b17] border border-slate-800 p-4 rounded-xl space-y-4">
-                  <div className="flex items-start space-x-2.5">
-                    <ShieldAlert className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-slate-400 leading-normal font-mono">
-                      <b>REGULATORY COMPLIANCE LOCK:</b> To avoid double-spending or ghost-submissions, the "Proceed to Form" button remains locked for the first 30 seconds of active scanning. You can submit manually once the contract is fully processed.
+                <div className="bg-[#040813]/40 border border-slate-800/60 p-3 rounded-xl space-y-3">
+                  <div className="flex items-start space-x-2">
+                    <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-[9px] text-slate-400 leading-normal font-mono">
+                      <b>DOUBLE-SPEND LOCK:</b> "Proceed" unlocks after 30 seconds for manual validation of transaction coordinates.
                     </p>
                   </div>
 
                   {timeLeft > 30 ? (
                     <button
                       disabled
-                      className="w-full bg-slate-800 text-slate-500 font-black text-xs py-3.5 rounded-lg uppercase tracking-wider cursor-not-allowed flex items-center justify-center space-x-2 font-mono"
+                      className="w-full bg-slate-800/50 text-slate-500 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-wider cursor-not-allowed flex items-center justify-center space-x-1.5 font-mono"
                     >
-                      <Lock className="w-4 h-4 text-slate-600" />
-                      <span>Unlocking Manual Submit in {timeLeft - 30}s...</span>
+                      <Lock className="w-3.5 h-3.5 text-slate-600" />
+                      <span>Unlocking Form in {timeLeft - 30}s...</span>
                     </button>
                   ) : (
                     <button
                       onClick={() => setPaymentStep('trading_form')}
-                      className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-3.5 rounded-lg uppercase tracking-wider transition-all shadow-lg shadow-amber-500/10 flex items-center justify-center space-x-1.5"
+                      className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 flex items-center justify-center space-x-1.5"
                     >
-                      <span>Proceed to Trading Form (Payment Complete)</span>
+                      <span>Proceed to Trading Form</span>
                       <span>→</span>
                     </button>
                   )}
@@ -738,91 +752,91 @@ export default function WalletSection({
 
             {/* STEP 3: Basic trading details form */}
             {paymentStep === 'trading_form' && (
-              <form onSubmit={handleTradingFormSubmit} className="space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+              <form onSubmit={handleTradingFormSubmit} className="space-y-3.5 animate-fadeIn">
+                <div className="flex items-center justify-between border-b border-slate-800/40 pb-2.5">
                   <button
                     type="button"
                     onClick={() => setPaymentStep('scan_qr')}
-                    className="text-[11px] font-mono font-bold text-slate-400 hover:text-white flex items-center space-x-1 transition-all"
+                    className="text-[10px] font-mono font-bold text-slate-400 hover:text-white flex items-center space-x-1 transition-all"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <ArrowLeft className="w-3 h-3" />
                     <span>Back to Scanner</span>
                   </button>
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase flex items-center space-x-1">
-                    <Check className="w-3.5 h-3.5" />
+                  <span className="text-[9px] font-mono text-emerald-400 font-black uppercase flex items-center space-x-1">
+                    <Check className="w-3 h-3" />
                     <span>Payment Verified</span>
                   </span>
                 </div>
 
-                <div className="bg-amber-500/5 border border-amber-500/20 p-3 rounded-xl text-left">
-                  <p className="text-[11px] text-slate-400 font-mono leading-normal">
-                    Enter your official registration and transaction UTR details. All fields are mandatory and validated strictly for security.
+                <div className="bg-[#040813]/40 border border-slate-800/60 px-3 py-2 rounded-lg text-left">
+                  <p className="text-[10px] text-slate-400 font-mono leading-relaxed">
+                    Complete verification with official registration details. Fields are validated for security.
                   </p>
                 </div>
 
                 {/* Grid Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Full Name</label>
+                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Full Name</label>
                     <input
                       type="text"
                       required
                       placeholder="Enter legal full name"
                       value={formFullName}
                       onChange={(e) => setFormFullName(e.target.value)}
-                      className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-3 rounded-lg text-xs outline-none focus:border-amber-500"
+                      className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10 placeholder-slate-600"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Email ID</label>
+                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Email ID</label>
                     <input
                       type="email"
                       required
                       placeholder="e.g. contact@domain.com"
                       value={formEmail}
                       onChange={(e) => setFormEmail(e.target.value)}
-                      className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-3 rounded-lg text-xs outline-none focus:border-amber-500"
+                      className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10 placeholder-slate-600"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Phone Number</label>
+                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Phone Number</label>
                     <input
                       type="tel"
                       required
                       placeholder="e.g. 9876543210"
                       value={formPhone}
                       onChange={(e) => setFormPhone(e.target.value.replace(/[^0-9]/g, ''))}
-                      className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-3 rounded-lg text-xs outline-none focus:border-amber-500"
+                      className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10 placeholder-slate-600"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Date of Birth</label>
+                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Date of Birth</label>
                     <input
                       type="date"
                       required
                       value={formDob}
                       onChange={(e) => setFormDob(e.target.value)}
-                      className="w-full bg-[#0d1222] border border-slate-800 text-slate-300 font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-amber-500"
+                      className="w-full bg-[#060a13]/80 border border-slate-800 text-slate-300 font-mono py-1.5 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Profession</label>
+                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Profession</label>
                     <input
                       type="text"
                       required
                       placeholder="e.g. Business Analyst"
                       value={formProfession}
                       onChange={(e) => setFormProfession(e.target.value)}
-                      className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-3 rounded-lg text-xs outline-none focus:border-amber-500"
+                      className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10 placeholder-slate-600"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">12-Digit UPI UTR / Transaction Reference No.</label>
+                    <label className="text-[9px] uppercase font-mono tracking-wider text-amber-500/80 font-bold block">12-Digit UPI UTR No.</label>
                     <input
                       type="text"
                       required
@@ -830,27 +844,27 @@ export default function WalletSection({
                       placeholder="e.g. 417281923052"
                       value={formUtr}
                       onChange={(e) => setFormUtr(e.target.value.replace(/[^0-9]/g, ''))}
-                      className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-3 rounded-lg text-xs outline-none focus:border-amber-500 font-bold"
+                      className="w-full bg-[#060a13]/80 border border-amber-500/30 text-amber-400 font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 font-bold placeholder-amber-500/20"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1 text-left">
-                  <label className="text-[10px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Investment Amount (INR)</label>
+                  <label className="text-[8px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Investment Amount (INR)</label>
                   <input
                     type="text"
                     disabled
                     value={`₹${depositAmount.toLocaleString()}`}
-                    className="w-full bg-slate-900 border border-slate-800 text-slate-400 font-mono py-2.5 px-3 rounded-lg text-xs cursor-not-allowed font-bold"
+                    className="w-full bg-[#03060c] border border-slate-900 text-slate-400 font-mono py-2 px-3 rounded-lg text-[11px] cursor-not-allowed font-bold"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3.5 rounded-lg uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/10 mt-3 flex items-center justify-center space-x-2"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-emerald-500/10 mt-2 flex items-center justify-center space-x-1.5"
                 >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Submit Trading Application & Redirect to WhatsApp</span>
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Submit Application via WhatsApp</span>
                 </button>
               </form>
             )}
@@ -910,82 +924,82 @@ export default function WalletSection({
 
       {/* SUB TAB VIEW: WITHDRAW PROFIT */}
       {internalTab === 'withdraw' && (
-        <section className="bg-[#0b101f] border border-slate-800 rounded-2xl p-6 md:p-8 space-y-8" id="withdrawal-request-form">
-          <div className="border-b border-slate-800 pb-4">
-            <h4 className="text-lg font-black text-white uppercase tracking-tight font-display">Withdrawal Center</h4>
-            <p className="text-xs text-slate-400">Withdraw matured profits directly to your bank account. Transfers are subject to manual regulatory compliance checks.</p>
+        <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-5 space-y-5" id="withdrawal-request-form">
+          <div className="border-b border-slate-800/60 pb-3">
+            <h4 className="text-base font-black text-white uppercase tracking-tight font-display">Withdrawal Center</h4>
+            <p className="text-[10px] text-slate-400">Withdraw matured profits directly to your bank account. Transfers are subject to security checks.</p>
           </div>
 
           {withdrawSuccess ? (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-2xl text-center space-y-4 max-w-xl mx-auto" id="withdraw-success-view">
-              <div className="w-12 h-12 bg-emerald-500/25 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-7 h-7" />
+            <div className="bg-emerald-500/10 border border-emerald-500/20 p-5 rounded-xl text-center space-y-3 max-w-xl mx-auto" id="withdraw-success-view">
+              <div className="w-10 h-10 bg-emerald-500/25 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <h5 className="text-base font-black text-white font-sans">Withdrawal Request Registered!</h5>
-                <p className="text-xs text-slate-300 leading-normal">
+                <h5 className="text-xs font-bold text-white font-sans">Withdrawal Request Registered!</h5>
+                <p className="text-[10px] text-slate-300 leading-normal">
                   Our Indian Finance Ministry Compliance Desk is validating the security coordinates. Funds will reflect in your account post admin verification.
                 </p>
-                <p className="text-[10px] text-amber-400 font-mono mt-3">Status: Pending Verification (Under review)</p>
+                <p className="text-[9px] text-amber-400 font-mono mt-2">Status: Pending Verification</p>
               </div>
               <button
                 onClick={() => setWithdrawSuccess(false)}
-                className="bg-slate-900 border border-slate-800 text-slate-300 font-bold py-2 px-4 rounded-lg text-xs mt-2"
+                className="bg-slate-900 border border-slate-800 text-slate-300 font-black py-1.5 px-3 rounded-md text-[10px] tracking-wider uppercase mt-1"
               >
                 Log New Request
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
               {/* Left Side: Summary and Withdrawal Method Selection */}
-              <div className="lg:col-span-5 bg-[#050914] border border-slate-800 rounded-2xl p-6 space-y-6 text-left">
-                <div className="space-y-4">
-                  <div className="bg-[#0a0f1d] p-4 rounded-xl border border-slate-800">
-                    <span className="text-[10px] text-slate-500 block uppercase tracking-widest font-mono font-bold mb-1">Available Settlement Balance</span>
-                    <span className="text-2xl font-black text-emerald-400 font-mono">{formatIndianCurrency(currentUser?.profitWallet || 0)}</span>
+              <div className="lg:col-span-5 bg-[#050914] border border-slate-850 rounded-xl p-4 space-y-4 text-left">
+                <div className="space-y-3">
+                  <div className="bg-[#03060c] p-3 rounded-lg border border-slate-850">
+                    <span className="text-[8px] text-slate-500 block uppercase tracking-widest font-mono font-bold mb-0.5">Settlement Balance</span>
+                    <span className="text-lg font-black text-emerald-400 font-mono">{formatIndianCurrency(currentUser?.profitWallet || 0)}</span>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Select Withdrawal Method</label>
-                    <div className="grid grid-cols-1 gap-2">
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Method</label>
+                    <div className="grid grid-cols-1 gap-1.5">
                       <button
                         type="button"
                         onClick={() => setWithdrawMethod('upi')}
-                        className={`py-3 px-4 border rounded-xl text-xs font-bold uppercase font-mono transition-all flex items-center justify-between ${
-                          withdrawMethod === 'upi' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-600'
+                        className={`py-2 px-3 border rounded-lg text-[10px] font-bold uppercase font-mono transition-all flex items-center justify-between ${
+                          withdrawMethod === 'upi' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-850 text-slate-400 hover:border-slate-700'
                         }`}
                       >
                         <div className="flex items-center">
-                          <Smartphone className="w-4 h-4 mr-2" />
+                          <Smartphone className="w-3.5 h-3.5 mr-1.5" />
                           <span>UPI Transfer</span>
                         </div>
-                        {withdrawMethod === 'upi' && <CheckCircle2 className="w-4 h-4" />}
+                        {withdrawMethod === 'upi' && <CheckCircle2 className="w-3.5 h-3.5" />}
                       </button>
                       <button
                         type="button"
                         onClick={() => setWithdrawMethod('scanner')}
-                        className={`py-3 px-4 border rounded-xl text-xs font-bold uppercase font-mono transition-all flex items-center justify-between ${
-                          withdrawMethod === 'scanner' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-600'
+                        className={`py-2 px-3 border rounded-lg text-[10px] font-bold uppercase font-mono transition-all flex items-center justify-between ${
+                          withdrawMethod === 'scanner' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-850 text-slate-400 hover:border-slate-700'
                         }`}
                       >
                         <div className="flex items-center">
-                          <QrCode className="w-4 h-4 mr-2" />
+                          <QrCode className="w-3.5 h-3.5 mr-1.5" />
                           <span>QR Scanner Payout</span>
                         </div>
-                        {withdrawMethod === 'scanner' && <CheckCircle2 className="w-4 h-4" />}
+                        {withdrawMethod === 'scanner' && <CheckCircle2 className="w-3.5 h-3.5" />}
                       </button>
                       <button
                         type="button"
                         onClick={() => setWithdrawMethod('bank')}
-                        className={`py-3 px-4 border rounded-xl text-xs font-bold uppercase font-mono transition-all flex items-center justify-between ${
-                          withdrawMethod === 'bank' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-600'
+                        className={`py-2 px-3 border rounded-lg text-[10px] font-bold uppercase font-mono transition-all flex items-center justify-between ${
+                          withdrawMethod === 'bank' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-850 text-slate-400 hover:border-slate-700'
                         }`}
                       >
                         <div className="flex items-center">
-                          <Wallet className="w-4 h-4 mr-2" />
+                          <Wallet className="w-3.5 h-3.5 mr-1.5" />
                           <span>Bank Account Settlement</span>
                         </div>
-                        {withdrawMethod === 'bank' && <CheckCircle2 className="w-4 h-4" />}
+                        {withdrawMethod === 'bank' && <CheckCircle2 className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </div>
@@ -993,24 +1007,24 @@ export default function WalletSection({
               </div>
 
               {/* Form details */}
-              <div className="lg:col-span-7 bg-[#070c18] border border-slate-800/80 rounded-2xl p-6">
-                <form onSubmit={handleWithdrawalSubmit} className="space-y-4 text-left" id="withdrawal-submission-form">
+              <div className="lg:col-span-7 bg-[#070c18]/80 border border-slate-850 rounded-xl p-4">
+                <form onSubmit={handleWithdrawalSubmit} className="space-y-3.5 text-left" id="withdrawal-submission-form">
                   {withdrawError && (
-                    <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-lg flex items-center space-x-2 text-xs text-rose-400 font-sans">
-                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <div className="bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg flex items-center space-x-2 text-[10px] text-rose-400 font-sans">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                       <span>{withdrawError}</span>
                     </div>
                   )}
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Select Withdrawal Method</label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Method Selected</label>
+                      <div className="grid grid-cols-3 gap-1.5">
                         <button
                           type="button"
                           onClick={() => setWithdrawMethod('upi')}
-                          className={`py-2 px-1 border rounded-lg text-[10px] font-bold uppercase font-mono transition-all ${
-                            withdrawMethod === 'upi' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-600'
+                          className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
+                            withdrawMethod === 'upi' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
                           }`}
                         >
                           UPI ID
@@ -1018,8 +1032,8 @@ export default function WalletSection({
                         <button
                           type="button"
                           onClick={() => setWithdrawMethod('scanner')}
-                          className={`py-2 px-1 border rounded-lg text-[10px] font-bold uppercase font-mono transition-all ${
-                            withdrawMethod === 'scanner' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-600'
+                          className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
+                            withdrawMethod === 'scanner' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
                           }`}
                         >
                           Scanner
@@ -1027,8 +1041,8 @@ export default function WalletSection({
                         <button
                           type="button"
                           onClick={() => setWithdrawMethod('bank')}
-                          className={`py-2 px-1 border rounded-lg text-[10px] font-bold uppercase font-mono transition-all ${
-                            withdrawMethod === 'bank' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-600'
+                          className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
+                            withdrawMethod === 'bank' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
                           }`}
                         >
                           Bank
@@ -1037,7 +1051,7 @@ export default function WalletSection({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Withdrawal Amount (INR)</label>
+                      <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Withdrawal Amount (INR)</label>
                       <input
                         type="number"
                         required
@@ -1046,44 +1060,44 @@ export default function WalletSection({
                         placeholder="e.g. 15000"
                         value={withdrawAmount || ''}
                         onChange={(e) => setWithdrawAmount(Number(e.target.value))}
-                        className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono font-bold py-2.5 px-4 rounded-lg text-sm outline-none focus:border-amber-500"
+                        className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono font-bold py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
                       />
                     </div>
 
                     {withdrawMethod === 'bank' && (
-                      <div className="space-y-4 animate-fadeIn">
+                      <div className="space-y-3 animate-fadeIn">
                         <div className="space-y-1">
-                          <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Bank Name</label>
+                          <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Bank Name</label>
                           <input
                             type="text"
-                            placeholder="State Bank of India (SBI)"
+                            placeholder="State Bank of India"
                             id="withdraw-bank-input"
                             value={bankName}
                             onChange={(e) => setBankName(e.target.value)}
-                            className="w-full bg-[#0d1222] border border-slate-800 text-white py-2.5 px-4 rounded-lg text-xs outline-none focus:border-amber-500"
+                            className="w-full bg-[#060a13]/80 border border-slate-800 text-white py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Bank Account Number</label>
+                            <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Account Number</label>
                             <input
                               type="text"
                               placeholder="31024567210"
                               id="withdraw-account-input"
                               value={accountNo}
                               onChange={(e) => setAccountNo(e.target.value)}
-                              className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-amber-500"
+                              className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">IFSC Code</label>
+                            <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">IFSC Code</label>
                             <input
                               type="text"
                               placeholder="SBIN0004921"
                               id="withdraw-ifsc-input"
                               value={ifsc}
                               onChange={(e) => setIfsc(e.target.value.toUpperCase())}
-                              className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-amber-500"
+                              className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
                             />
                           </div>
                         </div>
@@ -1092,20 +1106,20 @@ export default function WalletSection({
 
                     {withdrawMethod === 'upi' && (
                       <div className="space-y-1 animate-fadeIn">
-                        <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">User UPI ID</label>
+                        <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">User UPI ID</label>
                         <input
                           type="text"
                           placeholder="username@okaxis"
                           value={userUpiId}
                           onChange={(e) => setUserUpiId(e.target.value)}
-                          className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-amber-500"
+                          className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
                         />
                       </div>
                     )}
 
                     {withdrawMethod === 'scanner' && (
                       <div className="space-y-1 animate-fadeIn">
-                        <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload Payment Scanner QR</label>
+                        <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Upload Payment QR</label>
                         <div className="relative group">
                           <input
                             type="file"
@@ -1125,24 +1139,23 @@ export default function WalletSection({
                           />
                           <label 
                             htmlFor="withdraw-qr-upload"
-                            className="w-full bg-[#0d1222] border border-dashed border-slate-700 hover:border-amber-500/50 text-slate-400 font-mono py-8 px-4 rounded-xl text-xs flex flex-col items-center justify-center cursor-pointer transition-all"
+                            className="w-full bg-[#060a13]/80 border border-dashed border-slate-800 hover:border-amber-500/40 text-slate-400 font-mono py-5 px-3 rounded-xl text-[10px] flex flex-col items-center justify-center cursor-pointer transition-all"
                           >
                             {userScannerUrl ? (
-                              <div className="flex flex-col items-center space-y-2">
-                                <img src={userScannerUrl} alt="Preview" className="w-20 h-20 object-contain rounded border border-slate-700" />
-                                <span className="text-emerald-400 font-bold">QR Image Selected</span>
-                                <span className="text-[10px] text-slate-500">Click to replace</span>
+                              <div className="flex flex-col items-center space-y-1">
+                                <img src={userScannerUrl} alt="Preview" className="w-14 h-14 object-contain rounded border border-slate-700" />
+                                <span className="text-emerald-400 font-bold">QR Selected</span>
+                                <span className="text-[9px] text-slate-500">Click to replace</span>
                               </div>
                             ) : (
                               <>
-                                <QrCode className="w-8 h-8 mb-2 opacity-30" />
+                                <QrCode className="w-6 h-6 mb-1 opacity-30 text-slate-400" />
                                 <span>Click to upload QR code image</span>
-                                <span className="text-[9px] text-slate-600 mt-1 uppercase">Supports JPG, PNG, WEBP</span>
+                                <span className="text-[8px] text-slate-600 tracking-wider">JPG, PNG, WEBP</span>
                               </>
                             )}
                           </label>
                         </div>
-                        <p className="text-[9px] text-slate-500 mt-2 italic">Note: Ensure the QR is clear and valid for receiving high-velocity funds.</p>
                       </div>
                     )}
                   </div>
@@ -1150,9 +1163,9 @@ export default function WalletSection({
                   <button
                     type="submit"
                     id="btn-withdraw-submit"
-                    className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs py-3 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 mt-3"
+                    className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2 px-3 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 mt-2 flex items-center justify-center space-x-1"
                   >
-                    Request Secure Settlement
+                    <span>Request Settlement</span>
                   </button>
                 </form>
               </div>
@@ -1163,58 +1176,75 @@ export default function WalletSection({
 
       {/* SUB TAB VIEW: TRANSACTION HISTORY LOGS */}
       {internalTab === 'history' && (
-        <section className="bg-[#0b101f] border border-slate-800 rounded-2xl p-6 shadow-xl" id="transaction-history-logs-sub-tab">
-          <div className="border-b border-slate-800 pb-4 mb-6">
+        <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-5 shadow-xl" id="transaction-history-logs-sub-tab">
+          <div className="border-b border-slate-800/60 pb-3 mb-4">
             <h4 className="text-base font-extrabold text-white uppercase tracking-wider font-display">My Transaction Ledger</h4>
-            <p className="text-xs text-slate-400 font-sans">Full cryptographic history of your capital allocations, deposits, and withdrawal settlements.</p>
+            <p className="text-[10px] text-slate-400 font-sans">Full cryptographic history of your capital allocations, deposits, and withdrawal settlements.</p>
           </div>
 
           {userTransactions.length === 0 ? (
-            <div className="text-center py-10 bg-[#050913] rounded-xl border border-dashed border-slate-800">
-              <p className="text-xs text-slate-500 font-mono">No transaction ledger history recorded under your account username yet.</p>
+            <div className="text-center py-8 bg-[#050913] rounded-xl border border-dashed border-slate-800">
+              <p className="text-[10px] text-slate-500 font-mono">No transaction ledger history recorded under your account yet.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left font-mono text-xs text-slate-400">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
-                    <th className="py-3 px-2">TX ID</th>
-                    <th className="py-3 px-2">Type</th>
-                    <th className="py-3 px-2">Amount</th>
-                    <th className="py-3 px-2">Tracking / Method</th>
-                    <th className="py-3 px-2 text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-900">
-                  {userTransactions.map(tx => (
-                    <tr key={tx.id} className="hover:bg-slate-900/40">
-                      <td className="py-3 px-2 font-bold text-slate-300">{tx.id}</td>
-                      <td className="py-3 px-2 uppercase">
-                        {tx.type === 'deposit' ? (
-                          <span className="text-cyan-400 flex items-center"><ArrowUpRight className="w-3 h-3 mr-1" /> Ledger Credit</span>
-                        ) : (
-                          <span className="text-rose-400 flex items-center"><ArrowDownRight className="w-3 h-3 mr-1" /> Payout Request</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-2 text-slate-200 font-bold">{formatIndianCurrency(tx.amount)}</td>
-                      <td className="py-3 px-2 text-slate-400 font-semibold truncate max-w-[200px]">
-                        {tx.type === 'deposit' ? `UTR: ${tx.utr || '—'}` : `VIA: ${(tx.bankDetails?.method || 'BANK').toUpperCase()}`}
-                      </td>
-                      <td className="py-3 px-2 text-right">
-                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          tx.status === 'completed' || tx.status === 'approved'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : tx.status === 'pending'
-                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                        }`}>
-                          {tx.status}
+            <div className="space-y-2.5">
+              {userTransactions.map(tx => (
+                <div 
+                  key={tx.id} 
+                  className="bg-[#050914]/80 border border-slate-850 hover:border-slate-800/80 p-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all animate-fadeIn"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
+                      tx.type === 'deposit' 
+                        ? 'bg-emerald-500/5 text-emerald-400 border-emerald-500/10' 
+                        : 'bg-amber-500/5 text-amber-400 border-amber-500/10'
+                    }`}>
+                      {tx.type === 'deposit' ? (
+                        <ArrowUpRight className="w-4 h-4" />
+                      ) : (
+                        <ArrowDownRight className="w-4 h-4" />
+                      )}
+                    </div>
+                    
+                    <div className="min-w-0 text-left">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs font-black text-slate-200">
+                          {tx.type === 'deposit' ? 'Ledger Credit' : 'Withdrawal Payout'}
                         </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <span className="text-[9px] font-mono font-bold text-slate-500">
+                          #{tx.id}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-400 truncate block">
+                        {tx.type === 'deposit' 
+                          ? `Ref: ${tx.utr || 'Direct Transfer'}` 
+                          : `Channel: ${(tx.bankDetails?.method || 'UPI/BANK').toUpperCase()}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end space-x-4 border-t sm:border-t-0 border-slate-800/40 pt-2 sm:pt-0">
+                    <div className="text-left sm:text-right">
+                      <span className="text-xs font-mono font-black text-white block">
+                        {tx.type === 'deposit' ? '+' : '-'} {formatIndianCurrency(tx.amount)}
+                      </span>
+                      <span className="text-[8px] font-mono text-slate-500 block uppercase">
+                        INR Value Settlement
+                      </span>
+                    </div>
+
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${
+                      tx.status === 'completed' || tx.status === 'approved'
+                        ? 'bg-emerald-500/5 text-emerald-400 border-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.05)]'
+                        : tx.status === 'pending'
+                        ? 'bg-amber-500/5 text-amber-400 border-amber-500/10 shadow-[0_0_10px_rgba(245,158,11,0.05)]'
+                        : 'bg-rose-500/5 text-rose-400 border-rose-500/10'
+                    }`}>
+                      {tx.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </section>

@@ -32,7 +32,11 @@ export const INITIAL_TICKERS: StockTicker[] = [
   { symbol: 'NIFTY 50', name: 'Nifty Index', price: 23512.40, change: 0.72, trend: 'up' },
   { symbol: 'SENSEX', name: 'BSE Sensex', price: 77215.10, change: 0.68, trend: 'up' },
   { symbol: 'BTC-INR', name: 'Bitcoin / INR', price: 5412980, change: 3.42, trend: 'up' },
-  { symbol: 'ETH-INR', name: 'Ethereum / INR', price: 284150, change: -1.15, trend: 'down' }
+  { symbol: 'ETH-INR', name: 'Ethereum / INR', price: 284150, change: -1.15, trend: 'down' },
+  { symbol: 'SOL-INR', name: 'Solana / INR', price: 14500, change: 5.67, trend: 'up' },
+  { symbol: 'DOGE-INR', name: 'Dogecoin / INR', price: 12.45, change: -2.34, trend: 'down' },
+  { symbol: 'ADA-INR', name: 'Cardano / INR', price: 38.20, change: 0.98, trend: 'up' },
+  { symbol: 'XRP-INR', name: 'XRP / INR', price: 55.60, change: -0.45, trend: 'down' }
 ];
 
 export const DEFAULT_SETTINGS: SystemSettings = {

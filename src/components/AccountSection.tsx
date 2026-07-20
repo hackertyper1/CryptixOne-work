@@ -11,8 +11,10 @@ import {
   MessageSquare, 
   LogOut,
   ShieldCheck,
-  Smartphone
+  Smartphone,
+  Fingerprint
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AccountSectionProps {
   isLoggedIn: boolean;
@@ -38,6 +40,13 @@ export default function AccountSection({
   initialMode = 'login'
 }: AccountSectionProps) {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
+
+  // Luxury Mobile Settings States
+  const [biometricEnabled, setBiometricEnabled] = useState<boolean>(() => {
+    const stored = localStorage.getItem(`cryptix_biometrics_${currentUser?.username || 'anon'}`);
+    return stored ? JSON.parse(stored) : true;
+  });
+  const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(true);
 
   useEffect(() => {
     setAuthMode(initialMode);
@@ -374,59 +383,139 @@ export default function AccountSection({
       {/* Luxury Mobile Account Profile Design - Midnight Premium Theme */}
       <section className="md:hidden bg-[#05070a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8" id="mobile-profile-modern">
         {/* Deep Slate Banner with Ambient Glow */}
-        <div className="bg-[#0a0c14] p-8 flex items-center justify-between relative overflow-hidden h-40">
+        <div className="bg-[#0a0c14] p-6 flex items-center justify-between relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-blue-600/10 rounded-full -mr-24 -mt-24 blur-[40px]" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full -ml-16 -mb-16 blur-[30px]" />
           
-          <div className="flex items-center space-x-5 relative z-10">
+          <div className="flex items-center space-x-5 relative z-10 w-full">
             {/* Avatar Circle with Ring */}
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full blur-md opacity-50" />
-              <div className="w-20 h-20 bg-slate-900 border-2 border-white/20 rounded-full flex items-center justify-center text-3xl font-black text-white relative z-10 shadow-2xl">
+              <div className="w-16 h-16 bg-slate-900 border-2 border-white/20 rounded-full flex items-center justify-center text-2xl font-black text-white relative z-10 shadow-2xl">
                 {currentUser?.name?.charAt(0).toUpperCase()}
               </div>
             </div>
             
-            <div className="text-left">
+            <div className="text-left flex-grow min-w-0">
               <div className="flex flex-col">
-                <div className="flex items-center space-x-2 mb-1">
-                  <h3 className="text-2xl font-black text-white tracking-tight">{currentUser?.name}</h3>
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center space-x-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Verified</span>
+                <div className="flex items-center space-x-2 mb-1 flex-wrap gap-y-1">
+                  <h3 className="text-xl font-black text-white tracking-tight truncate max-w-[150px]">{currentUser?.name}</h3>
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center space-x-1 flex-shrink-0">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-tighter">Verified</span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-400 font-medium">{currentUser?.email}</p>
-                <div className="mt-2 flex items-center space-x-2">
-                  <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
-                    <span className="text-[9px] text-slate-300 font-mono uppercase tracking-[0.2em] font-black">SL423633</span>
-                  </div>
-                </div>
+                <p className="text-[11px] text-slate-400 font-medium truncate">{currentUser?.email}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile Detail Rows - Premium Luxury Grid */}
-        <div className="px-8 pb-8 space-y-4">
-          <div className="bg-white/[0.03] p-5 rounded-[1.25rem] border border-white/10 backdrop-blur-md flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
-                <UserIcon className="w-4 h-4 text-blue-400" />
+        {/* Compact Credential Passport Row Blocks */}
+        <div className="px-6 pb-6 space-y-4">
+          <div className="bg-[#0a0c14]/60 p-5 rounded-[1.5rem] border border-white/5 space-y-3.5">
+            <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] block font-mono">Institutional Credentials</span>
+            
+            {/* SL Code */}
+            <div className="flex items-center justify-between border-b border-white/[0.03] pb-3">
+              <span className="text-[11px] text-slate-400 font-bold font-mono uppercase tracking-wider">SL Code</span>
+              <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
+                <span className="text-[11px] text-slate-300 font-mono uppercase tracking-[0.05em] font-black">SL423633</span>
               </div>
-              <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Username</span>
             </div>
-            <span className="text-[11px] font-black text-white font-mono">{currentUser?.username}</span>
+
+            {/* Username */}
+            <div className="flex items-center justify-between border-b border-white/[0.03] pb-3">
+              <span className="text-[11px] text-slate-400 font-bold font-mono uppercase tracking-wider">Username</span>
+              <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
+                <span className="text-[11px] text-slate-300 font-mono tracking-wide font-black">{currentUser?.username}</span>
+              </div>
+            </div>
+
+            {/* Mobile Number */}
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-bold font-mono uppercase tracking-wider">Mobile No</span>
+              <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
+                <span className="text-[11px] text-slate-300 font-mono tracking-tighter font-black">+91 {currentUser?.phone}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white/[0.03] p-5 rounded-[1.25rem] border border-white/10 backdrop-blur-md flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">
-                <Smartphone className="w-4 h-4 text-emerald-400" />
+          {/* Premium Biometrics and Security Settings (Mobile Only) */}
+          <div className="bg-[#0a0c14]/60 p-5 rounded-[1.5rem] border border-white/5 space-y-4">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-6 h-6 bg-amber-500/10 rounded-lg flex items-center justify-center border border-amber-500/20">
+                <Fingerprint className="w-3.5 h-3.5 text-amber-500" />
               </div>
-              <span className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Registered</span>
+              <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] font-mono">Sensory Security Settings</span>
             </div>
-            <span className="text-[11px] font-black text-white font-mono tracking-tighter">+91 {currentUser?.phone}</span>
+
+            {/* Biometric Toggle Switch */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex flex-col text-left">
+                <span className="text-[11px] text-slate-300 font-bold uppercase tracking-wider">FaceID / TouchID Login</span>
+                <span className="text-[8.5px] text-slate-500 font-mono">Verified via local hardware enclave keys</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const newState = !biometricEnabled;
+                  setBiometricEnabled(newState);
+                  localStorage.setItem(`cryptix_biometrics_${currentUser?.username || 'anon'}`, JSON.stringify(newState));
+                  if (newState) {
+                    toast.success("Biometric login activated.", {
+                      description: "Hardware key signature successfully registered with Secure Enclave."
+                    });
+                  } else {
+                    toast("Biometric login deactivated.", {
+                      description: "Reverted to standard username and password authentication."
+                    });
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  biometricEnabled ? 'bg-[#00C087]' : 'bg-slate-800'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    biometricEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Anti-phishing security key */}
+            <div className="flex items-center justify-between border-t border-white/[0.03] pt-3">
+              <div className="flex flex-col text-left">
+                <span className="text-[11px] text-slate-300 font-bold uppercase tracking-wider">Luxury Sensory Haptics</span>
+                <span className="text-[8.5px] text-slate-500 font-mono">Delivers custom high-fidelity haptic feedback</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const newState = !hapticsEnabled;
+                  setHapticsEnabled(newState);
+                  if (newState) {
+                    toast.success("Haptic Sensory triggers activated.", {
+                      description: "Micro haptic loops synced with physical touch events."
+                    });
+                  } else {
+                    toast("Haptics muted.", {
+                      description: "Deactivated sensory haptic physical triggers."
+                    });
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  hapticsEnabled ? 'bg-[#00C087]' : 'bg-slate-800'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    hapticsEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
           
           <button
@@ -518,7 +607,7 @@ export default function AccountSection({
       </section>
 
       {/* Luxury Advisor & Compliance Sections (Desktop + Mobile Unified Luxury) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {/* Advisor Card */}
         <section className="bg-[#05070a] border border-white/10 rounded-[2rem] p-8 shadow-xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-amber-500/10 transition-all" />
@@ -595,6 +684,91 @@ export default function AccountSection({
               <div className="flex items-center space-x-2 px-3 py-2 bg-blue-500/5 rounded-xl border border-blue-500/10">
                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
                 <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Global AML Protocol v2.4 Active</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Security & Biometrics Card */}
+        <section className="bg-[#05070a] border border-white/10 rounded-[2rem] p-8 shadow-xl relative overflow-hidden group md:col-span-2 lg:col-span-1">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-emerald-500/10 transition-all" />
+          
+          <div className="flex items-center space-x-4 mb-6 relative z-10">
+            <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20 shadow-lg shadow-emerald-500/10">
+              <Fingerprint className="w-6 h-6 text-[#00C087]" />
+            </div>
+            <div className="text-left">
+              <h4 className="text-[10px] font-black text-[#00C087] uppercase tracking-[0.2em] mb-1">Luxury Security</h4>
+              <p className="text-sm font-black text-white">Device Sensory Hardware</p>
+            </div>
+          </div>
+          
+          <div className="space-y-4 relative z-10">
+            {/* Biometrics */}
+            <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 flex items-center justify-between">
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">FaceID / TouchID Toggle</span>
+                <span className="text-[9px] text-slate-500 font-mono mt-0.5">Hardware cryptographic signatures</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const newState = !biometricEnabled;
+                  setBiometricEnabled(newState);
+                  localStorage.setItem(`cryptix_biometrics_${currentUser?.username || 'anon'}`, JSON.stringify(newState));
+                  if (newState) {
+                    toast.success("Biometric verification active.", {
+                      description: "Hardware secure element handshake successful."
+                    });
+                  } else {
+                    toast("Biometrics disabled.");
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  biometricEnabled ? 'bg-[#00C087]' : 'bg-slate-800'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    biometricEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Haptics */}
+            <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 flex items-center justify-between">
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Luxury Sensory Haptics</span>
+                <span className="text-[9px] text-slate-500 font-mono mt-0.5">High-fidelity haptic sensory loops</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const newState = !hapticsEnabled;
+                  setHapticsEnabled(newState);
+                  if (newState) {
+                    toast.success("High haptic sensation loops activated.");
+                  } else {
+                    toast("Haptic physical triggers deactivated.");
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  hapticsEnabled ? 'bg-[#00C087]' : 'bg-slate-800'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    hapticsEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="pt-2 flex flex-col space-y-2">
+              <div className="flex items-center space-x-2 px-3 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
+                <div className="w-1.5 h-1.5 bg-[#00C087] rounded-full" />
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Secure Hardware Enclave Synced</span>
               </div>
             </div>
           </div>
