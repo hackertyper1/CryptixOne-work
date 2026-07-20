@@ -4,9 +4,16 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Space Grotesk", sans-serif;
-  --font-serif: "Playfair Display", serif;
+  
+  --color-bg-primary: #11161D;
+  --color-bg-secondary: #181E27;
+  --color-bg-card: #1E2530;
+  --color-border: #2E3642;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B6BEC9;
+  --color-buy: #00C087;
+  --color-sell: #F6465D;
+  --color-accent: #F0B90B;
 }
 
 @layer base {
@@ -16,12 +23,12 @@
   }
   
   body {
-    @apply antialiased text-slate-300;
+    @apply antialiased bg-bg-primary text-text-primary;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply text-white font-display;
+    @apply text-white;
   }
 }
 

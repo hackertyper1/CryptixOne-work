@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { User, Transaction, SystemSettings, ActivityLog, InvestmentRequest, AdminMessage } from '../types';
+import { User, Transaction, SystemSettings, ActivityLog, InvestmentRequest, AdminMessage, Post } from '../types';
 import { formatIndianCurrency } from '../data';
+import { db } from '../lib/firebase';
+import { collection, query, onSnapshot, updateDoc, doc, orderBy } from 'firebase/firestore';
 import { 
   ShieldCheck, 
   Lock, 
@@ -66,8 +68,27 @@ export default function AdminPanel({
   const [adminPassword, setAdminPassword] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
-  // Admin Internal tab Navigation: 'dashboard' | 'transactions' | 'settings' | 'users' | 'logs' | 'investments' | 'messages' | 'traders'
-  const [adminTab, setAdminTab] = useState<'dashboard' | 'transactions' | 'settings' | 'users' | 'logs' | 'investments' | 'messages' | 'traders'>('dashboard');
+  // Admin Internal tab Navigation: 'dashboard' | 'transactions' | 'settings' | 'users' | 'logs' | 'investments' | 'messages' | 'traders' | 'posts'
+  const [adminTab, setAdminTab] = useState<'dashboard' | 'transactions' | 'settings' | 'users' | 'logs' | 'investments' | 'messages' | 'traders' | 'posts'>('dashboard');
+  const [firestorePosts, setFirestorePosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setFirestorePosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post)));
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const approvePost = async (postId: string) => {
+    await updateDoc(doc(db, 'posts', postId), { approved: true });
+    toast.success('Post approved');
+  };
+
+  const rejectPost = async (postId: string) => {
+    await updateDoc(doc(db, 'posts', postId), { approved: false });
+    toast.error('Post rejected');
+  };
 
   // Website setting inputs
   const [qrCodeInput, setQrCodeInput] = useState<string>(systemSettings.qrCodeUrl);
@@ -313,6 +334,15 @@ export default function AdminPanel({
           >
             <TrendingUp className="w-3 h-3" />
             <span>Traders Management</span>
+          </button>
+          <button
+            onClick={() => setAdminTab('posts')}
+            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+              adminTab === 'posts' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <FileText className="w-3 h-3" />
+            <span>Manage Posts</span>
           </button>
           <button
             id="btn-admin-tab-users"
@@ -1132,6 +1162,47 @@ export default function AdminPanel({
                       >
                         Update
                       </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {adminTab === 'posts' && (
+        <section className="bg-[#0b101f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6" id="admin-posts-management">
+          <h3 className="text-sm font-extrabold text-white uppercase tracking-wider font-mono mb-4">
+            Manage Community Posts
+          </h3>
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <table className="w-full text-left border-collapse font-mono text-[11px] text-slate-400">
+              <thead>
+                <tr className="bg-[#070b14] border-b border-slate-800 text-slate-300 uppercase text-[9px] font-bold">
+                  <th className="py-3 px-4">Author</th>
+                  <th className="py-3 px-4">Content</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {firestorePosts.map((post) => (
+                  <tr key={post.id} className="hover:bg-slate-900/30 transition-all">
+                    <td className="py-3.5 px-4">
+                      <p className="text-white font-bold">@{post.authorUsername}</p>
+                    </td>
+                    <td className="py-3.5 px-4 truncate max-w-xs">{post.content}</td>
+                    <td className="py-3.5 px-4">
+                      <span className={`px-2 py-0.5 rounded font-bold uppercase text-[9px] ${post.approved ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                        {post.approved ? 'Approved' : 'Pending'}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right space-x-2">
+                      {!post.approved && (
+                        <button onClick={() => approvePost(post.id)} className="bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded text-[10px] uppercase">Approve</button>
+                      )}
+                      <button onClick={() => rejectPost(post.id)} className="bg-rose-500 text-white font-bold px-2 py-1 rounded text-[10px] uppercase">Reject</button>
                     </td>
                   </tr>
                 ))}

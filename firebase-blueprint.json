@@ -1,0 +1,24 @@
+{
+  "entities": {
+    "Post": {
+      "title": "Post",
+      "description": "A social post about market analysis",
+      "type": "object",
+      "properties": {
+        "authorName": { "type": "string" },
+        "authorUsername": { "type": "string" },
+        "content": { "type": "string" },
+        "approved": { "type": "boolean" },
+        "likes": { "type": "number" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["authorName", "authorUsername", "content", "approved", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/posts/{postId}": {
+      "schema": { "$ref": "Post" },
+      "description": "Collection of social posts"
+    }
+  }
+}

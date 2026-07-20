@@ -114,10 +114,21 @@ export interface ActivityLog {
   encryptedPayload: string; // simulated encrypted log for high security compliance
 }
 
+export interface Post {
+  id: string;
+  authorName: string;
+  authorUsername: string;
+  content: string;
+  approved: boolean;
+  likes: number;
+  createdAt: number;
+}
+
 export interface StockTicker {
   symbol: string;
   name: string;
   price: number;
-  change: number; // percentage
+  change: number;
   trend: 'up' | 'down';
+  logo: string;
 }

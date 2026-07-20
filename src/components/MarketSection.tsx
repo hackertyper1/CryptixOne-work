@@ -19,9 +19,13 @@ import {
   Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, SystemSettings } from '../types';
+import PostInput from './PostInput';
+import PostFeed from './PostFeed';
+import { Post, User, SystemSettings } from '../types';
 import { formatIndianCurrency } from '../data';
 import { toast } from 'sonner';
+import { db } from '../lib/firebase';
+import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, orderBy, serverTimestamp } from 'firebase/firestore';
 
 interface MarketSectionProps {
   currentUser: User | null;
@@ -572,7 +576,6 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
     { id: 'asset-sbin', symbol: 'SBIN', name: 'State Bank of India', category: 'Indian Shares', basePrice: 842, currentPrice: 842, change: 1.75, history: [820, 828, 831, 835, 839, 842] },
     { id: 'asset-aapl', symbol: 'AAPL', name: 'Apple Inc.', category: 'International Stocks', basePrice: 18450, currentPrice: 18450, change: 1.20, history: [18100, 18300, 18250, 18400, 18350, 18450] }
   ]);
-
   const [selectedAssetId, setSelectedAssetId] = useState<string>('asset-btc');
   
   // Buy / Sell state
@@ -580,6 +583,43 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
   const [tradeAmount, setTradeAmount] = useState<string>('');
   const [tradeError, setTradeError] = useState<string>('');
   const [tradeSuccess, setTradeSuccess] = useState<string>('');
+  
+  const [firestorePosts, setFirestorePosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    const q = query(collection(db, 'posts'), where('approved', '==', true), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setFirestorePosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post)));
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const [newPostContent, setNewPostContent] = useState('');
+
+  const handlePostSubmit = async () => {
+    if (!newPostContent || !currentUser) {
+      toast.error('Please log in to post.');
+      return;
+    }
+    await addDoc(collection(db, 'posts'), {
+      authorName: currentUser.name,
+      authorUsername: currentUser.username,
+      content: newPostContent,
+      approved: false,
+      likes: 0,
+      createdAt: Date.now()
+    });
+    setNewPostContent('');
+    toast.success('Post submitted for admin review!');
+  };
+
+  const handleLikePost = async (postId: string, currentLikes: number) => {
+    if (!currentUser) {
+      toast.error('Please log in to like.');
+      return;
+    }
+    await updateDoc(doc(db, 'posts', postId), { likes: currentLikes + 1 });
+  };
 
   // User's custom stocks/crypto portfolio tracker synced with local storage
   const [portfolio, setPortfolio] = useState<any[]>([]);
@@ -1477,6 +1517,14 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
                     </button>
                   </form>
                 </div>
+
+                {/* Community Feed Section */}
+                <div className="bg-bg-card border border-border rounded-3xl p-6 md:p-8 space-y-6 shadow-xl text-left" id="community-posts-feed">
+                  <h3 className="text-sm font-black text-white uppercase tracking-wider">Community Market Insights</h3>
+                  <PostInput content={newPostContent} onChange={setNewPostContent} onSubmit={handlePostSubmit} />
+                  <PostFeed posts={firestorePosts} onLike={handleLikePost} />
+                </div>
+                {/* END Community Feed Section */}
 
                 {/* My Portfolio list (Held Assets) */}
                 <div className="bg-[#070b14] border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl text-left" id="user-portfolio-details">
