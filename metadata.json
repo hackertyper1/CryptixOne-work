@@ -1,0 +1,6 @@
+{
+  "name": "CryptixOne - Trading & Investment",
+  "description": "Premium trading and investment platform featuring real-time market charts, multi-tier investment tiers with an interactive profit calculator, secure transaction and deposit management with UTR verification, personal trader assignments, and an advanced administrative panel with encrypted log tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

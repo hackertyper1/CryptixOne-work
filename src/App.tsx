@@ -1,0 +1,824 @@
+import React, { useState, useEffect } from 'react';
+import { Toaster, toast } from 'sonner';
+import { TrendingUp } from 'lucide-react';
+import Header from './components/Header';
+import HomeSection from './components/HomeSection';
+import PlanSection from './components/PlanSection';
+import TradeSection from './components/TradeSection';
+import WalletSection from './components/WalletSection';
+import AccountSection from './components/AccountSection';
+import AdminPanel from './components/AdminPanel';
+import { User, ActiveTrade, Transaction, SystemSettings, ActivityLog, InvestmentPlan, InvestmentRequest, AdminMessage } from './types';
+import { DEFAULT_SETTINGS, encryptPayload, INVESTMENT_PLANS } from './data';
+
+export default function App() {
+  // Navigation State: 'home' | 'trade' | 'account' | 'admin'
+  const [activeTab, setActiveTab] = useState<string>('home');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+
+  // Core Data Registries
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [activeTrades, setActiveTrades] = useState<ActiveTrade[]>([]);
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>(DEFAULT_SETTINGS);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [investmentRequests, setInvestmentRequests] = useState<InvestmentRequest[]>([]);
+  const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
+
+  // Selection states
+  const [selectedPlanForInvestment, setSelectedPlanForInvestment] = useState<InvestmentPlan | null>(null);
+
+  // 1. Initial Seeding and Local Storage Synchronization
+  useEffect(() => {
+    // Check for secure admin access URL parameter
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('access') === 'admin-portal-2026') {
+      setActiveTab('admin');
+    }
+
+    // Sync System Settings
+    const storedSettings = localStorage.getItem('cryptix_settings');
+    if (storedSettings) {
+      setSystemSettings(JSON.parse(storedSettings));
+    } else {
+      localStorage.setItem('cryptix_settings', JSON.stringify(DEFAULT_SETTINGS));
+    }
+
+    // Sync Users
+    const storedUsers = localStorage.getItem('cryptix_users');
+    let seededUsers: User[] = [];
+    if (storedUsers) {
+      seededUsers = JSON.parse(storedUsers);
+      setUsers(seededUsers);
+    } else {
+      // Seed initial mock user for easy preview testing
+      const seedUser: User = {
+        id: 'user-seed-1',
+        name: 'Aarav Sharma',
+        username: 'aarav77',
+        email: 'aarav@gmail.com',
+        phone: '9876543210',
+        whatsapp: '9876543210',
+        profession: 'Software Consultant',
+        dob: '1995-05-15',
+        depositWallet: 5000,
+        profitWallet: 14999,
+        activeInvestment: 0,
+        traderName: 'Rohit Singhania (Senior Trader)',
+        traderPhone: '8696860548',
+        createdAt: new Date().toISOString()
+      };
+      seededUsers = [seedUser];
+      localStorage.setItem('cryptix_users', JSON.stringify(seededUsers));
+      localStorage.setItem('cryptix_pass_aarav77', 'pass123'); // seed password
+      setUsers(seededUsers);
+    }
+
+    // Sync Current Logged User
+    const storedCurrentUser = localStorage.getItem('cryptix_current_user');
+    if (storedCurrentUser) {
+      const parsedUser = JSON.parse(storedCurrentUser);
+      // reload from master user array to get fresh balances
+      const freshUser = seededUsers.find((u: User) => u.username === parsedUser.username);
+      setCurrentUser(freshUser || parsedUser);
+    }
+
+    // Sync Transactions
+    const storedTxs = localStorage.getItem('cryptix_transactions');
+    if (storedTxs) {
+      setTransactions(JSON.parse(storedTxs));
+    } else {
+      const initialTxs: Transaction[] = [
+        {
+          id: 'TX-1001',
+          userId: 'user-seed-1',
+          username: 'aarav77',
+          userPhone: '9876543210',
+          type: 'deposit',
+          amount: 5000,
+          status: 'completed',
+          date: new Date(Date.now() - 3600000 * 24).toLocaleString(),
+          utr: '417281923052'
+        }
+      ];
+      localStorage.setItem('cryptix_transactions', JSON.stringify(initialTxs));
+      setTransactions(initialTxs);
+    }
+
+    // Sync Active Trades
+    const storedTrades = localStorage.getItem('cryptix_trades');
+    if (storedTrades) {
+      setActiveTrades(JSON.parse(storedTrades));
+    }
+
+    // Sync Logs
+    const storedLogs = localStorage.getItem('cryptix_logs');
+    if (storedLogs) {
+      setActivityLogs(JSON.parse(storedLogs));
+    } else {
+      const initialLogs: ActivityLog[] = [
+        {
+          id: 'LOG-8801',
+          timestamp: new Date().toLocaleString(),
+          action: 'Platform initialized with Ministry of Finance audit structure',
+          username: 'system',
+          encryptedPayload: encryptPayload({ msg: 'Core initialized successfully.' })
+        }
+      ];
+      localStorage.setItem('cryptix_logs', JSON.stringify(initialLogs));
+      setActivityLogs(initialLogs);
+    }
+
+    // Sync Investment Requests
+    const storedRequests = localStorage.getItem('cryptix_investment_requests');
+    if (storedRequests) {
+      setInvestmentRequests(JSON.parse(storedRequests));
+    }
+
+    // Sync Admin Messages
+    const storedMessages = localStorage.getItem('cryptix_admin_messages');
+    if (storedMessages) {
+      setAdminMessages(JSON.parse(storedMessages));
+    }
+  }, []);
+
+  // Redirect guest or logged in user to permitted sections only
+  useEffect(() => {
+    // Scroll to top on every tab change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (currentUser) {
+      if (activeTab === 'home') {
+        setActiveTab('plan'); // redirect logged-in user away from home
+      }
+    } else {
+      if (activeTab !== 'home' && activeTab !== 'account' && activeTab !== 'admin') {
+        setActiveTab('home'); // redirect guests away from internal pages
+      }
+    }
+  }, [currentUser, activeTab]);
+
+  // Check for hidden admin mode in URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'admin') {
+      setActiveTab('admin');
+    }
+  }, []);
+
+  // Sync balances and users to local storage on changes
+  const saveUsersToStorage = (updatedUsers: User[]) => {
+    setUsers(updatedUsers);
+    localStorage.setItem('cryptix_users', JSON.stringify(updatedUsers));
+  };
+
+  const saveTransactionsToStorage = (updatedTxs: Transaction[]) => {
+    setTransactions(updatedTxs);
+    localStorage.setItem('cryptix_transactions', JSON.stringify(updatedTxs));
+  };
+
+  const saveTradesToStorage = (updatedTrades: ActiveTrade[]) => {
+    setActiveTrades(updatedTrades);
+    localStorage.setItem('cryptix_trades', JSON.stringify(updatedTrades));
+  };
+
+  const saveInvestmentRequestsToStorage = (updatedRequests: InvestmentRequest[]) => {
+    setInvestmentRequests(updatedRequests);
+    localStorage.setItem('cryptix_investment_requests', JSON.stringify(updatedRequests));
+  };
+
+  const saveAdminMessagesToStorage = (updated: AdminMessage[]) => {
+    setAdminMessages(updated);
+    localStorage.setItem('cryptix_admin_messages', JSON.stringify(updated));
+  };
+
+  const handleSendMessage = (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => {
+    const newMsg: AdminMessage = {
+      ...msg,
+      id: `MSG-${Math.floor(1000 + Math.random() * 9000)}`,
+      sender: 'admin',
+      timestamp: new Date().toLocaleString(),
+      read: false
+    };
+    const updated = [newMsg, ...adminMessages];
+    saveAdminMessagesToStorage(updated);
+    addLog(`Sent ${msg.type} message to ${msg.recipientId}: ${msg.subject}`, 'admin');
+  };
+
+  const addLog = (action: string, username: string) => {
+    const newLog: ActivityLog = {
+      id: `LOG-${Math.floor(1000 + Math.random() * 9000)}`,
+      timestamp: new Date().toLocaleString(),
+      action,
+      username,
+      encryptedPayload: encryptPayload({ action, username, time: Date.now() })
+    };
+    const updated = [newLog, ...activityLogs];
+    setActivityLogs(updated);
+    localStorage.setItem('cryptix_logs', JSON.stringify(updated));
+  };
+
+  // 2. Active Trade Countdown Mature & Payout Loop
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      let hasChange = false;
+      const updatedTrades = activeTrades.map(trade => {
+        if (trade.status === 'active') {
+          // Check for halfway progress
+          const totalDuration = trade.endTime - trade.startTime;
+          const elapsed = now - trade.startTime;
+          const progress = elapsed / totalDuration;
+
+          if (progress >= 0.5 && !trade.halfwayNotified) {
+            trade.halfwayNotified = true;
+            hasChange = true;
+            
+            // Only notify if it's the current user's trade
+            if (currentUser && currentUser.id === trade.userId) {
+              toast.info(`Trade Update: Your ${trade.planName} contract has reached 50% maturity. Portfolio scaling in progress...`, {
+                icon: <TrendingUp className="w-4 h-4 text-amber-500" />
+              });
+            }
+          }
+
+          if (now >= trade.endTime) {
+            trade.status = 'completed';
+            hasChange = true;
+            
+            // Move funds from Active investment to Profit Wallet of client
+            const updatedUsers = users.map(user => {
+              if (user.username === trade.username) {
+                const profitEarned = trade.estimatedProfit;
+                const refundCapital = trade.amount;
+                const newProfit = user.profitWallet + profitEarned;
+                const newActive = Math.max(0, user.activeInvestment - refundCapital);
+                
+                const updatedUser = {
+                  ...user,
+                  profitWallet: newProfit,
+                  activeInvestment: newActive
+                };
+
+                // If currently logged in user is this user, sync current user state
+                if (currentUser && currentUser.username === user.username) {
+                  setCurrentUser(updatedUser);
+                  localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
+                  
+                  // Alert the user of the maturity payout
+                  toast.success(`Capital Settlement: +₹${profitEarned}`, {
+                    description: `Contract ${trade.id} has matured successfully. Payout added to your yield balance.`,
+                    duration: 6000,
+                  });
+                }
+                return updatedUser;
+              }
+              return user;
+            });
+            
+            saveUsersToStorage(updatedUsers);
+            addLog(`Micro-Investment contract matured and payouts settled. Yield: +${trade.estimatedProfit}`, trade.username);
+          }
+        }
+        return trade;
+      });
+
+      if (hasChange) {
+        saveTradesToStorage(updatedTrades);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeTrades, users, currentUser]);
+
+  // Sound Alert for Admin Messages
+  useEffect(() => {
+    if (!currentUser || adminMessages.length === 0) return;
+    
+    const lastMsg = adminMessages[0];
+    const storedLastMsgId = localStorage.getItem('cryptix_last_msg_id');
+    
+    if (lastMsg.id !== storedLastMsgId) {
+      localStorage.setItem('cryptix_last_msg_id', lastMsg.id);
+      
+      // Check if message is for this user or broadcast
+      if (lastMsg.recipientId === currentUser.id || lastMsg.recipientId === 'all') {
+        // Play notification sound
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.play().catch(e => console.log('Audio play failed:', e));
+        
+        toast.info(`Institutional Directive: ${lastMsg.subject}`, {
+          description: "New message received from regulatory desk.",
+          duration: 8000,
+        });
+      }
+    }
+  }, [adminMessages, currentUser]);
+
+  // 3. Authenticate User login
+  const handleUserLogin = (userOrEmail: string, pass: string): boolean => {
+    const cleaned = userOrEmail.trim().toLowerCase();
+    const userMatch = users.find(
+      u => u.username.toLowerCase() === cleaned || u.email.toLowerCase() === cleaned
+    );
+
+    if (userMatch) {
+      const storedPass = localStorage.getItem(`cryptix_pass_${userMatch.username}`);
+      if (storedPass === pass) {
+        setCurrentUser(userMatch);
+        localStorage.setItem('cryptix_current_user', JSON.stringify(userMatch));
+        addLog('Client security session authenticated', userMatch.username);
+        setActiveTab('plan');
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // 4. Client Sign Up Handler
+  const handleUserSignup = (
+    userData: Omit<User, 'id' | 'depositWallet' | 'profitWallet' | 'activeInvestment' | 'traderName' | 'traderPhone' | 'createdAt'>,
+    pass: string
+  ) => {
+    const newUser: User = {
+      ...userData,
+      id: `usr-${Math.floor(10000 + Math.random() * 90000)}`,
+      depositWallet: 0,
+      profitWallet: 0,
+      activeInvestment: 0,
+      traderName: 'Rohit Singhania (Senior Trader)',
+      traderPhone: '8696860548',
+      createdAt: new Date().toISOString()
+    };
+
+    // Store password and register user
+    localStorage.setItem(`cryptix_pass_${newUser.username}`, pass);
+    const updatedUsers = [...users, newUser];
+    saveUsersToStorage(updatedUsers);
+
+    // Automaticaly log in new signup
+    setCurrentUser(newUser);
+    localStorage.setItem('cryptix_current_user', JSON.stringify(newUser));
+    addLog('New client profile registered', newUser.username);
+    setActiveTab('plan');
+  };
+
+  // 5. Submit Deposit Claim UTR Form
+  const handleDepositSubmit = (tx: Omit<Transaction, 'id' | 'userId' | 'username' | 'userPhone' | 'status' | 'date'>) => {
+    if (!currentUser) return;
+
+    const newTx: Transaction = {
+      ...tx,
+      id: `TX-${Math.floor(2000 + Math.random() * 8000)}`,
+      userId: currentUser.id,
+      username: currentUser.username,
+      userPhone: currentUser.phone,
+      status: 'pending',
+      date: new Date().toLocaleString()
+    };
+
+    const updated = [newTx, ...transactions];
+    saveTransactionsToStorage(updated);
+    addLog(`Submitted deposit UTR claim for verification of ${tx.amount} INR`, currentUser.username);
+  };
+
+  // 6. Submit Withdrawal Settlement
+  const handleWithdrawalSubmit = (amount: number, details: any): boolean => {
+    if (!currentUser) return false;
+
+    // Check if user has sufficient Profit Wallet Balance
+    if (currentUser.profitWallet < amount) {
+      return false;
+    }
+
+    // Deduct pending amount immediately for transparency
+    const updatedUsers = users.map(user => {
+      if (user.username === currentUser.username) {
+        const updated = {
+          ...user,
+          profitWallet: user.profitWallet - amount
+        };
+        setCurrentUser(updated);
+        localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
+        return updated;
+      }
+      return user;
+    });
+    saveUsersToStorage(updatedUsers);
+
+    const newTx: Transaction = {
+      id: `TX-${Math.floor(2000 + Math.random() * 8000)}`,
+      userId: currentUser.id,
+      username: currentUser.username,
+      userPhone: currentUser.phone,
+      type: 'withdrawal',
+      amount,
+      status: 'pending',
+      date: new Date().toLocaleString(),
+      bankDetails: details
+    };
+
+    const updatedTxs = [newTx, ...transactions];
+    saveTransactionsToStorage(updatedTxs);
+    addLog(`Submitted withdrawal request for ${amount} INR via ${details.method}`, currentUser.username);
+    return true;
+  };
+
+  // 7. Admin Action: Approve Transaction (deposit / withdrawal)
+  const handleApproveTransaction = (txId: string) => {
+    const txMatch = transactions.find(t => t.id === txId);
+    if (!txMatch) return;
+
+    const updatedTxs = transactions.map(t => {
+      if (t.id === txId) {
+        return { ...t, status: 'completed' as const };
+      }
+      return t;
+    });
+
+    // Update Client Balances
+    const updatedUsers = users.map(u => {
+      if (u.username === txMatch.username) {
+        let updatedUser = { ...u };
+        
+        if (txMatch.type === 'deposit') {
+          // Add funds to deposit wallet
+          updatedUser.depositWallet += txMatch.amount;
+          
+          // Automaticaly launch matched 1-hour Micro-Contract Trade!
+          // This ensures immediate real-time feedback and high satisfaction!
+          const simulated1HourDuration = 60 * 60 * 1000; // 1 Hour
+          // For easy demonstration/testing, if contract is less than ₹10k, let it countdown in 3 minutes (180 secs)
+          // or keep standard 1 hour. Let's make it 10 minutes so it has nice speed, or standard 1 hour.
+          // Let's do a fast-track 1-hour contract timer (simulated: 10 mins / 600s) so they see quick payouts!
+          // We can set actual 1-hour countdown.
+          const contractTimeMs = 60 * 60 * 1000; 
+
+          // Find approximate matched plan to fetch estimated profit
+          const matchedPlanAmount = txMatch.amount;
+          // Calculate high-multiplier profit if not an exact plan size
+          const simulatedProfit = Math.round(matchedPlanAmount * 14); 
+
+          const newActiveTrade: ActiveTrade = {
+            id: `TRD-${Math.floor(10000 + Math.random() * 90000)}`,
+            userId: u.id,
+            username: u.username,
+            amount: matchedPlanAmount,
+            estimatedProfit: simulatedProfit,
+            planName: 'Auto Verified',
+            duration: '1 Hour',
+            startTime: Date.now(),
+            endTime: Date.now() + contractTimeMs,
+            status: 'active',
+            currentProfit: 0
+          };
+
+          // Save active trades
+          const freshTrades = [newActiveTrade, ...activeTrades];
+          saveTradesToStorage(freshTrades);
+
+          // Update active investment indicator
+          updatedUser.activeInvestment += matchedPlanAmount;
+          updatedUser.depositWallet = Math.max(0, updatedUser.depositWallet - matchedPlanAmount);
+        } else {
+          // Withdrawal completes (payout already deducted on submission)
+        }
+
+        // Sync currently logged in client profile
+        if (currentUser && currentUser.username === u.username) {
+          setCurrentUser(updatedUser);
+          localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
+        }
+        return updatedUser;
+      }
+      return u;
+    });
+
+    saveUsersToStorage(updatedUsers);
+    saveTransactionsToStorage(updatedTxs);
+    addLog(`Approved ${txMatch.type} for ₹${txMatch.amount}. Active contract activated automatically.`, 'admin');
+  };
+
+  // 8. Admin Action: Reject Claim
+  const handleRejectTransaction = (txId: string) => {
+    const txMatch = transactions.find(t => t.id === txId);
+    if (!txMatch) return;
+
+    const updatedTxs = transactions.map(t => {
+      if (t.id === txId) {
+        return { ...t, status: 'rejected' as const };
+      }
+      return t;
+    });
+
+    // Refund withdrawal funds if rejected
+    const updatedUsers = users.map(u => {
+      if (u.username === txMatch.username) {
+        let updatedUser = { ...u };
+        if (txMatch.type === 'withdrawal') {
+          updatedUser.profitWallet += txMatch.amount;
+        }
+        if (currentUser && currentUser.username === u.username) {
+          setCurrentUser(updatedUser);
+          localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
+        }
+        return updatedUser;
+      }
+      return u;
+    });
+
+    saveUsersToStorage(updatedUsers);
+    saveTransactionsToStorage(updatedTxs);
+    addLog(`Rejected ${txMatch.type} claim of ₹${txMatch.amount} for compliance misalignment`, 'admin');
+  };
+
+  // 9. Admin Action: Edit client details manually
+  const handleUpdateUserBalance = (
+    userId: string,
+    deposit: number,
+    profit: number,
+    active: number,
+    traderName: string,
+    traderPhone: string
+  ) => {
+    const updatedUsers = users.map(u => {
+      if (u.id === userId) {
+        const updated = {
+          ...u,
+          depositWallet: deposit,
+          profitWallet: profit,
+          activeInvestment: active,
+          traderName,
+          traderPhone
+        };
+        if (currentUser && currentUser.id === userId) {
+          setCurrentUser(updated);
+          localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
+        }
+        return updated;
+      }
+      return u;
+    });
+    saveUsersToStorage(updatedUsers);
+    addLog(`Manually modified balances and assigned trader support for client ID: ${userId}`, 'admin');
+  };
+
+  // 10. Admin Action: Save Website Setting Configurations
+  const handleUpdateSettings = (newSettings: SystemSettings) => {
+    setSystemSettings(newSettings);
+    localStorage.setItem('cryptix_settings', JSON.stringify(newSettings));
+    addLog('System configs, UPI details, and priority QR code scanners updated', 'admin');
+  };
+
+  // 11. User triggers direct investment slot click from home tab
+  const handleInvestSelect = (plan: InvestmentPlan) => {
+    setSelectedPlanForInvestment(plan);
+    setActiveTab('wallet');
+    addLog(`Selected investment slot ${plan.category} ₹${plan.amount} - Redirected to payment form`, currentUser?.username || 'anonymous');
+  };
+
+  // 13. Submit Custom Investment Request Form (not shown in user's transactions history)
+  const handleInvestmentRequestSubmit = (req: Omit<InvestmentRequest, 'id' | 'userId' | 'username' | 'status' | 'date'>) => {
+    if (!currentUser) return;
+    const newReq: InvestmentRequest = {
+      ...req,
+      id: `REQ-${Math.floor(10000 + Math.random() * 90000)}`,
+      userId: currentUser.id,
+      username: currentUser.username,
+      status: 'pending',
+      date: new Date().toLocaleString()
+    };
+    const updated = [newReq, ...investmentRequests];
+    saveInvestmentRequestsToStorage(updated);
+    addLog(`Submitted custom investment form for ₹${req.amount} via WhatsApp`, currentUser.username);
+  };
+
+  // 14. Admin Action: Approve Investment Request
+  const handleApproveInvestmentRequest = (reqId: string) => {
+    const reqMatch = investmentRequests.find(r => r.id === reqId);
+    if (!reqMatch) return;
+
+    const updatedRequests = investmentRequests.map(r => {
+      if (r.id === reqId) {
+        return { ...r, status: 'approved' as const };
+      }
+      return r;
+    });
+
+    // Update Client Balances
+    const updatedUsers = users.map(u => {
+      if (u.username === reqMatch.username) {
+        let updatedUser = { ...u };
+        
+        // Find approximate matched plan to fetch estimated profit
+        const matchedPlan = INVESTMENT_PLANS.find(p => p.id === reqMatch.planId || p.amount === reqMatch.amount);
+        const estimatedProfit = matchedPlan ? matchedPlan.estimatedProfit : Math.round(reqMatch.amount * 14);
+
+        const contractTimeMs = 60 * 60 * 1000; // 1 Hour
+        const newActiveTrade: ActiveTrade = {
+          id: `TRD-${Math.floor(10000 + Math.random() * 90000)}`,
+          userId: u.id,
+          username: u.username,
+          amount: reqMatch.amount,
+          estimatedProfit: estimatedProfit,
+          planName: matchedPlan ? `${matchedPlan.category} Contract` : 'Custom Contract',
+          duration: '1 Hour',
+          startTime: Date.now(),
+          endTime: Date.now() + contractTimeMs,
+          status: 'active',
+          currentProfit: 0
+        };
+
+        // Save active trades
+        const freshTrades = [newActiveTrade, ...activeTrades];
+        saveTradesToStorage(freshTrades);
+
+        // Update active investment indicator
+        updatedUser.activeInvestment += reqMatch.amount;
+
+        // Sync currently logged in client profile
+        if (currentUser && currentUser.username === u.username) {
+          setCurrentUser(updatedUser);
+          localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
+        }
+        return updatedUser;
+      }
+      return u;
+    });
+
+    saveUsersToStorage(updatedUsers);
+    saveInvestmentRequestsToStorage(updatedRequests);
+    addLog(`Approved investment request of ₹${reqMatch.amount} for @${reqMatch.username}`, 'admin');
+  };
+
+  // 15. Admin Action: Reject Investment Request
+  const handleRejectInvestmentRequest = (reqId: string) => {
+    const reqMatch = investmentRequests.find(r => r.id === reqId);
+    if (!reqMatch) return;
+
+    const updatedRequests = investmentRequests.map(r => {
+      if (r.id === reqId) {
+        return { ...r, status: 'rejected' as const };
+      }
+      return r;
+    });
+
+    saveInvestmentRequestsToStorage(updatedRequests);
+    addLog(`Rejected investment request of ₹${reqMatch.amount} for @${reqMatch.username}`, 'admin');
+  };
+
+  // 12. Log out current user session
+  const handleLogout = () => {
+    addLog('Client security session disconnected', currentUser?.username || 'unknown');
+    setCurrentUser(null);
+    localStorage.removeItem('cryptix_current_user');
+    setActiveTab('home');
+  };
+
+  return (
+    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col justify-between" id="app-root-container">
+      <Toaster position="top-right" theme="dark" richColors closeButton />
+      {/* Header Navigation */}
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        setAuthMode={(mode) => {
+          setAuthMode(mode);
+          setActiveTab('account');
+        }}
+        isLoggedIn={!!currentUser}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        supportPhone={systemSettings.supportPhone}
+      />
+
+      <div className="flex-grow w-full">
+        {/* Main Content Area */}
+        <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+          {activeTab === 'home' && (
+            <HomeSection
+              systemSettings={systemSettings}
+              isLoggedIn={!!currentUser}
+              onNavigateToAuth={(mode) => {
+                setAuthMode(mode || 'signup');
+                setActiveTab('account');
+                setSelectedPlanForInvestment(null);
+              }}
+              onNavigateToPlans={() => {
+                if (currentUser) {
+                  setActiveTab('plan');
+                } else {
+                  setAuthMode('signup');
+                  setActiveTab('account');
+                }
+              }}
+            />
+          )}
+
+          {activeTab === 'plan' && (
+            <PlanSection
+              onInvestSelect={handleInvestSelect}
+              systemSettings={systemSettings}
+            />
+          )}
+
+          {activeTab === 'trade' && (
+            <TradeSection
+              activeTrades={activeTrades}
+              isLoggedIn={!!currentUser}
+              onNavigateToHome={() => {
+                setActiveTab('account');
+                setSelectedPlanForInvestment(null);
+              }}
+              onInvestSelect={handleInvestSelect}
+              systemSettings={systemSettings}
+            />
+          )}
+
+          {activeTab === 'wallet' && (
+            <WalletSection
+              isLoggedIn={!!currentUser}
+              currentUser={currentUser}
+              systemSettings={systemSettings}
+              transactions={transactions}
+              onSubmitDeposit={handleDepositSubmit}
+              onSubmitWithdrawal={handleWithdrawalSubmit}
+              selectedPlanForInvestment={selectedPlanForInvestment}
+              setSelectedPlanForInvestment={setSelectedPlanForInvestment}
+              onNavigateToAuth={() => {
+                setActiveTab('account');
+                setSelectedPlanForInvestment(null);
+              }}
+              onNavigateToTrade={() => setActiveTab('plan')}
+              onInvestmentRequestSubmit={handleInvestmentRequestSubmit}
+            />
+          )}
+
+          {activeTab === 'account' && (
+            <AccountSection
+              isLoggedIn={!!currentUser}
+              currentUser={currentUser}
+              onLogin={handleUserLogin}
+              onSignup={handleUserSignup}
+              systemSettings={systemSettings}
+              onLogout={handleLogout}
+              users={users}
+              adminMessages={adminMessages}
+              initialMode={authMode}
+            />
+          )}
+
+          {activeTab === 'admin' && (
+            <AdminPanel
+              users={users}
+              transactions={transactions}
+              systemSettings={systemSettings}
+              activityLogs={activityLogs}
+              onUpdateSettings={handleUpdateSettings}
+              onApproveTransaction={handleApproveTransaction}
+              onRejectTransaction={handleRejectTransaction}
+              onUpdateUserBalance={handleUpdateUserBalance}
+              investmentRequests={investmentRequests}
+              onApproveInvestmentRequest={handleApproveInvestmentRequest}
+              onRejectInvestmentRequest={handleRejectInvestmentRequest}
+              adminMessages={adminMessages}
+              onSendMessage={handleSendMessage}
+            />
+          )}
+        </main>
+      </div>
+
+      {/* Luxury Footer bar with regulatory clearance - Render ONLY on Home page */}
+      {activeTab === 'home' && (
+        <footer className="bg-[#050811] border-t border-slate-800/80 py-8 text-xs text-slate-500 font-mono" id="app-footer">
+          <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
+            {/* Logo Brand */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-bold text-slate-300 font-sans uppercase tracking-widest">CryptixOne Asset Group</h4>
+              <p className="text-[11px] text-slate-500 leading-normal">
+                Regulated micro-yield allocations licensed in compliance with digital assets protocols and secure national ledger auditing. Partner of SBI Finance.
+              </p>
+            </div>
+
+            {/* Links / T&C */}
+            <div className="space-y-1 text-[11px]">
+              <span className="font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans">Official Links</span>
+              <p className="hover:text-slate-300 transition-all cursor-pointer">Sovereign Asset Disclosures</p>
+              <p className="hover:text-slate-300 transition-all cursor-pointer">SBI Finance of India Terms</p>
+              <p className="hover:text-slate-300 transition-all cursor-pointer">Digital UTR Claims Protocol</p>
+            </div>
+
+            {/* Contact support */}
+            <div className="space-y-1 text-[11px]">
+              <span className="font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans">Central Compliance Desk</span>
+              <p className="text-slate-400">Email: <span className="text-amber-500 font-bold">{systemSettings.companyEmail}</span></p>
+              <p className="text-slate-400">WhatsApp Hotlines: <span className="text-emerald-400 font-bold">+91 {systemSettings.supportWhatsApp}</span></p>
+              <p className="text-[10px] text-slate-600 uppercase mt-2">© 2026 CryptixOne.com. All Rights Reserved.</p>
+            </div>
+          </div>
+        </footer>
+      )}
+    </div>
+  );
+}
