@@ -9,6 +9,8 @@ import WalletSection from './components/WalletSection';
 import AccountSection from './components/AccountSection';
 import AdminPanel from './components/AdminPanel';
 import MarketSection from './components/MarketSection';
+import SplashScreen from './components/SplashScreen';
+import AuthGate from './components/AuthGate';
 import { User, ActiveTrade, Transaction, SystemSettings, ActivityLog, InvestmentPlan, InvestmentRequest, AdminMessage } from './types';
 import { DEFAULT_SETTINGS, encryptPayload, INVESTMENT_PLANS } from './data';
 import { db } from './lib/firebase';
@@ -32,6 +34,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [mobileShowHome, setMobileShowHome] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [showSplash, setShowSplash] = useState<boolean>(true);
 
   useEffect(() => {
     const handleResize = () => {
@@ -775,28 +778,47 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col justify-between" id="app-root-container">
       <Toaster position="top-right" theme="dark" richColors closeButton />
+      
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      
+      {!showSplash && !currentUser && activeTab !== 'admin' && activeTab !== 'account' && (
+        <AuthGate 
+          onSelectLogin={() => {
+            setAuthMode('login');
+            setActiveTab('account');
+          }}
+          onSelectSignup={() => {
+            setAuthMode('signup');
+            setActiveTab('account');
+          }}
+        />
+      )}
+
       {/* Header Navigation */}
-      <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        setAuthMode={(mode) => {
-          setAuthMode(mode);
-          setActiveTab('account');
-        }}
-        isLoggedIn={!!currentUser}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-        supportPhone={systemSettings.supportPhone}
-        mobileShowHome={mobileShowHome}
-        setMobileShowHome={setMobileShowHome}
-        isMobile={isMobile}
-      />
+      {(!showSplash && (currentUser || activeTab === 'admin' || activeTab === 'account')) && (
+        <Header
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setAuthMode={(mode) => {
+            setAuthMode(mode);
+            setActiveTab('account');
+          }}
+          isLoggedIn={!!currentUser}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          supportPhone={systemSettings.supportPhone}
+          mobileShowHome={mobileShowHome}
+          setMobileShowHome={setMobileShowHome}
+          isMobile={isMobile}
+        />
+      )}
 
       <div className="flex-grow w-full">
         {/* Main Content Area */}
-        <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
-          {/* Desktop or Mobile view */}
-          <>
+        {(!showSplash && (currentUser || activeTab === 'admin' || activeTab === 'account')) && (
+          <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
+            {/* Desktop or Mobile view */}
+            <>
             {activeTab === 'home' && (
               <HomeSection
                 systemSettings={systemSettings}
@@ -904,6 +926,7 @@ export default function App() {
             )}
           </>
         </main>
+      )}
       </div>
 
       {/* Luxury Footer bar with regulatory clearance - Render ONLY on Home page */}

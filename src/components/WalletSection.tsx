@@ -3,6 +3,7 @@ import { User, Transaction, SystemSettings, InvestmentPlan, InvestmentRequest, A
 import { formatIndianCurrency, INVESTMENT_PLANS } from '../data';
 import WalletHero from './WalletHero';
 import LiveMarketChart from './LiveMarketChart';
+import MarketAssetList from './MarketAssetList';
 import { 
   Wallet, 
   TrendingUp, 
@@ -297,10 +298,27 @@ export default function WalletSection({
   }
 
   return (
-    <div className="space-y-10 text-left bg-trading-animated" id="wallet-section-container">
+    <div className="space-y-6 text-left bg-trading-animated" id="wallet-section-container">
+      {/* Compact Balance Bar (Always Visible) */}
+      <div className="grid grid-cols-3 gap-2 px-1" id="compact-balance-bar">
+        <div className="bg-[#0b101f] border border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center space-y-0.5">
+          <span className="text-[7px] text-slate-500 uppercase font-black tracking-widest">Profits</span>
+          <span className="text-[10px] font-black text-emerald-400 font-mono">{formatIndianCurrency(currentUser?.profitWallet || 0)}</span>
+        </div>
+        <div className="bg-[#0b101f] border border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center space-y-0.5">
+          <span className="text-[7px] text-slate-500 uppercase font-black tracking-widest">Main</span>
+          <span className="text-[10px] font-black text-white font-mono">{formatIndianCurrency(currentUser?.depositWallet || 0)}</span>
+        </div>
+        <div className="bg-[#0b101f] border border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center space-y-0.5">
+          <span className="text-[7px] text-slate-500 uppercase font-black tracking-widest">Active</span>
+          <span className="text-[10px] font-black text-amber-500 font-mono">{formatIndianCurrency(currentUser?.activeInvestment || 0)}</span>
+        </div>
+      </div>
+
       {/* Modern Wallet UI based on video */}
       <WalletHero onSetUpWallet={onNavigateToPlans} />
       <LiveMarketChart />
+      <MarketAssetList />
 
       {/* Desktop Wallet Balance Cards Bar - Hidden on mobile */}
       <section className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6" id="wallet-statistics-bar">

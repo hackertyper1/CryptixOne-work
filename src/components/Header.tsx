@@ -173,17 +173,6 @@ export default function Header({
             {!isLoggedIn ? (
               <div className="flex items-center space-x-2">
                 <button
-                  id="btn-desktop-home-nav"
-                  onClick={() => setActiveTab('home')}
-                  className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
-                    activeTab === 'home'
-                      ? 'bg-white/10 text-white border border-white/10'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Home
-                </button>
-                <button
                   onClick={() => setAuthMode('login')}
                   className="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/5 transition-all"
                 >
@@ -267,11 +256,13 @@ export default function Header({
         </div>
 
         {/* MOBILE HEADER (visible only on mobile) */}
-        {(activeTab === 'plan' || activeTab === 'account' || activeTab === 'market') && (
+        {(activeTab === 'home' || activeTab === 'plan' || activeTab === 'account' || activeTab === 'market' || activeTab === 'trade' || activeTab === 'wallet') && (
           <div className="flex md:hidden w-full px-4 py-3 flex-row justify-between items-center bg-[#05070a]" id="mobile-header-bar">
             {/* Logo & Brand (Left) */}
             <div className="flex items-center space-x-2">
-              <CryptixLogo className="w-9 h-9" />
+              <div className="p-1 text-amber-500">
+                <CryptixLogo className="w-8 h-8" />
+              </div>
               <div className="flex flex-col text-left">
                 <span className="text-sm font-black tracking-tight text-white leading-none">
                   CRYPTIX<span className="text-amber-500 font-black">ONE</span>
@@ -282,21 +273,38 @@ export default function Header({
               </div>
             </div>
 
-            {/* Toggle Button & Secure Badge (Right) */}
+            {/* Actions (Right) */}
             <div className="flex items-center space-x-2">
-              {isLoggedIn && (
-                <div className="bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded flex items-center space-x-1">
-                  <ShieldCheck className="w-2.5 h-2.5 text-amber-500 animate-pulse" />
-                  <span className="text-[7px] text-amber-500 font-black tracking-widest uppercase">SECURE</span>
+              {!isLoggedIn ? (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setAuthMode('login')}
+                    className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider text-slate-400 border border-white/5 bg-white/5 transition-all"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => setAuthMode('signup')}
+                    className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 transition-all"
+                  >
+                    Signup
+                  </button>
                 </div>
+              ) : (
+                <>
+                  <div className="bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded flex items-center space-x-1">
+                    <ShieldCheck className="w-2.5 h-2.5 text-amber-500 animate-pulse" />
+                    <span className="text-[7px] text-amber-500 font-black tracking-widest uppercase">SECURE</span>
+                  </div>
+                  <button
+                    onClick={() => setDrawerOpen(true)}
+                    className="p-1.5 text-slate-400 hover:text-white bg-white/5 border border-white/5 rounded-lg transition-all focus:outline-none flex items-center justify-center"
+                    id="mobile-drawer-toggle"
+                  >
+                    <Menu className="w-5 h-5 text-amber-500" />
+                  </button>
+                </>
               )}
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="p-1.5 text-slate-400 hover:text-white bg-white/5 border border-white/5 rounded-lg transition-all focus:outline-none flex items-center justify-center"
-                id="mobile-drawer-toggle"
-              >
-                <Menu className="w-5 h-5 text-amber-500" />
-              </button>
             </div>
           </div>
         )}
@@ -384,27 +392,12 @@ export default function Header({
                       {/* Guest Navigation */}
                       <button
                         onClick={() => {
-                          setActiveTab('home');
-                          setDrawerOpen(false);
-                        }}
-                        className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-[10px] uppercase tracking-wider font-black transition-all border ${
-                          activeTab === 'home'
-                            ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md'
-                            : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        <Home className="w-4 h-4 shrink-0" />
-                        <span>Home Portal</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
                           setAuthMode('login');
                           setActiveTab('account');
                           setDrawerOpen(false);
                         }}
                         className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-[10px] uppercase tracking-wider font-black transition-all border ${
-                          activeTab === 'account'
+                          activeTab === 'account' && authMode === 'login'
                             ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md'
                             : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5'
                         }`}
