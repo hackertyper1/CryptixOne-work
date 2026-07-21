@@ -11,7 +11,6 @@ import AdminPanel from './components/AdminPanel';
 import MarketSection from './components/MarketSection';
 import SplashScreen from './components/SplashScreen';
 import AuthGate from './components/AuthGate';
-import ApkDownloadModal from './components/ApkDownloadModal';
 import { User, ActiveTrade, Transaction, SystemSettings, ActivityLog, InvestmentPlan, InvestmentRequest, AdminMessage } from './types';
 import { DEFAULT_SETTINGS, encryptPayload, INVESTMENT_PLANS } from './data';
 import { db } from './lib/firebase';
@@ -37,7 +36,6 @@ export default function App() {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isApk, setIsApk] = useState<boolean>(false);
   const [showSplash, setShowSplash] = useState<boolean>(true);
-  const [showApkModal, setShowApkModal] = useState<boolean>(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -58,20 +56,6 @@ export default function App() {
     };
     const isRunningAsApk = checkIsApk();
     setIsApk(isRunningAsApk);
-    
-    // Check if user has already seen the modal
-    const hasSeenApkModal = localStorage.getItem('cryptix_has_seen_apk_modal');
-    // Check specifically for Android since APKs are only for Android
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    
-    // Show APK modal after 5 seconds if NOT running as APK, IS an Android device, and hasn't seen it yet
-    if (!isRunningAsApk && isAndroid && !hasSeenApkModal) {
-      const timer = setTimeout(() => {
-        setShowApkModal(true);
-        localStorage.setItem('cryptix_has_seen_apk_modal', 'true');
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
   }, []);
 
   // Core Data Registries
@@ -809,8 +793,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col justify-between" id="app-root-container">
       <Toaster position="top-right" theme="dark" richColors closeButton />
-      
-      {showApkModal && <ApkDownloadModal onClose={() => setShowApkModal(false)} />}
 
       {showSplash && isApk && <SplashScreen onComplete={() => setShowSplash(false)} />}
       
