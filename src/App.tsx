@@ -61,11 +61,11 @@ export default function App() {
     
     // Check if user has already seen the modal
     const hasSeenApkModal = localStorage.getItem('cryptix_has_seen_apk_modal');
-    // Basic mobile detection
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+    // Check specifically for Android since APKs are only for Android
+    const isAndroid = /Android/i.test(navigator.userAgent);
     
-    // Show APK modal after 5 seconds if NOT running as APK, IS a mobile device, and hasn't seen it yet
-    if (!isRunningAsApk && isMobileDevice && !hasSeenApkModal) {
+    // Show APK modal after 5 seconds if NOT running as APK, IS an Android device, and hasn't seen it yet
+    if (!isRunningAsApk && isAndroid && !hasSeenApkModal) {
       const timer = setTimeout(() => {
         setShowApkModal(true);
         localStorage.setItem('cryptix_has_seen_apk_modal', 'true');
