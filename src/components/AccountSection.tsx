@@ -27,6 +27,8 @@ interface AccountSectionProps {
   adminMessages: AdminMessage[];
   initialMode?: 'login' | 'signup';
   onUpdateSlCode?: (userId: string, slCode: string) => void;
+  soundEffectsEnabled?: boolean;
+  onToggleSoundEffects?: (enabled: boolean) => void;
 }
 
 export default function AccountSection({
@@ -39,7 +41,9 @@ export default function AccountSection({
   users,
   adminMessages,
   initialMode = 'login',
-  onUpdateSlCode
+  onUpdateSlCode,
+  soundEffectsEnabled = true,
+  onToggleSoundEffects
 }: AccountSectionProps) {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
 
@@ -522,6 +526,40 @@ export default function AccountSection({
                 />
               </button>
             </div>
+
+            {/* Sound Effects Toggle */}
+            <div className="flex items-center justify-between border-t border-white/[0.03] pt-3">
+              <div className="flex flex-col text-left">
+                <span className="text-[11px] text-slate-300 font-bold uppercase tracking-wider">Sound Effects</span>
+                <span className="text-[8.5px] text-slate-500 font-mono">Enable trade completion and alert audio alerts</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onToggleSoundEffects) {
+                    onToggleSoundEffects(!soundEffectsEnabled);
+                    if (!soundEffectsEnabled) {
+                      toast.success("Sound Effects enabled.", {
+                        description: "Audio alerts will play on trade completion."
+                      });
+                    } else {
+                      toast("Sound Effects muted.", {
+                        description: "Muted all website audio alerts."
+                      });
+                    }
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  soundEffectsEnabled ? 'bg-[#00C087]' : 'bg-slate-800'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    soundEffectsEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
           
           <button
@@ -766,6 +804,36 @@ export default function AccountSection({
                 <span
                   className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                     hapticsEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Sound Effects Toggle */}
+            <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5 flex items-center justify-between">
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Sound Effects</span>
+                <span className="text-[9px] text-slate-500 font-mono mt-0.5">Enable trade completion and alert audio alerts</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onToggleSoundEffects) {
+                    onToggleSoundEffects(!soundEffectsEnabled);
+                    if (!soundEffectsEnabled) {
+                      toast.success("Sound Effects enabled.");
+                    } else {
+                      toast("Sound Effects muted.");
+                    }
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  soundEffectsEnabled ? 'bg-[#00C087]' : 'bg-slate-800'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    soundEffectsEnabled ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>

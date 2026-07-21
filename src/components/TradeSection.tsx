@@ -299,6 +299,8 @@ export default function TradeSection({
   const [limitPrice, setLimitPrice] = useState('');
   const [tradeAmountInput, setTradeAmountInput] = useState('5000');
   const [targetDuration, setTargetDuration] = useState('3m'); // 60s, 3m, 5m, 15m, 1h, 1D
+  const [quickTradeAsset, setQuickTradeAsset] = useState('BTC/USDT');
+  const [quickTradeDuration, setQuickTradeDuration] = useState('60s');
   const [chartTimeframe, setChartTimeframe] = useState<'Time' | '15m' | '1h' | '4h' | '1D' | 'More'>('15m');
   const [indicatorMode, setIndicatorMode] = useState<'MA' | 'EMA' | 'BOLL' | 'SAR' | 'AVL' | 'SUPER' | 'VOL' | 'MACD' | 'RSI'>('MA');
   const [orderBookTab, setOrderBookTab] = useState<'Order Book' | 'Depth' | 'Trades' | 'Network'>('Order Book');
@@ -625,6 +627,49 @@ export default function TradeSection({
     });
   };
 
+  // Handle Quick Trade 1-Click Execution
+  const handleExecuteQuickTrade = (amt: number) => {
+    if (!isLoggedIn) {
+      toast.error('Identity Verification Required', {
+        description: 'Please authenticate your profile session under the Account section first.',
+      });
+      return;
+    }
+
+    const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
+    if (amt > availableBal) {
+      toast.warning('Trade Amount Exceeds Total Balance', {
+        description: `Warning: You are attempting a Quick Trade of ₹${amt.toLocaleString()}, which exceeds your current total wallet balance of ₹${availableBal.toLocaleString()}. Please reduce the amount or deposit more funds.`,
+      });
+      return;
+    }
+
+    // Determine return multiplier based on duration
+    let profitRate = 1.12; // default +12%
+    if (quickTradeDuration === '60s') profitRate = 0.85; // +85% payout
+    else if (quickTradeDuration === '3m') profitRate = 1.05; // +105% payout
+    else if (quickTradeDuration === '5m') profitRate = 1.28; // +128% payout
+    else if (quickTradeDuration === '15m') profitRate = 1.95; // +195% payout
+    else if (quickTradeDuration === '1h') profitRate = 3.50; // +350% payout
+    else if (quickTradeDuration === '1D') profitRate = 14.50; // +1450% payout
+
+    const estimatedProfit = Math.round(amt * profitRate);
+
+    if (onExecuteTrade) {
+      onExecuteTrade(amt, estimatedProfit, quickTradeAsset, quickTradeDuration);
+      toast.success('Instant Quick Trade Executed!', {
+        description: `Deducted ₹${amt.toLocaleString()} to activate secure ${quickTradeAsset} ${quickTradeDuration} micro-contract.`,
+        icon: <Zap className="w-5 h-5 text-amber-500 animate-pulse" />
+      });
+      
+      // scroll to active contracts tracker
+      setTimeout(() => {
+        const trackerEl = document.getElementById('user-active-trades-section');
+        if (trackerEl) trackerEl.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  };
+
   // Handle Trade Execution Submit
   const handleTradeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -796,6 +841,71 @@ export default function TradeSection({
             <span className="text-[10px] font-mono font-black text-slate-300 uppercase tracking-widest whitespace-nowrap">
               {activeHeaderTab.toUpperCase()} ACTIVE
             </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 1-Click Quick Trade HUD Widget */}
+      <div className="bg-gradient-to-r from-[#0d0e12] via-[#14161c] to-[#0d0e12] rounded-2xl border border-amber-500/10 p-5 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-5 text-left" id="quick-trade-terminal-hud">
+        <div className="space-y-1.5 flex-1 w-full">
+          <div className="flex items-center space-x-2">
+            <Zap className="w-4 h-4 text-amber-500 animate-pulse" />
+            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 font-mono">1-Click Quick Trade Terminal</h4>
+          </div>
+          <p className="text-[11px] text-slate-400">
+            Instantly execute high-yield market contracts with pre-set allocations. Select asset and duration, then execute with a single click.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-start lg:justify-end">
+          {/* Asset Selection */}
+          <div className="flex flex-col space-y-1">
+            <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Select Asset</span>
+            <select
+              value={quickTradeAsset}
+              onChange={(e) => setQuickTradeAsset(e.target.value)}
+              className="bg-slate-950 border border-slate-800 text-xs text-white font-mono py-1.5 px-3 rounded-lg outline-none focus:border-amber-500"
+            >
+              <option value="BTC/USDT">BTC/USDT (Crypto)</option>
+              <option value="ETH/USDT">ETH/USDT (Crypto)</option>
+              <option value="SOL/USDT">SOL/USDT (Crypto)</option>
+              <option value="XAU/USD">XAU/USD (Gold)</option>
+              <option value="RELIANCE">RELIANCE (Stock)</option>
+              <option value="EUR/USD">EUR/USD (Forex)</option>
+            </select>
+          </div>
+
+          {/* Duration Selection */}
+          <div className="flex flex-col space-y-1">
+            <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Select Duration</span>
+            <select
+              value={quickTradeDuration}
+              onChange={(e) => setQuickTradeDuration(e.target.value)}
+              className="bg-slate-950 border border-slate-800 text-xs text-white font-mono py-1.5 px-3 rounded-lg outline-none focus:border-amber-500"
+            >
+              <option value="60s">60 Seconds (+85%)</option>
+              <option value="3m">3 Minutes (+105%)</option>
+              <option value="5m">5 Minutes (+128%)</option>
+              <option value="15m">15 Minutes (+195%)</option>
+              <option value="1h">1 Hour (+350%)</option>
+              <option value="1D">1 Day (+1450%)</option>
+            </select>
+          </div>
+
+          {/* Preset Buttons */}
+          <div className="flex flex-col space-y-1 w-full sm:w-auto">
+            <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Instant INR Market Buy</span>
+            <div className="flex items-center space-x-2">
+              {[1000, 5000, 10000].map((presetAmt) => (
+                <button
+                  key={presetAmt}
+                  onClick={() => handleExecuteQuickTrade(presetAmt)}
+                  className="flex-1 sm:flex-initial bg-gradient-to-b from-amber-500/10 to-amber-500/5 hover:from-amber-500 hover:to-amber-600 hover:text-slate-950 text-amber-500 border border-amber-500/30 hover:border-amber-500 font-mono text-[11px] font-black px-4 py-1.5 rounded-lg transition-all transform active:scale-95 shadow-sm"
+                >
+                  ₹{presetAmt.toLocaleString()}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

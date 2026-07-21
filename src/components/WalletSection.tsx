@@ -384,51 +384,56 @@ export default function WalletSection({
       </div>
 
       {/* Wallet Balance Cards Bar - Visible on all devices */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6" id="wallet-statistics-bar">
-        {/* Profit Wallet */}
-        <div className="bg-[#0b101f] border-2 border-emerald-500/40 rounded-3xl p-6 flex items-center justify-center shadow-2xl relative overflow-hidden group hover:border-emerald-500/60 transition-all duration-500">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full" />
-          <div className="flex flex-col items-center text-center space-y-1 relative z-10">
-            <span className="text-[10px] text-emerald-500 uppercase font-bold tracking-wider mb-1">Profit Wallet</span>
-            <p className="text-3xl font-black text-emerald-400 tabular-nums">{formatIndianCurrency(currentUser?.profitWallet || 0)}</p>
-            <div className="flex items-center space-x-1.5 text-emerald-400 mt-1">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Available to Withdraw</span>
+      <section className="grid grid-cols-3 gap-1.5 sm:gap-4 md:gap-6 items-center" id="wallet-statistics-bar">
+        {/* Deposit/Trading Wallet */}
+        <div className="bg-[#0b101f] border border-slate-800 rounded-xl sm:rounded-3xl p-2 sm:p-4 md:p-6 flex items-center justify-center shadow-xl group hover:border-emerald-500/30 transition-all duration-500 h-full">
+          <div className="flex flex-col items-center text-center space-y-0.5 sm:space-y-1">
+            <span className="text-[7px] xs:text-[9px] sm:text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5 sm:mb-1">Trading Wallet</span>
+            <p className="text-xs xs:text-sm sm:text-2xl md:text-3xl font-black text-white tabular-nums">{formatIndianCurrency(currentUser?.depositWallet || 0)}</p>
+            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-emerald-500 mt-0.5 sm:mt-1">
+              <Wallet className="w-2 sm:w-3.5 h-2 sm:h-3.5" />
+              <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">Main Principal</span>
             </div>
           </div>
         </div>
 
-        {/* Deposit Wallet */}
-        <div className="bg-[#0b101f] border border-slate-800 rounded-3xl p-6 flex items-center justify-center shadow-2xl group hover:border-emerald-500/30 transition-all duration-500">
-          <div className="flex flex-col items-center text-center space-y-1">
-            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Trading Wallet</span>
-            <p className="text-3xl font-black text-white tabular-nums">{formatIndianCurrency(currentUser?.depositWallet || 0)}</p>
-            <div className="flex items-center space-x-1.5 text-emerald-500 mt-1">
-              <Wallet className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Main Principal</span>
+        {/* Profit Wallet - Premium Highlighted Card (Thoda Bada type Mai) */}
+        <div className="bg-[#0b101f] border-2 border-emerald-500 rounded-xl sm:rounded-[2rem] p-3 sm:p-6 md:p-8 flex items-center justify-center shadow-[0_0_25px_rgba(16,185,129,0.25)] relative overflow-hidden group hover:border-emerald-400 transition-all duration-500 transform scale-102 sm:scale-105 z-10 h-full">
+          <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-emerald-500/5 blur-2xl sm:blur-3xl rounded-full" />
+          <div className="flex flex-col items-center text-center space-y-0.5 sm:space-y-1 relative z-10">
+            <div className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.5 rounded-full text-[5px] xs:text-[7px] sm:text-[8px] font-black uppercase tracking-widest mb-0.5 sm:mb-1 animate-pulse">
+              ⭐ Premium
+            </div>
+            <span className="text-[8px] xs:text-[10px] sm:text-[11px] text-emerald-400 uppercase font-black tracking-widest">Profit Wallet</span>
+            <p className="text-sm xs:text-base sm:text-3xl md:text-4xl font-black text-emerald-400 tabular-nums leading-none">{formatIndianCurrency(currentUser?.profitWallet || 0)}</p>
+            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-emerald-400 mt-0.5 sm:mt-1">
+              <TrendingUp className="w-2.5 sm:w-4 h-2.5 sm:h-4 animate-bounce" />
+              <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-black uppercase tracking-widest">Withdrawal Active</span>
             </div>
           </div>
         </div>
 
-        {/* Active Investment */}
-        <div className="bg-[#0b101f] border border-slate-800 rounded-3xl p-6 flex items-center justify-center shadow-2xl group hover:border-cyan-500/30 transition-all duration-500">
-          <div className="flex flex-col items-center text-center space-y-1">
-            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Running Trades</span>
-            <p className="text-3xl font-black text-white tabular-nums">{formatIndianCurrency(currentUser?.activeInvestment || 0)}</p>
-            <div className="flex items-center space-x-1.5 text-cyan-400 mt-1">
-              <FileText className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Active Investment</span>
+        {/* Active Investment / Running Trades (INR symbol removed, displays only the number) */}
+        <div className="bg-[#0b101f] border border-slate-800 rounded-xl sm:rounded-3xl p-2 sm:p-4 md:p-6 flex items-center justify-center shadow-xl group hover:border-cyan-500/30 transition-all duration-500 h-full">
+          <div className="flex flex-col items-center text-center space-y-0.5 sm:space-y-1">
+            <span className="text-[7px] xs:text-[9px] sm:text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5 sm:mb-1">Running Trades</span>
+            <p className="text-xs xs:text-sm sm:text-2xl md:text-3xl font-black text-white tabular-nums">
+              {(currentUser?.activeInvestment || 0).toLocaleString()}
+            </p>
+            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-cyan-400 mt-0.5 sm:mt-1">
+              <FileText className="w-2 sm:w-3.5 h-2 sm:h-3.5" />
+              <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">Active Investment</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Internal Navigation Sub-Bar */}
-      <div className="flex bg-[#050914] p-1.5 rounded-2xl border border-slate-800 space-x-1.5 font-bold text-[10px] uppercase tracking-wider max-w-xl shadow-inner">
+      <div className="flex bg-[#050914] p-1 sm:p-1.5 rounded-2xl border border-slate-800 space-x-1 sm:space-x-1.5 font-bold text-[8px] xs:text-[9px] sm:text-[10px] uppercase tracking-wider max-w-xl shadow-inner w-full">
         <button
           id="btn-sub-deposit"
           onClick={() => { setInternalTab('deposit'); setDepositSuccess(false); }}
-          className={`flex-1 py-3 rounded-xl transition-all ${
+          className={`flex-1 py-2.5 sm:py-3 rounded-xl transition-all ${
             internalTab === 'deposit' ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'
           }`}
         >
@@ -448,7 +453,7 @@ export default function WalletSection({
               }
             }, 100);
           }}
-          className={`flex-1 py-3 rounded-xl transition-all ${
+          className={`flex-1 py-2.5 sm:py-3 rounded-xl transition-all ${
             internalTab === 'withdraw' ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'
           }`}
         >
@@ -456,11 +461,17 @@ export default function WalletSection({
         </button>
         <button
           onClick={() => setInternalTab('history')}
-          className={`flex-1 py-3 rounded-xl transition-all ${
+          className={`flex-1 py-2.5 sm:py-3 rounded-xl transition-all ${
             internalTab === 'history' ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'
           }`}
         >
           History
+        </button>
+        <button
+          onClick={onNavigateToAuth}
+          className="flex-1 py-2.5 sm:py-3 rounded-xl transition-all text-slate-500 hover:text-white"
+        >
+          Account
         </button>
       </div>
 

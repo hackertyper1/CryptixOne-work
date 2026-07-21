@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { User, Transaction, SystemSettings, ActivityLog, InvestmentRequest, AdminMessage, Post } from '../types';
+import { User, Transaction, SystemSettings, ActivityLog, InvestmentRequest, AdminMessage, Post, ActiveTrade } from '../types';
 import { formatIndianCurrency } from '../data';
 import { db } from '../lib/firebase';
-import { collection, query, onSnapshot, updateDoc, doc, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, updateDoc, doc, orderBy, setDoc } from 'firebase/firestore';
 import { 
   ShieldCheck, 
   Lock, 
@@ -68,14 +68,23 @@ export default function AdminPanel({
   const [adminPassword, setAdminPassword] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
-  // Admin Internal tab Navigation: 'dashboard' | 'transactions' | 'settings' | 'users' | 'logs' | 'investments' | 'messages' | 'traders' | 'posts'
-  const [adminTab, setAdminTab] = useState<'dashboard' | 'transactions' | 'settings' | 'users' | 'logs' | 'investments' | 'messages' | 'traders' | 'posts'>('dashboard');
+  // Admin Internal tab Navigation: 'dashboard' | 'transactions' | 'settings' | 'users' | 'logs' | 'investments' | 'messages' | 'traders' | 'posts' | 'trades'
+  const [adminTab, setAdminTab] = useState<'dashboard' | 'transactions' | 'settings' | 'users' | 'logs' | 'investments' | 'messages' | 'traders' | 'posts' | 'trades'>('dashboard');
   const [firestorePosts, setFirestorePosts] = useState<Post[]>([]);
+  const [adminTrades, setAdminTrades] = useState<ActiveTrade[]>([]);
 
   useEffect(() => {
     const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setFirestorePosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post)));
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const q = query(collection(db, 'trades'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setAdminTrades(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ActiveTrade)));
     });
     return () => unsubscribe();
   }, []);
@@ -357,6 +366,16 @@ export default function AdminPanel({
           >
             <Users className="w-3 h-3" />
             <span>Clients ({users.length})</span>
+          </button>
+          <button
+            id="btn-admin-tab-trades"
+            onClick={() => setAdminTab('trades')}
+            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+              adminTab === 'trades' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <TrendingUp className="w-3 h-3" />
+            <span>Active Contracts ({adminTrades.filter(t => t.status === 'active').length})</span>
           </button>
           <button
             onClick={() => setAdminTab('settings')}
@@ -1293,6 +1312,144 @@ export default function AdminPanel({
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* SECTION E: ACTIVE CONTRACTS MANAGEMENT TAB */}
+      {adminTab === 'trades' && (
+        <section className="bg-[#0b101f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6" id="active-contracts-management-tab">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+              <h4 className="text-base font-extrabold text-white uppercase tracking-wider font-mono">
+                Active Contracts & Trade Maturity Management
+              </h4>
+              <p className="text-xs text-slate-400">
+                View and manually override remaining countdown times for active trade/investment contracts.
+              </p>
+            </div>
+            <div className="bg-[#070b14] px-4 py-2 rounded-xl border border-slate-800 flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+              <span className="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-widest">
+                REALTIME DISPATCH ACTIVE
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-[#070b14] rounded-2xl border border-slate-800 p-4">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left font-mono text-xs text-slate-400">
+                <thead>
+                  <tr className="border-b border-slate-800 text-slate-500 text-[10px] uppercase">
+                    <th className="py-3 px-4">Trade ID</th>
+                    <th className="py-3 px-4">Client</th>
+                    <th className="py-3 px-4">Contract / Asset</th>
+                    <th className="py-3 px-4">Allocation</th>
+                    <th className="py-3 px-4">Est. Yield</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Remaining Duration</th>
+                    <th className="py-3 px-4 text-right">Action / Override</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-850">
+                  {adminTrades.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-6 px-4 text-center text-slate-600">
+                        No trade contracts found in the database.
+                      </td>
+                    </tr>
+                  ) : (
+                    adminTrades.map((trade) => {
+                      const now = Date.now();
+                      const isCompleted = trade.status === 'completed' || now >= trade.endTime;
+                      const remainingMs = isCompleted ? 0 : trade.endTime - now;
+                      const remainingMins = Math.ceil(remainingMs / (60 * 1000));
+
+                      return (
+                        <tr key={trade.id} className="hover:bg-white/[0.01] transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-white">{trade.id}</td>
+                          <td className="py-3.5 px-4">
+                            <span className="text-slate-300 font-bold">@{trade.username}</span>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="text-slate-300">{trade.planName || trade.assetName || 'Contract'}</span>
+                            <span className="text-[10px] text-slate-500 block">{trade.duration} limit</span>
+                          </td>
+                          <td className="py-3.5 px-4 text-[#f0b90b] font-bold">
+                            ₹{trade.amount.toLocaleString()}
+                          </td>
+                          <td className="py-3.5 px-4 text-emerald-400 font-bold">
+                            ₹{trade.estimatedProfit.toLocaleString()}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                              isCompleted 
+                                ? 'bg-emerald-500/10 text-emerald-400' 
+                                : 'bg-amber-500/10 text-amber-500 animate-pulse'
+                            }`}>
+                              {isCompleted ? 'Completed' : 'Active'}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            {isCompleted ? (
+                              <span className="text-slate-600">Matured</span>
+                            ) : (
+                              <div className="flex items-center space-x-1.5 text-amber-500">
+                                <span className="text-[11px] font-bold">{remainingMins} min{remainingMins > 1 ? 's' : ''}</span>
+                                <span className="text-[9px] text-slate-600">({Math.round(remainingMs / 1000)}s)</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            {isCompleted ? (
+                              <span className="text-slate-600 text-[10px]">No Override Possible</span>
+                            ) : (
+                              <div className="flex items-center justify-end space-x-2">
+                                <input
+                                  type="number"
+                                  min="1"
+                                  placeholder="Mins"
+                                  className="bg-slate-900 border border-slate-800 text-white rounded px-2 py-1 w-16 text-center text-[11px] outline-none focus:border-red-500"
+                                  defaultValue={remainingMins}
+                                  id={`override-input-${trade.id}`}
+                                />
+                                <button
+                                  onClick={async () => {
+                                    const inputEl = document.getElementById(`override-input-${trade.id}`) as HTMLInputElement;
+                                    if (inputEl) {
+                                      const mins = parseInt(inputEl.value);
+                                      if (isNaN(mins) || mins < 1) {
+                                        toast.error('Invalid Minutes', { description: 'Please specify a positive integer value.' });
+                                        return;
+                                      }
+                                      try {
+                                        const newEndTime = Date.now() + (mins * 60 * 1000);
+                                        await updateDoc(doc(db, 'trades', trade.id), {
+                                          endTime: newEndTime,
+                                          startTime: Date.now() // resets start to now for progress tracking
+                                        });
+                                        toast.success('Trade Duration Updated!', {
+                                          description: `Trade ${trade.id} set to mature in ${mins} minute(s).`
+                                        });
+                                      } catch (err: any) {
+                                        toast.error('Firestore Update Failed', { description: err.message });
+                                      }
+                                    }
+                                  }}
+                                  className="bg-red-500 hover:bg-red-400 text-slate-950 px-2 py-1 rounded text-[10px] uppercase font-black"
+                                >
+                                  Update
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       )}

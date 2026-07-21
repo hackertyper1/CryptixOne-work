@@ -67,6 +67,10 @@ export default function App() {
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [investmentRequests, setInvestmentRequests] = useState<InvestmentRequest[]>([]);
   const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
+  const [soundEffectsEnabled, setSoundEffectsEnabled] = useState<boolean>(() => {
+    const stored = localStorage.getItem('cryptix_sound_effects_enabled');
+    return stored !== 'false';
+  });
 
   // Selection states
   const [selectedPlanForInvestment, setSelectedPlanForInvestment] = useState<InvestmentPlan | null>(null);
@@ -111,6 +115,13 @@ export default function App() {
     }, (error) => {
       console.error("Users snapshot error:", error);
     });
+
+    // Request Notification permission
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
 
     // Real-time Transactions
     const unsubscribeTransactions = onSnapshot(query(collection(db, 'transactions'), orderBy('date', 'desc')), (snapshot) => {
@@ -301,6 +312,24 @@ export default function App() {
                     description: `Contract ${trade.id} has matured successfully. Payout added to your yield balance.`,
                     duration: 6000,
                   });
+
+                  // Play custom maturity sound
+                  if (soundEffectsEnabled) {
+                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
+                    audio.play().catch(e => console.log('Audio playback failed:', e));
+                  }
+
+                  // Dispatch device Web Notification
+                  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                    try {
+                      new Notification('Contract Matured successfully! 🎉', {
+                        body: `Your trade ${trade.id} has matured. Yield +₹${profitEarned.toLocaleString()} added to your balance.`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/2953/2953423.png'
+                      });
+                    } catch (err) {
+                      console.log('Notification dispatch failed:', err);
+                    }
+                  }
                 }
                 return updatedUser;
               }
@@ -959,6 +988,11 @@ export default function App() {
                 adminMessages={adminMessages}
                 initialMode={authMode}
                 onUpdateSlCode={handleUpdateSlCode}
+                soundEffectsEnabled={soundEffectsEnabled}
+                onToggleSoundEffects={(enabled) => {
+                  setSoundEffectsEnabled(enabled);
+                  localStorage.setItem('cryptix_sound_effects_enabled', JSON.stringify(enabled));
+                }}
               />
             )}
 
