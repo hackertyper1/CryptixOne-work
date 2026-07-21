@@ -163,6 +163,7 @@ export default function WalletSection({
   const [dob, setDob] = useState('');
   const [profession, setProfession] = useState('');
   const [copiedUpi, setCopiedUpi] = useState(false);
+  const [copiedText, setCopiedText] = useState(false);
   const [depositSuccess, setDepositSuccess] = useState(false);
   const [lastSubmittedMsg, setLastSubmittedMsg] = useState('');
 
@@ -219,6 +220,13 @@ export default function WalletSection({
     navigator.clipboard.writeText(systemSettings.upiId);
     setCopiedUpi(true);
     setTimeout(() => setCopiedUpi(false), 2000);
+  };
+
+  // Copy general text helper
+  const handleCopyText = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(true);
+    setTimeout(() => setCopiedText(false), 2000);
   };
 
   // Submit handles
@@ -418,11 +426,11 @@ export default function WalletSection({
           <div className="flex flex-col items-center text-center space-y-0.5 sm:space-y-1">
             <span className="text-[7px] xs:text-[9px] sm:text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5 sm:mb-1">Running Trades</span>
             <p className="text-xs xs:text-sm sm:text-2xl md:text-3xl font-black text-white tabular-nums">
-              {(currentUser?.activeInvestment || 0).toLocaleString()}
+              {activeTrades.filter(t => t.userId === currentUser?.id && t.status === 'active').length}
             </p>
             <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-cyan-400 mt-0.5 sm:mt-1">
               <FileText className="w-2 sm:w-3.5 h-2 sm:h-3.5" />
-              <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">Active Investment</span>
+              <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">Running Trades</span>
             </div>
           </div>
         </div>
@@ -646,86 +654,307 @@ export default function WalletSection({
               </div>
             </div>
 
-            {/* STEP 1: Select Payment Method - Now at the bottom */}
+            {/* STEP 1: Select Payment Method - Custom "Choose deposit method" Layout */}
             {paymentStep === 'select_method' && (
-              <div className="space-y-5 animate-fadeIn relative z-10 pt-4 border-t border-slate-800/60">
-                <div className="text-center space-y-1">
-                  <h5 className="text-xs font-black text-slate-200 uppercase tracking-widest">Select Payment Processor</h5>
-                  <p className="text-[10px] text-slate-500 font-medium">Secure instant routing via verified UPI nodes</p>
+              <div className="space-y-6 animate-fadeIn relative z-10 pt-4 border-t border-slate-800/60 text-left">
+                {/* Header line with close button */}
+                <div className="flex items-center justify-between">
+                  <h5 className="text-sm font-black text-white uppercase tracking-wider font-display">Choose Deposit Method</h5>
+                  <button 
+                    onClick={() => setSelectedPlanForInvestment(null)}
+                    className="p-1 bg-slate-900/60 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-all"
+                    type="button"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Google Pay */}
-                  <button
-                    onClick={() => {
-                      setSelectedPaymentMethod('Google Pay');
-                      setPaymentStep('scan_qr');
-                    }}
-                    className="flex flex-col items-center justify-center space-y-3 bg-[#0c1425] hover:bg-[#121b33] border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all group relative"
-                  >
-                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2.5 shadow-lg group-hover:scale-110 transition-transform">
-                      <img src="https://www.gstatic.com/images/branding/product/2x/gpay_96dp.png" alt="GPay" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                    </div>
-                    <span className="text-[11px] font-black text-white uppercase tracking-widest">Google Pay</span>
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowUpRight className="w-3 h-3 text-emerald-500" />
-                    </div>
-                  </button>
+                {/* Subheader Banner */}
+                <div className="bg-emerald-500/10 border border-emerald-500/15 p-3 rounded-2xl flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <ShieldCheck className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-wide">Trusted by 1.2 million users</p>
+                    <p className="text-[9px] text-slate-400 leading-tight">Your funds available 24/7, manage them whenever it suits you</p>
+                  </div>
+                </div>
 
-                  {/* PhonePe */}
-                  <button
-                    onClick={() => {
-                      setSelectedPaymentMethod('Phone Pay');
-                      setPaymentStep('scan_qr');
-                    }}
-                    className="flex flex-col items-center justify-center space-y-3 bg-[#0c1425] hover:bg-[#121b33] border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all group relative"
-                  >
-                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2 shadow-lg group-hover:scale-110 transition-transform">
-                      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ_C9I_x9z_B0H_B9u0C9z1G9z2E9S2T2R2Q&s" alt="PhonePe" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                    </div>
-                    <span className="text-[11px] font-black text-white uppercase tracking-widest">Phone Pay</span>
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowUpRight className="w-3 h-3 text-emerald-500" />
-                    </div>
-                  </button>
+                {/* Decorative secure asset allocation card */}
+                <div className="bg-gradient-to-br from-emerald-950/40 via-[#0e2124]/40 to-slate-950 border border-emerald-500/10 p-4 rounded-2xl flex justify-between items-center relative overflow-hidden shadow-inner">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full" />
+                  <div className="space-y-1 relative z-10">
+                    <p className="text-[8px] uppercase tracking-widest text-slate-500 font-mono font-black">Secure Ledger Allocation Node</p>
+                    <h6 className="text-[13px] font-black text-white uppercase">INSTANT ROUTING GATEWAY</h6>
+                    <p className="text-[9px] font-mono text-emerald-400/85">SBI • HFT • NODE_V8_ACTIVE</p>
+                  </div>
+                  <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg relative z-10 flex-shrink-0">
+                    <span className="text-slate-950 text-[14px] font-black font-mono">₿</span>
+                  </div>
+                </div>
 
-                  {/* Paytm */}
-                  <button
-                    onClick={() => {
-                      setSelectedPaymentMethod('Paytm');
-                      setPaymentStep('scan_qr');
-                    }}
-                    className="flex flex-col items-center justify-center space-y-3 bg-[#0c1425] hover:bg-[#121b33] border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all group relative"
-                  >
-                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2 shadow-lg group-hover:scale-110 transition-transform">
-                      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-M9S9Z9P9_B0H_B9u0C9z1G9z2E9S2T2R2Q&s" alt="Paytm" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                    </div>
-                    <span className="text-[11px] font-black text-white uppercase tracking-widest">Paytm</span>
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowUpRight className="w-3 h-3 text-emerald-500" />
-                    </div>
-                  </button>
+                {/* POPULAR SECTION */}
+                <div className="space-y-2.5">
+                  <h6 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest block">⭐ Popular</h6>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {/* Upi */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Upi');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-purple-600/15 border border-purple-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-purple-400">
+                          UPI
+                        </div>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Upi</span>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Instant</span>
+                    </button>
 
-                  {/* BHIM UPI */}
+                    {/* Upi QR */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Upi QR');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-600/15 border border-blue-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-blue-400">
+                          QR
+                        </div>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Upi QR</span>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Scan QR</span>
+                    </button>
+
+                    {/* Paytm by UPI */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Paytm by UPI');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-cyan-600/15 border border-cyan-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-cyan-400">
+                          Paytm
+                        </div>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Paytm by UPI</span>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Upi node</span>
+                    </button>
+
+                    {/* Google Pay by UPI */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Google Pay by UPI');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-emerald-600/15 border border-emerald-500/20 rounded-lg flex items-center justify-center p-1">
+                          <img src="https://www.gstatic.com/images/branding/product/2x/gpay_96dp.png" alt="GPay" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        </div>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Google Pay by UPI</span>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">G-pay</span>
+                    </button>
+
+                    {/* Phone Pay by UPI */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Phone Pay by UPI');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-indigo-600/15 border border-indigo-500/20 rounded-lg flex items-center justify-center p-1.5">
+                          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ_C9I_x9z_B0H_B9u0C9z1G9z2E9S2T2R2Q&s" alt="PhonePe" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        </div>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Phone Pay by UPI</span>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">PhonePe</span>
+                    </button>
+
+                    {/* Binance Pay */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Binance Pay');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-amber-600/15 border border-amber-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-amber-400">
+                          Binance
+                        </div>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Binance Pay</span>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Crypto</span>
+                    </button>
+
+                    {/* iCash.One */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('iCash.One');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-slate-600/15 border border-slate-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-slate-350">
+                          iCash
+                        </div>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">iCash.One</span>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Instant</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* CRYPTO WALLETS SECTION */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h6 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest flex items-center space-x-2">
+                      <span>🌐 Crypto wallets</span>
+                    </h6>
+                    <span className="px-2 py-0.5 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-[8px] uppercase rounded font-mono tracking-wider animate-pulse">
+                      + PAYBACK 5%
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-slate-400 leading-tight bg-slate-950/40 p-2.5 rounded-lg border border-orange-500/5 font-mono">
+                    Deposit in crypto and get 5% payback instantly - straight to your profit account balance.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {/* Gate Pay */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Gate Pay');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-orange-500/30 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-7 h-7 bg-red-600/10 border border-red-500/15 rounded-lg flex items-center justify-center font-black font-mono text-[8px] text-red-400">
+                          Gate
+                        </div>
+                        <span className="text-[10px] font-black text-white uppercase tracking-wider">Gate Pay</span>
+                      </div>
+                    </button>
+
+                    {/* Tonkeeper Pay (USDT) */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Tonkeeper Pay (USDT)');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-orange-500/30 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-7 h-7 bg-blue-600/10 border border-blue-500/15 rounded-lg flex items-center justify-center font-black font-mono text-[8px] text-blue-400">
+                          TON
+                        </div>
+                        <span className="text-[10px] font-black text-white uppercase tracking-wider">Tonkeeper USDT</span>
+                      </div>
+                    </button>
+
+                    {/* Other cryptocurrencies */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Other cryptocurrencies');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-orange-500/30 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-7 h-7 bg-amber-600/10 border border-amber-500/15 rounded-lg flex items-center justify-center font-black font-mono text-[8px] text-amber-400">
+                          CRYP
+                        </div>
+                        <span className="text-[10px] font-black text-white uppercase tracking-wider">Other Crypto</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* INTERNET BANKING SECTION */}
+                <div className="space-y-2.5">
+                  <h6 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest block">🏛️ Internet banking</h6>
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Upi */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Upi');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/60 rounded-xl transition-all hover:border-emerald-500/30 text-left w-full"
+                    >
+                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-wider">Upi Fast-settlement</span>
+                    </button>
+
+                    {/* Upi QR */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Upi QR');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/60 rounded-xl transition-all hover:border-emerald-500/30 text-left w-full"
+                    >
+                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-wider">Upi QR Scan banking</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* OTHER SECTION */}
+                <div className="space-y-2.5">
+                  <h6 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest block">📁 Other</h6>
                   <button
+                    type="button"
                     onClick={() => {
-                      setSelectedPaymentMethod('Bhim Upi');
+                      setSelectedPaymentMethod('iCash.One');
                       setPaymentStep('scan_qr');
                     }}
-                    className="flex flex-col items-center justify-center space-y-3 bg-[#0c1425] hover:bg-[#121b33] border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all group relative"
+                    className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/60 rounded-xl transition-all hover:border-emerald-500/30 text-left w-full"
                   >
-                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2.5 shadow-lg group-hover:scale-110 transition-transform">
-                      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR61z-oK7X7H-V6W2qR1fD8eL4eE9W2e3Y2eA&s" alt="BHIM UPI" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                    </div>
-                    <span className="text-[11px] font-black text-white uppercase tracking-widest">BHIM UPI</span>
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ArrowUpRight className="w-3 h-3 text-emerald-500" />
-                    </div>
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-wider">iCash.One Settlement Node</span>
                   </button>
+                </div>
+
+                {/* TRUST BADGES FOOTER */}
+                <div className="pt-4 border-t border-slate-800/50 flex flex-wrap items-center justify-between gap-3 text-[9px] font-mono font-bold text-slate-500">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-emerald-500 font-extrabold">🔒 SECURED</span>
+                    <span>PCI DSS COMPLIANT</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span>3D SECURE</span>
+                    <span>€ CERTIFIED</span>
+                  </div>
                 </div>
 
                 <div className="flex justify-center pt-2">
                   <button
+                    type="button"
                     onClick={() => setSelectedPlanForInvestment(null)}
                     className="text-[10px] text-slate-500 hover:text-slate-300 font-mono font-bold flex items-center space-x-1.5 transition-all uppercase tracking-tighter"
                   >
@@ -736,127 +965,272 @@ export default function WalletSection({
               </div>
             )}
 
-            {/* STEP 2: Scan QR & Validity CountDown */}
-            {paymentStep === 'scan_qr' && selectedPaymentMethod && (
-              <div className="space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between border-b border-slate-800/40 pb-2.5">
-                  <button
-                    onClick={() => {
-                      setPaymentStep('select_method');
-                      setSelectedPaymentMethod(null);
-                    }}
-                    className="text-[10px] font-mono font-bold text-slate-400 hover:text-white flex items-center space-x-1 transition-all"
-                  >
-                    <ArrowLeft className="w-3 h-3" />
-                    <span>Change Method</span>
-                  </button>
-                  <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider">
-                    Gateway: <b className="text-amber-400 font-black">{selectedPaymentMethod}</b>
-                  </span>
-                </div>
+            {/* STEP 2: Scan QR or Address View with Validity CountDown */}
+            {paymentStep === 'scan_qr' && selectedPaymentMethod && (() => {
+              // Helper to resolve specific dynamic fields for chosen method
+              const defaultQr = systemSettings.qrCodeImage || systemSettings.qrCodeUrl;
+              const defaultUpi = systemSettings.upiId;
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#060a15]/60 border border-white/[0.03] p-4 rounded-xl">
-                  {/* Left: Dynamic QR with Validity Scanning effect */}
-                  <div className="flex-shrink-0 flex flex-col items-center space-y-2">
-                    <div className="w-32 h-32 bg-white p-1.5 rounded-xl flex flex-col items-center justify-center shadow-lg relative border border-amber-500/30">
-                      <div className="absolute inset-x-1.5 h-0.5 bg-amber-500 animate-scan"></div>
-                      <img 
-                        src={systemSettings.qrCodeImage || systemSettings.qrCodeUrl}
-                        alt="Secure Payment QR Scanner"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    </div>
+              const getDetails = (name: string) => {
+                switch (name) {
+                  case 'Upi':
+                    return {
+                      upiId: systemSettings.upiUpiId || defaultUpi,
+                      qrUrl: systemSettings.upiQrCode || defaultQr,
+                      isCrypto: false
+                    };
+                  case 'Upi QR':
+                    return {
+                      upiId: systemSettings.upiQrUpiId || defaultUpi,
+                      qrUrl: systemSettings.upiQrQrCode || defaultQr,
+                      isCrypto: false
+                    };
+                  case 'Paytm':
+                  case 'Paytm by UPI':
+                    return {
+                      upiId: systemSettings.paytmUpiId || defaultUpi,
+                      qrUrl: systemSettings.paytmQrCode || defaultQr,
+                      isCrypto: false
+                    };
+                  case 'Google Pay':
+                  case 'Google Pay by UPI':
+                    return {
+                      upiId: systemSettings.gpayUpiId || defaultUpi,
+                      qrUrl: systemSettings.gpayQrCode || defaultQr,
+                      isCrypto: false
+                    };
+                  case 'Phone Pay':
+                  case 'Phone Pay by UPI':
+                    return {
+                      upiId: systemSettings.phonepeUpiId || defaultUpi,
+                      qrUrl: systemSettings.phonepeQrCode || defaultQr,
+                      isCrypto: false
+                    };
+                  case 'iCash.One':
+                    return {
+                      upiId: systemSettings.icashUpiId || defaultUpi,
+                      qrUrl: systemSettings.icashQrCode || defaultQr,
+                      isCrypto: false
+                    };
+                  case 'Gate Pay':
+                    return {
+                      upiId: systemSettings.gatepayUpiId || defaultUpi,
+                      qrUrl: systemSettings.gatepayQrCode || defaultQr,
+                      isCrypto: false
+                    };
+                  case 'Binance Pay':
+                    return {
+                      address: systemSettings.binanceAddress || 'binance-pay-id-872910291',
+                      isCrypto: true
+                    };
+                  case 'Tonkeeper Pay (USDT)':
+                    return {
+                      address: systemSettings.tonkeeperAddress || 'UQCd3v0pP4H8A_UpxX5Wv8G9F_uS0qP9K3d2A1m7S8r5N6tY',
+                      isCrypto: true
+                    };
+                  case 'Other cryptocurrencies':
+                    return {
+                      address: systemSettings.otherCryptoAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+                      isCrypto: true
+                    };
+                  default:
+                    return {
+                      upiId: defaultUpi,
+                      qrUrl: defaultQr,
+                      isCrypto: false
+                    };
+                }
+              };
 
-                    <a
-                      href={systemSettings.qrCodeImage || systemSettings.qrCodeUrl}
-                      download="payment_qr.jpg"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center space-x-1 text-[9px] text-amber-500 hover:text-amber-400 font-mono font-black transition-all"
+              const details = getDetails(selectedPaymentMethod);
+
+              return (
+                <div className="space-y-4 animate-fadeIn text-left">
+                  <div className="flex items-center justify-between border-b border-slate-800/40 pb-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaymentStep('select_method');
+                        setSelectedPaymentMethod(null);
+                      }}
+                      className="text-[10px] font-mono font-bold text-slate-400 hover:text-white flex items-center space-x-1 transition-all uppercase tracking-wider"
                     >
-                      <Download className="w-3 h-3" />
-                      <span>Download QR</span>
-                    </a>
+                      <ArrowLeft className="w-3 h-3" />
+                      <span>Choose Method</span>
+                    </button>
+                    <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider">
+                      Protocol: <b className="text-amber-500 font-black">{selectedPaymentMethod}</b>
+                    </span>
                   </div>
 
-                  {/* Right: Timer details and Copy buttons */}
-                  <div className="flex-grow w-full space-y-3 text-left">
-                    {/* Countdown Tracker Box */}
-                    <div className="bg-[#03060c] border border-slate-850 p-3 rounded-lg space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center space-x-1">
-                          <Clock className={`w-3.5 h-3.5 animate-spin ${timeLeft <= 30 ? 'text-amber-500' : 'text-emerald-400'}`} />
-                          <span>QR Validity Session</span>
-                        </span>
-                        <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${
-                          timeLeft <= 30 ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
-                        }`}>
-                          {timeLeft}s
-                        </span>
-                      </div>
-                      
-                      {/* Dynamic visual progress bar */}
-                      <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full transition-all duration-1000 ${
-                            timeLeft <= 30 ? 'bg-amber-500' : 'bg-emerald-400'
-                          }`}
-                          style={{ width: `${(timeLeft / 60) * 100}%` }}
-                        ></div>
+                  {details.isCrypto ? (
+                    // CRYPTOCURRENCY LAYOUT: NO QR CODE, ONLY WRITTEN ADDRESS & COPY OPTION
+                    <div className="space-y-3.5">
+                      <div className="bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/15 p-4 rounded-xl space-y-1.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                          <h6 className="text-[11px] font-black text-amber-500 uppercase tracking-wider">Crypto Settlement Active</h6>
+                        </div>
+                        <p className="text-[10px] text-slate-400 leading-normal font-medium">
+                          Please deposit your allocation capital using the custom wallet address credentials below. Copy the address and submit the hash transaction id in the final step.
+                        </p>
                       </div>
 
-                      <p className="text-[9px] text-slate-500 font-mono leading-tight">
-                        Terminates in <b className="text-slate-300">{timeLeft} seconds</b>. The system resets if unpaid after this window.
+                      {/* Large Address copy box */}
+                      <div className="bg-[#03060c] border border-slate-850 p-4 rounded-xl space-y-3 font-mono">
+                        <div className="space-y-1">
+                          <span className="text-[8px] text-slate-500 uppercase font-black block tracking-widest">Network Wallet Address</span>
+                          <div className="bg-[#060a14] border border-slate-800 p-3 rounded-lg flex items-center justify-between gap-2 overflow-hidden">
+                            <span className="text-slate-200 font-black text-[11px] select-all break-all pr-2 font-mono">
+                              {details.address}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(details.address || '')}
+                              className="p-2 bg-[#0c1425] hover:bg-slate-800 border border-slate-750 hover:text-white rounded-lg transition-all text-amber-500 flex items-center space-x-1 flex-shrink-0"
+                            >
+                              {copiedText ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                              <span className="text-[9px] font-black uppercase">{copiedText ? 'Copied' : 'Copy'}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <p className="text-[9px] text-slate-500 leading-tight">
+                          💡 Ensure you send the exact transaction amount of <b className="text-slate-300">₹{selectedPlanForInvestment.amount.toLocaleString()}</b> on the correct chain protocol.
+                        </p>
+                      </div>
+
+                      {/* Progress Session validity countdown */}
+                      <div className="bg-[#03060c] border border-slate-850 p-3.5 rounded-xl space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold text-slate-450 flex items-center space-x-1.5">
+                            <Clock className={`w-4 h-4 animate-spin ${timeLeft <= 30 ? 'text-amber-500' : 'text-emerald-400'}`} />
+                            <span>Address Validity Session</span>
+                          </span>
+                          <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${
+                            timeLeft <= 30 ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
+                          }`}>
+                            {timeLeft}s
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all duration-1000 ${
+                              timeLeft <= 30 ? 'bg-amber-500' : 'bg-emerald-400'
+                            }`}
+                            style={{ width: `${(timeLeft / 60) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    // UPI / QR SYSTEM LAYOUT: SCANNER SHOWN, DOWNLOAD BUTTON, UPI ID AND COPY BUTTONS
+                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#060a15]/60 border border-white/[0.03] p-4 rounded-xl">
+                      {/* Left: Dynamic QR with Validity Scanning effect */}
+                      <div className="flex-shrink-0 flex flex-col items-center space-y-2">
+                        <div className="w-32 h-32 bg-white p-1.5 rounded-xl flex flex-col items-center justify-center shadow-lg relative border border-amber-500/30">
+                          <div className="absolute inset-x-1.5 h-0.5 bg-amber-500 animate-scan"></div>
+                          <img 
+                            src={details.qrUrl}
+                            alt="Secure Payment QR Scanner"
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover rounded-md"
+                          />
+                        </div>
+
+                        <a
+                          href={details.qrUrl}
+                          download={`${selectedPaymentMethod}_qr.jpg`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center space-x-1 text-[9px] text-amber-500 hover:text-amber-400 font-mono font-black transition-all uppercase tracking-wider"
+                        >
+                          <Download className="w-3 h-3" />
+                          <span>Download QR</span>
+                        </a>
+                      </div>
+
+                      {/* Right: Timer details and Copy buttons */}
+                      <div className="flex-grow w-full space-y-3 text-left">
+                        {/* Countdown Tracker Box */}
+                        <div className="bg-[#03060c] border border-slate-850 p-3 rounded-lg space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center space-x-1">
+                              <Clock className={`w-3.5 h-3.5 animate-spin ${timeLeft <= 30 ? 'text-amber-500' : 'text-emerald-400'}`} />
+                              <span>QR Validity Session</span>
+                            </span>
+                            <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${
+                              timeLeft <= 30 ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
+                            }`}>
+                              {timeLeft}s
+                            </span>
+                          </div>
+                          
+                          {/* Dynamic visual progress bar */}
+                          <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full transition-all duration-1000 ${
+                                timeLeft <= 30 ? 'bg-amber-500' : 'bg-emerald-400'
+                              }`}
+                              style={{ width: `${(timeLeft / 60) * 100}%` }}
+                            ></div>
+                          </div>
+
+                          <p className="text-[9px] text-slate-500 font-mono leading-tight">
+                            Terminates in <b className="text-slate-300">{timeLeft} seconds</b>. The system resets if unpaid after this window.
+                          </p>
+                        </div>
+
+                        {/* Copy UPI Address Details */}
+                        <div className="bg-[#03060c] border border-slate-850 p-2.5 rounded-lg flex justify-between items-center font-mono">
+                          <div className="min-w-0">
+                            <span className="text-[8px] text-slate-500 uppercase block tracking-wider">Secure UPI Address</span>
+                            <span className="text-slate-300 font-black text-[10px] truncate block allow-copy font-mono select-all">{details.upiId}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(details.upiId || '')}
+                            className="p-1.5 bg-[#090e1c] border border-slate-800 hover:text-white rounded transition-all text-amber-500 flex items-center space-x-1 flex-shrink-0 ml-2"
+                          >
+                            {copiedText ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                            <span className="text-[8px] font-black uppercase">{copiedText ? 'Copied' : 'Copy'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Secure Flow submission Lock Constraint */}
+                  <div className="bg-[#040813]/40 border border-slate-800/60 p-3 rounded-xl space-y-3">
+                    <div className="flex items-start space-x-2">
+                      <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-[9px] text-slate-400 leading-normal font-mono">
+                        <b>DOUBLE-SPEND LOCK:</b> "Proceed" unlocks after 30 seconds for manual validation of transaction coordinates.
                       </p>
                     </div>
 
-                    {/* Copy UPI Address Details */}
-                    <div className="bg-[#03060c] border border-slate-850 p-2.5 rounded-lg flex justify-between items-center font-mono">
-                      <div className="min-w-0">
-                        <span className="text-[8px] text-slate-500 uppercase block tracking-wider">Secure UPI Address</span>
-                        <span className="text-slate-300 font-black text-[10px] truncate block allow-copy">{systemSettings.upiId}</span>
-                      </div>
+                    {timeLeft > 30 ? (
                       <button
-                        onClick={handleCopyUpi}
-                        className="p-1.5 bg-[#090e1c] border border-slate-800 hover:text-white rounded transition-all text-amber-500 flex items-center space-x-1 flex-shrink-0 ml-2"
+                        disabled
+                        className="w-full bg-slate-800/50 text-slate-500 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-wider cursor-not-allowed flex items-center justify-center space-x-1.5 font-mono"
                       >
-                        {copiedUpi ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                        <span className="text-[8px] font-black uppercase">{copiedUpi ? 'Copied' : 'Copy'}</span>
+                        <Lock className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Unlocking Form in {timeLeft - 30}s...</span>
                       </button>
-                    </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setPaymentStep('trading_form')}
+                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 flex items-center justify-center space-x-1.5"
+                      >
+                        <span>Proceed to Trading Form</span>
+                        <span>→</span>
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                {/* Secure Flow submission Lock Constraint */}
-                <div className="bg-[#040813]/40 border border-slate-800/60 p-3 rounded-xl space-y-3">
-                  <div className="flex items-start space-x-2">
-                    <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-[9px] text-slate-400 leading-normal font-mono">
-                      <b>DOUBLE-SPEND LOCK:</b> "Proceed" unlocks after 30 seconds for manual validation of transaction coordinates.
-                    </p>
-                  </div>
-
-                  {timeLeft > 30 ? (
-                    <button
-                      disabled
-                      className="w-full bg-slate-800/50 text-slate-500 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-wider cursor-not-allowed flex items-center justify-center space-x-1.5 font-mono"
-                    >
-                      <Lock className="w-3.5 h-3.5 text-slate-600" />
-                      <span>Unlocking Form in {timeLeft - 30}s...</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setPaymentStep('trading_form')}
-                      className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 flex items-center justify-center space-x-1.5"
-                    >
-                      <span>Proceed to Trading Form</span>
-                      <span>→</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* STEP 3: Basic trading details form */}
             {paymentStep === 'trading_form' && (

@@ -79,6 +79,33 @@ export interface SystemSettings {
   scannerUrl?: string; // explicitly for the scanner update
   qrCodeImage?: string; // base64 or url for the admin uploaded QR code
   tradeTimeLimit?: number; // duration limit in minutes
+
+  // Individual payment UPI IDs and QR images
+  upiUpiId?: string;
+  upiQrCode?: string;
+
+  upiQrUpiId?: string;
+  upiQrQrCode?: string;
+
+  paytmUpiId?: string;
+  paytmQrCode?: string;
+
+  gpayUpiId?: string;
+  gpayQrCode?: string;
+
+  phonepeUpiId?: string;
+  phonepeQrCode?: string;
+
+  icashUpiId?: string;
+  icashQrCode?: string;
+
+  gatepayUpiId?: string;
+  gatepayQrCode?: string;
+
+  // Crypto addresses (no QR codes)
+  binanceAddress?: string;
+  tonkeeperAddress?: string;
+  otherCryptoAddress?: string;
 }
 
 export interface AdminMessage {

@@ -110,6 +110,67 @@ export default function AdminPanel({
   const [tradeTimeLimitInput, setTradeTimeLimitInput] = useState<number>(systemSettings.tradeTimeLimit || 60);
   const [settingsSuccess, setSettingsSuccess] = useState<boolean>(false);
 
+  // Selector for which payment method to configure in Admin UI
+  const [paymentConfigTab, setPaymentConfigTab] = useState<string>('upi');
+
+  // Dynamic states for individual payment methods
+  const [upiUpiId, setUpiUpiId] = useState<string>(systemSettings.upiUpiId || 'cryptixone.upi@sbi');
+  const [upiQrCode, setUpiQrCode] = useState<string>(systemSettings.upiQrCode || '');
+
+  const [upiQrUpiId, setUpiQrUpiId] = useState<string>(systemSettings.upiQrUpiId || 'cryptixone.qr@sbi');
+  const [upiQrQrCode, setUpiQrQrCode] = useState<string>(systemSettings.upiQrQrCode || '');
+
+  const [paytmUpiId, setPaytmUpiId] = useState<string>(systemSettings.paytmUpiId || 'cryptixone.paytm@sbi');
+  const [paytmQrCode, setPaytmQrCode] = useState<string>(systemSettings.paytmQrCode || '');
+
+  const [gpayUpiId, setGpayUpiId] = useState<string>(systemSettings.gpayUpiId || 'cryptixone.gpay@sbi');
+  const [gpayQrCode, setGpayQrCode] = useState<string>(systemSettings.gpayQrCode || '');
+
+  const [phonepeUpiId, setPhonepeUpiId] = useState<string>(systemSettings.phonepeUpiId || 'cryptixone.pe@sbi');
+  const [phonepeQrCode, setPhonepeQrCode] = useState<string>(systemSettings.phonepeQrCode || '');
+
+  const [icashUpiId, setIcashUpiId] = useState<string>(systemSettings.icashUpiId || 'cryptixone.icash@sbi');
+  const [icashQrCode, setIcashQrCode] = useState<string>(systemSettings.icashQrCode || '');
+
+  const [gatepayUpiId, setGatepayUpiId] = useState<string>(systemSettings.gatepayUpiId || 'cryptixone.gate@sbi');
+  const [gatepayQrCode, setGatepayQrCode] = useState<string>(systemSettings.gatepayQrCode || '');
+
+  // Dynamic states for crypto addresses
+  const [binanceAddress, setBinanceAddress] = useState<string>(systemSettings.binanceAddress || 'binance-pay-id-872910291');
+  const [tonkeeperAddress, setTonkeeperAddress] = useState<string>(systemSettings.tonkeeperAddress || 'UQCd3v0pP4H8A_UpxX5Wv8G9F_uS0qP9K3d2A1m7S8r5N6tY');
+  const [otherCryptoAddress, setOtherCryptoAddress] = useState<string>(systemSettings.otherCryptoAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F');
+
+  // Synchronize inputs with settings config fetched in real-time from database
+  useEffect(() => {
+    setQrCodeInput(systemSettings.qrCodeUrl || '');
+    setScannerUrlInput(systemSettings.scannerUrl || systemSettings.qrCodeUrl || '');
+    setQrCodeImage(systemSettings.qrCodeImage || '');
+    setUpiIdInput(systemSettings.upiId || '');
+    setWhatsappInput(systemSettings.supportWhatsApp || '');
+    setPhoneInput(systemSettings.supportPhone || '');
+    setEmailInput(systemSettings.companyEmail || '');
+    setTradeTimeLimitInput(systemSettings.tradeTimeLimit || 60);
+
+    setUpiUpiId(systemSettings.upiUpiId || 'cryptixone.upi@sbi');
+    setUpiQrCode(systemSettings.upiQrCode || '');
+    setUpiQrUpiId(systemSettings.upiQrUpiId || 'cryptixone.qr@sbi');
+    setUpiQrQrCode(systemSettings.upiQrQrCode || '');
+    setPaytmUpiId(systemSettings.paytmUpiId || 'cryptixone.paytm@sbi');
+    setPaytmQrCode(systemSettings.paytmQrCode || '');
+    setGpayUpiId(systemSettings.gpayUpiId || 'cryptixone.gpay@sbi');
+    setGpayQrCode(systemSettings.gpayQrCode || '');
+    setPhonepeUpiId(systemSettings.phonepeUpiId || 'cryptixone.pe@sbi');
+    setPhonepeQrCode(systemSettings.phonepeQrCode || '');
+    setIcashUpiId(systemSettings.icashUpiId || 'cryptixone.icash@sbi');
+    setIcashQrCode(systemSettings.icashQrCode || '');
+    setGatepayUpiId(systemSettings.gatepayUpiId || 'cryptixone.gate@sbi');
+    setGatepayQrCode(systemSettings.gatepayQrCode || '');
+
+    setBinanceAddress(systemSettings.binanceAddress || 'binance-pay-id-872910291');
+    setTonkeeperAddress(systemSettings.tonkeeperAddress || 'UQCd3v0pP4H8A_UpxX5Wv8G9F_uS0qP9K3d2A1m7S8r5N6tY');
+    setOtherCryptoAddress(systemSettings.otherCryptoAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F');
+  }, [systemSettings]);
+
   // Message states
   const [messageRecipient, setMessageRecipient] = useState<string>('all');
   const [messageSubject, setMessageSubject] = useState<string>('');
@@ -152,13 +213,25 @@ export default function AdminPanel({
     }
   };
 
-  // Handle QR Code Image Upload
+  // Handle QR Code Image Upload (General fallback)
   const handleQrUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setQrCodeImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Generic helper to upload file QR for a specific setter
+  const handleMethodQrUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (val: string) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setter(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -175,7 +248,28 @@ export default function AdminPanel({
       companyEmail: emailInput,
       scannerUrl: scannerUrlInput,
       qrCodeImage: qrCodeImage,
-      tradeTimeLimit: Number(tradeTimeLimitInput) || 60
+      tradeTimeLimit: Number(tradeTimeLimitInput) || 60,
+
+      // Specific individual UPI payment methods
+      upiUpiId,
+      upiQrCode,
+      upiQrUpiId,
+      upiQrQrCode,
+      paytmUpiId,
+      paytmQrCode,
+      gpayUpiId,
+      gpayQrCode,
+      phonepeUpiId,
+      phonepeQrCode,
+      icashUpiId,
+      icashQrCode,
+      gatepayUpiId,
+      gatepayQrCode,
+
+      // Cryptocurrencies (no QR, address changes only)
+      binanceAddress,
+      tonkeeperAddress,
+      otherCryptoAddress
     });
     setSettingsSuccess(true);
     setTimeout(() => setSettingsSuccess(false), 3000);
@@ -742,6 +836,343 @@ export default function AdminPanel({
                   onChange={(e) => setTradeTimeLimitInput(Number(e.target.value) || 60)}
                   className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
                 />
+              </div>
+            </div>
+
+            {/* Individual Payment Method Settings */}
+            <div className="border-t border-slate-800/60 pt-6 space-y-4">
+              <div className="space-y-1">
+                <h4 className="text-xs font-black text-slate-200 uppercase tracking-widest font-mono">Individual Payment Method Config</h4>
+                <p className="text-[10px] text-slate-500 font-mono">Select and configure dynamic UPI IDs, QR Codes, and Crypto wallet coordinates for individual payment processors.</p>
+              </div>
+
+              {/* Selector Tabs */}
+              <div className="flex flex-wrap gap-2 pb-1">
+                {[
+                  { id: 'upi', label: 'Upi' },
+                  { id: 'upi_qr', label: 'Upi QR' },
+                  { id: 'paytm', label: 'Paytm by UPI' },
+                  { id: 'gpay', label: 'Google Pay by UPI' },
+                  { id: 'phonepe', label: 'Phone Pay by UPI' },
+                  { id: 'icash', label: 'iCash.One' },
+                  { id: 'gatepay', label: 'Gate Pay' },
+                  { id: 'binance', label: 'Binance Pay' },
+                  { id: 'tonkeeper', label: 'Tonkeeper Pay' },
+                  { id: 'other_crypto', label: 'Other Cryptos' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setPaymentConfigTab(item.id)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold uppercase transition-all border ${
+                      paymentConfigTab === item.id
+                        ? 'bg-red-500/10 border-red-500 text-red-400 font-black'
+                        : 'bg-[#0d1222] border-slate-800/80 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Form inputs per selection */}
+              <div className="bg-[#050913] border border-slate-800/80 p-5 rounded-xl space-y-4">
+                {paymentConfigTab === 'upi' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upi ID Address</label>
+                      <input
+                        type="text"
+                        value={upiUpiId}
+                        onChange={(e) => setUpiUpiId(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload Upi QR Scanner</label>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="upload-upi-qr"
+                          onChange={(e) => handleMethodQrUpload(e, setUpiQrCode)}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-upi-qr"
+                          className="flex items-center justify-center space-x-2 bg-[#0d1222] border border-slate-850 border-dashed hover:border-red-500 text-slate-400 hover:text-white py-2 px-3 rounded-lg cursor-pointer transition-all text-xs"
+                        >
+                          <Send className="w-3.5 h-3.5 rotate-[-45deg]" />
+                          <span>{upiQrCode ? 'QR Uploaded' : 'Upload QR Image'}</span>
+                        </label>
+                        {upiQrCode && (
+                          <img src={upiQrCode} alt="UPI QR" className="w-8 h-8 object-cover rounded border border-slate-800" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'upi_qr' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upi QR ID Address</label>
+                      <input
+                        type="text"
+                        value={upiQrUpiId}
+                        onChange={(e) => setUpiQrUpiId(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload Upi QR Scanner</label>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="upload-upiqr-qr"
+                          onChange={(e) => handleMethodQrUpload(e, setUpiQrQrCode)}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-upiqr-qr"
+                          className="flex items-center justify-center space-x-2 bg-[#0d1222] border border-slate-850 border-dashed hover:border-red-500 text-slate-400 hover:text-white py-2 px-3 rounded-lg cursor-pointer transition-all text-xs"
+                        >
+                          <Send className="w-3.5 h-3.5 rotate-[-45deg]" />
+                          <span>{upiQrQrCode ? 'QR Uploaded' : 'Upload QR Image'}</span>
+                        </label>
+                        {upiQrQrCode && (
+                          <img src={upiQrQrCode} alt="UPI QR QR" className="w-8 h-8 object-cover rounded border border-slate-800" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'paytm' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Paytm UPI ID</label>
+                      <input
+                        type="text"
+                        value={paytmUpiId}
+                        onChange={(e) => setPaytmUpiId(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload Paytm QR Scanner</label>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="upload-paytm-qr"
+                          onChange={(e) => handleMethodQrUpload(e, setPaytmQrCode)}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-paytm-qr"
+                          className="flex items-center justify-center space-x-2 bg-[#0d1222] border border-slate-850 border-dashed hover:border-red-500 text-slate-400 hover:text-white py-2 px-3 rounded-lg cursor-pointer transition-all text-xs"
+                        >
+                          <Send className="w-3.5 h-3.5 rotate-[-45deg]" />
+                          <span>{paytmQrCode ? 'QR Uploaded' : 'Upload QR Image'}</span>
+                        </label>
+                        {paytmQrCode && (
+                          <img src={paytmQrCode} alt="Paytm QR" className="w-8 h-8 object-cover rounded border border-slate-800" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'gpay' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Google Pay UPI ID</label>
+                      <input
+                        type="text"
+                        value={gpayUpiId}
+                        onChange={(e) => setGpayUpiId(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload Google Pay QR Scanner</label>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="upload-gpay-qr"
+                          onChange={(e) => handleMethodQrUpload(e, setGpayQrCode)}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-gpay-qr"
+                          className="flex items-center justify-center space-x-2 bg-[#0d1222] border border-slate-850 border-dashed hover:border-red-500 text-slate-400 hover:text-white py-2 px-3 rounded-lg cursor-pointer transition-all text-xs"
+                        >
+                          <Send className="w-3.5 h-3.5 rotate-[-45deg]" />
+                          <span>{gpayQrCode ? 'QR Uploaded' : 'Upload QR Image'}</span>
+                        </label>
+                        {gpayQrCode && (
+                          <img src={gpayQrCode} alt="GPay QR" className="w-8 h-8 object-cover rounded border border-slate-800" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'phonepe' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Phone Pay UPI ID</label>
+                      <input
+                        type="text"
+                        value={phonepeUpiId}
+                        onChange={(e) => setPhonepeUpiId(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload Phone Pay QR Scanner</label>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="upload-phonepe-qr"
+                          onChange={(e) => handleMethodQrUpload(e, setPhonepeQrCode)}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-phonepe-qr"
+                          className="flex items-center justify-center space-x-2 bg-[#0d1222] border border-slate-850 border-dashed hover:border-red-500 text-slate-400 hover:text-white py-2 px-3 rounded-lg cursor-pointer transition-all text-xs"
+                        >
+                          <Send className="w-3.5 h-3.5 rotate-[-45deg]" />
+                          <span>{phonepeQrCode ? 'QR Uploaded' : 'Upload QR Image'}</span>
+                        </label>
+                        {phonepeQrCode && (
+                          <img src={phonepeQrCode} alt="PhonePe QR" className="w-8 h-8 object-cover rounded border border-slate-800" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'icash' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">iCash.One UPI ID</label>
+                      <input
+                        type="text"
+                        value={icashUpiId}
+                        onChange={(e) => setIcashUpiId(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload iCash.One QR Scanner</label>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="upload-icash-qr"
+                          onChange={(e) => handleMethodQrUpload(e, setIcashQrCode)}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-icash-qr"
+                          className="flex items-center justify-center space-x-2 bg-[#0d1222] border border-slate-850 border-dashed hover:border-red-500 text-slate-400 hover:text-white py-2 px-3 rounded-lg cursor-pointer transition-all text-xs"
+                        >
+                          <Send className="w-3.5 h-3.5 rotate-[-45deg]" />
+                          <span>{icashQrCode ? 'QR Uploaded' : 'Upload QR Image'}</span>
+                        </label>
+                        {icashQrCode && (
+                          <img src={icashQrCode} alt="iCash QR" className="w-8 h-8 object-cover rounded border border-slate-800" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'gatepay' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Gate Pay UPI ID</label>
+                      <input
+                        type="text"
+                        value={gatepayUpiId}
+                        onChange={(e) => setGatepayUpiId(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload Gate Pay QR Scanner</label>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="upload-gatepay-qr"
+                          onChange={(e) => handleMethodQrUpload(e, setGatepayQrCode)}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="upload-gatepay-qr"
+                          className="flex items-center justify-center space-x-2 bg-[#0d1222] border border-slate-850 border-dashed hover:border-red-500 text-slate-400 hover:text-white py-2 px-3 rounded-lg cursor-pointer transition-all text-xs"
+                        >
+                          <Send className="w-3.5 h-3.5 rotate-[-45deg]" />
+                          <span>{gatepayQrCode ? 'QR Uploaded' : 'Upload QR Image'}</span>
+                        </label>
+                        {gatepayQrCode && (
+                          <img src={gatepayQrCode} alt="Gate Pay QR" className="w-8 h-8 object-cover rounded border border-slate-800" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'binance' && (
+                  <div className="space-y-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Binance Pay ID / Address</label>
+                      <input
+                        type="text"
+                        value={binanceAddress}
+                        onChange={(e) => setBinanceAddress(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <p className="text-[9px] text-amber-500/90 font-mono">⚠️ Info: Binance Pay will only display the copyable Pay ID Address/Code without a QR code as requested.</p>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'tonkeeper' && (
+                  <div className="space-y-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Tonkeeper Pay USDT Address</label>
+                      <input
+                        type="text"
+                        value={tonkeeperAddress}
+                        onChange={(e) => setTonkeeperAddress(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <p className="text-[9px] text-amber-500/90 font-mono">⚠️ Info: Tonkeeper Pay USDT will only display the copyable USDT Wallet Address without a QR code as requested.</p>
+                  </div>
+                )}
+
+                {paymentConfigTab === 'other_crypto' && (
+                  <div className="space-y-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Other Cryptocurrencies Address</label>
+                      <input
+                        type="text"
+                        value={otherCryptoAddress}
+                        onChange={(e) => setOtherCryptoAddress(e.target.value)}
+                        className="w-full bg-[#0d1222] border border-slate-850 text-white font-mono py-2 px-3 rounded-lg text-xs outline-none focus:border-red-500"
+                      />
+                    </div>
+                    <p className="text-[9px] text-amber-500/90 font-mono">⚠️ Info: Other Cryptocurrencies will only display the copyable Wallet Address without a QR code as requested.</p>
+                  </div>
+                )}
               </div>
             </div>
 

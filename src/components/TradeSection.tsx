@@ -185,8 +185,66 @@ export default function TradeSection({
   // Chart Selection state (for custom terminal widget compatibility)
   const [selectedChart, setSelectedChart] = useState<'STOCK' | 'CRYPTO' | 'FOREX'>('STOCK');
 
-  // Exact design header navigation tabs state (Crypto, TradFi, Alpha, Grow, Square, Data, Market)
-  const [activeHeaderTab, setActiveHeaderTab] = useState<'Crypto' | 'TradFi' | 'Alpha' | 'Grow' | 'Square' | 'Data' | 'Market'>('Crypto');
+  // Exact design header navigation tabs state (Crypto, TradFi, Alpha, Options, Grow, Square, Data, Market)
+  const [activeHeaderTab, setActiveHeaderTab] = useState<'Crypto' | 'TradFi' | 'Alpha' | 'Options' | 'Grow' | 'Square' | 'Data' | 'Market'>('Crypto');
+
+  // Options (Spot, Stocks, Buy/Sell) state
+  const [optionsSubTab, setOptionsSubTab] = useState<'Spot' | 'Stocks' | 'Buy/Sell'>('Buy/Sell');
+  const [optionsAsset, setOptionsAsset] = useState<string>('BTC/USDT');
+  const [optionsPrice, setOptionsPrice] = useState<string>('66843.99');
+  const [optionsAmount, setOptionsAmount] = useState<string>('0.075');
+  const [optionsOrderType, setOptionsOrderType] = useState<'Limit' | 'Market'>('Limit');
+  const [optionsActiveSide, setOptionsActiveSide] = useState<'Buy' | 'Sell'>('Buy');
+  const [optionsMargin, setOptionsMargin] = useState<boolean>(false);
+  const [optionsTpsl, setOptionsTpsl] = useState<boolean>(false);
+  const [optionsIceberg, setOptionsIceberg] = useState<boolean>(false);
+
+  // Real-time states for the Options tab
+  const [optionsBtcPrice, setOptionsBtcPrice] = useState<number>(66846.86);
+  const [optionsBtcChange, setOptionsBtcChange] = useState<number>(3.85);
+  const [optionsAsks, setOptionsAsks] = useState([
+    { price: 66847.82, amount: 0.00008 },
+    { price: 66847.39, amount: 0.00485 },
+    { price: 66847.20, amount: 0.00008 },
+    { price: 66846.89, amount: 0.00015 },
+    { price: 66846.88, amount: 0.00095 },
+    { price: 66846.87, amount: 0.21353 }
+  ]);
+  const [optionsBids, setOptionsBids] = useState([
+    { price: 66846.86, amount: 9.08418 },
+    { price: 66846.85, amount: 0.00047 },
+    { price: 66846.84, amount: 0.00031 },
+    { price: 66846.83, amount: 0.27024 },
+    { price: 66846.78, amount: 0.00016 },
+    { price: 66846.77, amount: 0.19682 }
+  ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOptionsBtcPrice(prev => {
+        const diff = (Math.random() - 0.49) * 0.18;
+        const next = parseFloat((prev + diff).toFixed(2));
+        
+        // Update asks and bids to be close to the new price
+        setOptionsAsks(asks => asks.map((ask, idx) => {
+          const newPrice = parseFloat((next + (6 - idx) * 0.12 + Math.random() * 0.05).toFixed(2));
+          const newAmount = parseFloat((Math.random() * 0.1 + 0.0001).toFixed(5));
+          return { price: newPrice, amount: newAmount };
+        }));
+
+        setOptionsBids(bids => bids.map((bid, idx) => {
+          const newPrice = parseFloat((next - (idx + 1) * 0.11 - Math.random() * 0.04).toFixed(2));
+          const newAmount = parseFloat((Math.random() * 0.5 + 0.0001).toFixed(5));
+          return { price: newPrice, amount: newAmount };
+        }));
+
+        return next;
+      });
+      
+      setOptionsBtcChange(prev => parseFloat((prev + (Math.random() - 0.5) * 0.02).toFixed(2)));
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
 
   // Search query & filtering states
   const [searchQuery, setSearchQuery] = useState('');
@@ -670,6 +728,54 @@ export default function TradeSection({
     }
   };
 
+  // Handle Options Terminal Trade Execution
+  const handleExecuteOptionsTrade = () => {
+    if (!isLoggedIn) {
+      toast.error('Identity Verification Required', {
+        description: 'Please authenticate your profile session under the Account section first.',
+      });
+      return;
+    }
+
+    const priceNum = parseFloat(optionsPrice);
+    const amountNum = parseFloat(optionsAmount);
+    if (isNaN(priceNum) || isNaN(amountNum) || amountNum <= 0) {
+      toast.error('Invalid Order Parameters', {
+        description: 'Please specify a valid price and non-zero amount to execute the order.',
+      });
+      return;
+    }
+
+    // Convert USDT to approx INR conversion (e.g. 87.5 INR per USDT)
+    const totalUsdt = priceNum * amountNum;
+    const totalInr = Math.round(totalUsdt * 87.5);
+
+    const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
+    if (totalInr > availableBal) {
+      toast.warning('Trade Amount Exceeds Total Balance', {
+        description: `Warning: You are attempting a trade of ₹${totalInr.toLocaleString()} (${totalUsdt.toFixed(2)} USDT), which exceeds your current total wallet balance of ₹${availableBal.toLocaleString()}. Please reduce the amount or deposit more funds.`,
+      });
+      return;
+    }
+
+    // Allocate return multiplier +85% for 15m option trade by default
+    const estimatedProfit = Math.round(totalInr * 1.85);
+
+    if (onExecuteTrade) {
+      onExecuteTrade(totalInr, estimatedProfit, optionsAsset, '15m');
+      toast.success('Instant Market Contract Activated!', {
+        description: `Successfully allocated ₹${totalInr.toLocaleString()} to execute the ${optionsActiveSide} contract on ${optionsAsset}.`,
+        icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />
+      });
+
+      // scroll to active contracts tracker
+      setTimeout(() => {
+        const trackerEl = document.getElementById('user-active-trades-section');
+        if (trackerEl) trackerEl.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  };
+
   // Handle Trade Execution Submit
   const handleTradeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -801,7 +907,7 @@ export default function TradeSection({
       {/* Premium Horizontal Navigation Bar mirroring user's image */}
       <div className="bg-[#181a20] rounded-2xl border border-slate-800/80 px-6 py-4 shadow-2xl flex flex-row items-center justify-between gap-4" id="premium-terminal-tagbar">
         <div className="flex items-center space-x-6 md:space-x-10 overflow-x-auto scrollbar-hide py-1">
-          {(['Crypto', 'TradFi', 'Alpha', 'Grow', 'Square', 'Data', 'Market'] as const).map((tab) => {
+          {(['Crypto', 'TradFi', 'Alpha', 'Options', 'Grow', 'Square', 'Data', 'Market'] as const).map((tab) => {
             const isActive = activeHeaderTab === tab;
             return (
               <button
@@ -841,71 +947,6 @@ export default function TradeSection({
             <span className="text-[10px] font-mono font-black text-slate-300 uppercase tracking-widest whitespace-nowrap">
               {activeHeaderTab.toUpperCase()} ACTIVE
             </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 1-Click Quick Trade HUD Widget */}
-      <div className="bg-gradient-to-r from-[#0d0e12] via-[#14161c] to-[#0d0e12] rounded-2xl border border-amber-500/10 p-5 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-5 text-left" id="quick-trade-terminal-hud">
-        <div className="space-y-1.5 flex-1 w-full">
-          <div className="flex items-center space-x-2">
-            <Zap className="w-4 h-4 text-amber-500 animate-pulse" />
-            <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 font-mono">1-Click Quick Trade Terminal</h4>
-          </div>
-          <p className="text-[11px] text-slate-400">
-            Instantly execute high-yield market contracts with pre-set allocations. Select asset and duration, then execute with a single click.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-start lg:justify-end">
-          {/* Asset Selection */}
-          <div className="flex flex-col space-y-1">
-            <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Select Asset</span>
-            <select
-              value={quickTradeAsset}
-              onChange={(e) => setQuickTradeAsset(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-xs text-white font-mono py-1.5 px-3 rounded-lg outline-none focus:border-amber-500"
-            >
-              <option value="BTC/USDT">BTC/USDT (Crypto)</option>
-              <option value="ETH/USDT">ETH/USDT (Crypto)</option>
-              <option value="SOL/USDT">SOL/USDT (Crypto)</option>
-              <option value="XAU/USD">XAU/USD (Gold)</option>
-              <option value="RELIANCE">RELIANCE (Stock)</option>
-              <option value="EUR/USD">EUR/USD (Forex)</option>
-            </select>
-          </div>
-
-          {/* Duration Selection */}
-          <div className="flex flex-col space-y-1">
-            <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Select Duration</span>
-            <select
-              value={quickTradeDuration}
-              onChange={(e) => setQuickTradeDuration(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-xs text-white font-mono py-1.5 px-3 rounded-lg outline-none focus:border-amber-500"
-            >
-              <option value="60s">60 Seconds (+85%)</option>
-              <option value="3m">3 Minutes (+105%)</option>
-              <option value="5m">5 Minutes (+128%)</option>
-              <option value="15m">15 Minutes (+195%)</option>
-              <option value="1h">1 Hour (+350%)</option>
-              <option value="1D">1 Day (+1450%)</option>
-            </select>
-          </div>
-
-          {/* Preset Buttons */}
-          <div className="flex flex-col space-y-1 w-full sm:w-auto">
-            <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Instant INR Market Buy</span>
-            <div className="flex items-center space-x-2">
-              {[1000, 5000, 10000].map((presetAmt) => (
-                <button
-                  key={presetAmt}
-                  onClick={() => handleExecuteQuickTrade(presetAmt)}
-                  className="flex-1 sm:flex-initial bg-gradient-to-b from-amber-500/10 to-amber-500/5 hover:from-amber-500 hover:to-amber-600 hover:text-slate-950 text-amber-500 border border-amber-500/30 hover:border-amber-500 font-mono text-[11px] font-black px-4 py-1.5 rounded-lg transition-all transform active:scale-95 shadow-sm"
-                >
-                  ₹{presetAmt.toLocaleString()}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -1268,6 +1309,731 @@ export default function TradeSection({
                 </tbody>
               </table>
             </div>
+          </motion.div>
+        ) : activeHeaderTab === 'Options' ? (
+          <motion.div
+            key="options-tab-content"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="space-y-6 text-left"
+          >
+            {/* Options Subtabs */}
+            <div className="flex bg-[#121212] p-1 rounded-xl border border-slate-800 space-x-1 font-bold text-xs uppercase tracking-wider max-w-xs shadow-inner">
+              {(['Spot', 'Stocks', 'Buy/Sell'] as const).map((subTab) => (
+                <button
+                  key={subTab}
+                  onClick={() => setOptionsSubTab(subTab)}
+                  className={`flex-1 py-2 rounded-lg transition-all font-mono font-black ${
+                    optionsSubTab === subTab ? 'bg-[#f0b90b] text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {subTab}
+                </button>
+              ))}
+            </div>
+
+            {optionsSubTab === 'Spot' && (
+              <div className="bg-[#181a20] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-6 animate-fade-in">
+                {/* Top Metrics Row mirroring Image 2 */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20 font-mono">Spot</span>
+                      <span className="text-xs text-slate-400 font-bold font-mono">Price &nbsp; DYOR &nbsp; Audit &nbsp; Square</span>
+                    </div>
+                    <div className="flex items-baseline space-x-2.5">
+                      <span className="text-3xl font-black text-emerald-400 font-mono tracking-tight">$0.0016447</span>
+                      <span className="text-sm font-black text-rose-500 font-mono">-11.51%</span>
+                      <span className="text-xs font-mono text-slate-500">0x2c3a...12f7d</span>
+                    </div>
+                  </div>
+
+                  {/* Market Stats Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-950/50 p-4 rounded-2xl border border-slate-800/60 text-xs font-mono">
+                    <div>
+                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Mkt Cap</span>
+                      <span className="text-slate-200 font-black font-mono">$37.49M</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Chain.Lq</span>
+                      <span className="text-slate-200 font-black font-mono">$1.11M</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Chain.Holders</span>
+                      <span className="text-slate-200 font-black font-mono">36,143</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">FDV</span>
+                      <span className="text-slate-200 font-black font-mono">$164.47M</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sub Header for chart settings */}
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-400">
+                  <div className="flex items-center space-x-3 overflow-x-auto scrollbar-hide py-1">
+                    <span className="text-slate-500">Time:</span>
+                    <span className="text-[#f0b90b] font-black cursor-pointer bg-[#f0b90b]/10 px-2 py-0.5 rounded">1D</span>
+                    <span className="hover:text-white cursor-pointer pl-1.5">15m</span>
+                    <span className="hover:text-white cursor-pointer pl-1.5">1h</span>
+                    <span className="hover:text-white cursor-pointer pl-1.5">4h</span>
+                    <span className="hover:text-white cursor-pointer pl-1.5">More ▾</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-[10px] text-slate-400">
+                    <span className="text-amber-500">MA(7): 0.00127664</span>
+                    <span className="text-purple-400">MA(25): 0.00057022</span>
+                    <span className="text-sky-400">MA(99): 0.00041132</span>
+                  </div>
+                </div>
+
+                {/* Main Candlestick Chart Area SVG Mirroring Image 2 exactly */}
+                <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800/80 h-72 relative flex flex-col justify-between overflow-hidden">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-15">
+                    <div className="border-b border-slate-700 w-full"></div>
+                    <div className="border-b border-slate-700 w-full"></div>
+                    <div className="border-b border-slate-700 w-full"></div>
+                    <div className="border-b border-slate-700 w-full"></div>
+                  </div>
+
+                  {/* SVG Candlestick layout */}
+                  <div className="w-full h-full relative z-10 flex items-end">
+                    <svg className="w-full h-full" viewBox="0 0 600 240">
+                      {/* Candlestick 1 (Red) */}
+                      <line x1="50" y1="90" x2="50" y2="160" stroke="#f43f5e" strokeWidth="1.5" />
+                      <rect x="42" y="100" width="16" height="40" fill="#f43f5e" rx="1" />
+
+                      {/* Candlestick 2 (Red) */}
+                      <line x1="110" y1="110" x2="110" y2="180" stroke="#f43f5e" strokeWidth="1.5" />
+                      <rect x="102" y="120" width="16" height="35" fill="#f43f5e" rx="1" />
+
+                      {/* Candlestick 3 (Green) */}
+                      <line x1="170" y1="80" x2="170" y2="150" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="162" y="90" width="16" height="45" fill="#10b981" rx="1" />
+
+                      {/* Candlestick 4 (Green) */}
+                      <line x1="230" y1="60" x2="230" y2="130" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="222" y="70" width="16" height="50" fill="#10b981" rx="1" />
+
+                      {/* Candlestick 5 (Green) */}
+                      <line x1="290" y1="40" x2="290" y2="100" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="282" y="50" width="16" height="40" fill="#10b981" rx="1" />
+
+                      {/* Candlestick 6 (Red - big drop) */}
+                      <line x1="350" y1="70" x2="350" y2="170" stroke="#f43f5e" strokeWidth="1.5" />
+                      <rect x="342" y="80" width="16" height="70" fill="#f43f5e" rx="1" />
+
+                      {/* Candlestick 7 (Green - huge pump) */}
+                      <line x1="410" y1="30" x2="410" y2="140" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="402" y="40" width="16" height="80" fill="#10b981" rx="1" />
+
+                      {/* Candlestick 8 (Current green tick) */}
+                      <line x1="470" y1="20" x2="470" y2="110" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="462" y="30" width="16" height="60" fill="#10b981" rx="1" />
+
+                      {/* SUPERTREND and MA line overlays */}
+                      <path d="M 50 120 Q 170 100 290 70 T 470 50" fill="none" stroke="#eab308" strokeWidth="2.5" />
+                      <path d="M 50 140 Q 170 120 290 90 T 470 70" fill="none" stroke="#a855f7" strokeWidth="1.5" />
+
+                      {/* Moving Price Cursor indicator */}
+                      <line x1="0" y1="60" x2="600" y2="60" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
+                      <rect x="495" y="48" width="100" height="24" fill="#10b981" rx="4" />
+                      <text x="502" y="64" fill="#090d16" fontSize="10" fontWeight="900" fontFamily="monospace">0.00164471 ➔</text>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Indicator buttons list under chart */}
+                <div className="flex items-center justify-between border-t border-slate-800 pt-4">
+                  <div className="flex flex-wrap items-center gap-1.5 text-[9px] font-mono font-black text-slate-500">
+                    {['MA', 'EMA', 'BOLL', 'SAR', 'AVL', 'SUPER', 'VOL', 'MACD'].map((ind) => (
+                      <span key={ind} className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:text-white cursor-pointer transition-all">{ind}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Order Book Bid/Ask Metrics mirroring bottom of Image 2 */}
+                <div className="grid grid-cols-3 gap-4 bg-[#121212]/50 p-4 rounded-2xl border border-slate-800/80 font-mono text-xs items-center">
+                  <div>
+                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Total Bid</span>
+                    <span className="text-emerald-400 font-black font-mono">265.84K</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Dynamic spread</span>
+                    <span className="text-slate-300 font-bold font-mono">▲ 0.00164367 &nbsp; ▼ 0.00164441</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Total Ask</span>
+                    <span className="text-rose-400 font-black font-mono">265.84K</span>
+                  </div>
+                </div>
+
+                {/* Big Premium Action Button block at the bottom */}
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => {
+                      setOptionsSubTab('Buy/Sell');
+                      setOptionsAsset('SOL/USDT');
+                      setOptionsPrice('0.0016447');
+                      setOptionsAmount('1000');
+                    }}
+                    className="w-full sm:w-64 bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black py-4 px-8 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center uppercase tracking-wider font-mono text-sm shadow-amber-500/10"
+                  >
+                    Trade SOL Spot ➔
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {optionsSubTab === 'Stocks' && (
+              <div className="bg-[#181a20] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-6 animate-fade-in">
+                {/* Top Metrics Row mirroring Image 3 */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-[10px] font-bold text-[#f0b90b] bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20 font-mono">Stocks</span>
+                      <span className="text-xs text-slate-400 font-bold font-mono">TradFi Securities List</span>
+                    </div>
+                    <div className="flex items-baseline space-x-2.5">
+                      <span className="text-3xl font-black text-emerald-400 font-mono tracking-tight">$0.66006</span>
+                      <span className="text-sm font-black text-emerald-400 font-mono">+12.16%</span>
+                      <span className="text-xs font-mono text-slate-500">0x500a...3b</span>
+                    </div>
+                  </div>
+
+                  {/* Market Stats Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-950/50 p-4 rounded-2xl border border-slate-800/60 text-xs font-mono">
+                    <div>
+                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Mkt Cap</span>
+                      <span className="text-slate-200 font-black font-mono">$105.61M</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Chain.Lq</span>
+                      <span className="text-slate-200 font-black font-mono">$3.21M</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Chain.Holders</span>
+                      <span className="text-slate-200 font-black font-mono">34,486</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">FDV</span>
+                      <span className="text-slate-200 font-black font-mono">$660.07M</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sub Header for chart settings */}
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-400">
+                  <div className="flex items-center space-x-3 overflow-x-auto scrollbar-hide py-1">
+                    <span className="text-slate-500">Time:</span>
+                    <span className="text-[#f0b90b] font-black cursor-pointer bg-[#f0b90b]/10 px-2 py-0.5 rounded">1D</span>
+                    <span className="hover:text-white cursor-pointer pl-1.5">15m</span>
+                    <span className="hover:text-white cursor-pointer pl-1.5">1h</span>
+                    <span className="hover:text-white cursor-pointer pl-1.5">4h</span>
+                    <span className="hover:text-white cursor-pointer pl-1.5">More ▾</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-[10px] text-slate-400">
+                    <span className="text-emerald-400">MA(7): 0.574418</span>
+                    <span className="text-rose-400">MA(25): 0.545936</span>
+                    <span className="text-slate-500">MA(99): --</span>
+                  </div>
+                </div>
+
+                {/* Main Candlestick Chart Area SVG Mirroring Image 3 exactly */}
+                <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800/80 h-72 relative flex flex-col justify-between overflow-hidden">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-15">
+                    <div className="border-b border-slate-700 w-full"></div>
+                    <div className="border-b border-slate-700 w-full"></div>
+                    <div className="border-b border-slate-700 w-full"></div>
+                    <div className="border-b border-slate-700 w-full"></div>
+                  </div>
+
+                  {/* SVG Candlestick layout */}
+                  <div className="w-full h-full relative z-10 flex items-end">
+                    <svg className="w-full h-full" viewBox="0 0 600 240">
+                      {/* Candlestick 1 (Green) */}
+                      <line x1="50" y1="130" x2="50" y2="190" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="42" y="140" width="16" height="40" fill="#10b981" rx="1" />
+
+                      {/* Candlestick 2 (Red) */}
+                      <line x1="110" y1="120" x2="110" y2="180" stroke="#f43f5e" strokeWidth="1.5" />
+                      <rect x="102" y="130" width="16" height="30" fill="#f43f5e" rx="1" />
+
+                      {/* Candlestick 3 (Red) */}
+                      <line x1="170" y1="140" x2="170" y2="200" stroke="#f43f5e" strokeWidth="1.5" />
+                      <rect x="162" y="150" width="16" height="35" fill="#f43f5e" rx="1" />
+
+                      {/* Candlestick 4 (Green) */}
+                      <line x1="230" y1="90" x2="230" y2="160" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="222" y="100" width="16" height="50" fill="#10b981" rx="1" />
+
+                      {/* Candlestick 5 (Green) */}
+                      <line x1="290" y1="70" x2="290" y2="130" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="282" y="80" width="16" height="40" fill="#10b981" rx="1" />
+
+                      {/* Candlestick 6 (Green) */}
+                      <line x1="350" y1="50" x2="350" y2="110" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="342" y="60" width="16" height="40" fill="#10b981" rx="1" />
+
+                      {/* Candlestick 7 (Red) */}
+                      <line x1="410" y1="80" x2="410" y2="150" stroke="#f43f5e" strokeWidth="1.5" />
+                      <rect x="402" y="90" width="16" height="45" fill="#f43f5e" rx="1" />
+
+                      {/* Candlestick 8 (Current green pump) */}
+                      <line x1="470" y1="30" x2="470" y2="120" stroke="#10b981" strokeWidth="1.5" />
+                      <rect x="462" y="40" width="16" height="70" fill="#10b981" rx="1" />
+
+                      {/* Indicator paths */}
+                      <path d="M 50 160 Q 170 140 290 100 T 470 65" fill="none" stroke="#10b981" strokeWidth="2.5" />
+                      <path d="M 50 180 Q 170 160 290 120 T 470 85" fill="none" stroke="#f43f5e" strokeWidth="1.5" />
+
+                      {/* Price Cursor overlay */}
+                      <line x1="0" y1="75" x2="600" y2="75" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
+                      <rect x="495" y="63" width="100" height="24" fill="#10b981" rx="4" />
+                      <text x="508" y="79" fill="#090d16" fontSize="10" fontWeight="900" fontFamily="monospace">0.666679 ➔</text>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Indicators bottom line */}
+                <div className="flex items-center justify-between border-t border-slate-800 pt-4">
+                  <div className="flex flex-wrap items-center gap-1.5 text-[9px] font-mono font-black text-slate-500">
+                    {['MA', 'EMA', 'BOLL', 'SAR', 'AVL', 'SUPER', 'VOL', 'MACD'].map((ind) => (
+                      <span key={ind} className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:text-white cursor-pointer transition-all">{ind}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bottom Order Book spreads mirroring Image 3 */}
+                <div className="grid grid-cols-3 gap-4 bg-[#121212]/50 p-4 rounded-2xl border border-slate-800/80 font-mono text-xs items-center">
+                  <div>
+                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Total Bid</span>
+                    <span className="text-emerald-400 font-black font-mono">11.0300</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Spread</span>
+                    <span className="text-slate-300 font-bold font-mono">▲ 0.66197829 &nbsp; ▼ 0.66200929</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Total Ask</span>
+                    <span className="text-rose-400 font-black font-mono">13.7700</span>
+                  </div>
+                </div>
+
+                {/* Big Action button */}
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => {
+                      setOptionsSubTab('Buy/Sell');
+                      setOptionsAsset('KERNEL/USDT');
+                      setOptionsPrice('0.66006');
+                      setOptionsAmount('250');
+                    }}
+                    className="w-full sm:w-64 bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black py-4 px-8 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center uppercase tracking-wider font-mono text-sm shadow-amber-500/10"
+                  >
+                    Trade KERNEL Spot ➔
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {optionsSubTab === 'Buy/Sell' && (
+              <div className="space-y-6 animate-fade-in">
+                
+                {/* 1-Click Quick Trade HUD (Only visible here, as requested) */}
+                <div className="bg-gradient-to-r from-[#0d0e12] via-[#14161c] to-[#0d0e12] rounded-2xl border border-amber-500/10 p-5 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-5 text-left" id="quick-trade-terminal-hud">
+                  <div className="space-y-1.5 flex-1 w-full">
+                    <div className="flex items-center space-x-2">
+                      <Zap className="w-4 h-4 text-amber-500 animate-pulse" />
+                      <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 font-mono">1-Click Quick Trade Terminal</h4>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Instantly execute high-yield market contracts with pre-set allocations. Select asset and duration, then execute with a single click.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-start lg:justify-end">
+                    {/* Asset Selection */}
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Select Asset</span>
+                      <select
+                        value={optionsAsset}
+                        onChange={(e) => setOptionsAsset(e.target.value)}
+                        className="bg-slate-950 border border-slate-800 text-xs text-white font-mono py-1.5 px-3 rounded-lg outline-none focus:border-amber-500"
+                      >
+                        <option value="BTC/USDT">BTC/USDT (Crypto)</option>
+                        <option value="ETH/USDT">ETH/USDT (Crypto)</option>
+                        <option value="SOL/USDT">SOL/USDT (Crypto)</option>
+                        <option value="XAU/USD">XAU/USD (Gold)</option>
+                        <option value="RELIANCE">RELIANCE (Stock)</option>
+                        <option value="EUR/USD">EUR/USD (Forex)</option>
+                      </select>
+                    </div>
+
+                    {/* Duration Selection */}
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Select Duration</span>
+                      <select
+                        value={quickTradeDuration}
+                        onChange={(e) => setQuickTradeDuration(e.target.value)}
+                        className="bg-slate-950 border border-slate-800 text-xs text-white font-mono py-1.5 px-3 rounded-lg outline-none focus:border-amber-500"
+                      >
+                        <option value="60s">60 Seconds (+85%)</option>
+                        <option value="3m">3 Minutes (+105%)</option>
+                        <option value="5m">5 Minutes (+128%)</option>
+                        <option value="15m">15 Minutes (+195%)</option>
+                        <option value="1h">1 Hour (+350%)</option>
+                        <option value="1D">1 Day (+1450%)</option>
+                      </select>
+                    </div>
+
+                    {/* Preset Buttons */}
+                    <div className="flex flex-col space-y-1 w-full sm:w-auto">
+                      <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Instant INR Market Buy</span>
+                      <div className="flex items-center space-x-2">
+                        {[1000, 5000, 10000].map((presetAmt) => (
+                          <button
+                            key={presetAmt}
+                            onClick={() => handleExecuteQuickTrade(presetAmt)}
+                            className="flex-1 sm:flex-initial bg-gradient-to-b from-amber-500/10 to-amber-500/5 hover:from-amber-500 hover:to-amber-600 hover:text-slate-950 text-amber-500 border border-amber-500/30 hover:border-amber-500 font-mono text-[11px] font-black px-4 py-1.5 rounded-lg transition-all transform active:scale-95 shadow-sm"
+                          >
+                            ₹{presetAmt.toLocaleString()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* High Fidelity Image 1 Replication Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#0b0e14] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl">
+                  
+                  {/* Left Column: Order Entry (lg:col-span-7) */}
+                  <div className="lg:col-span-7 space-y-5 text-left">
+                    {/* Header line for Active Asset */}
+                    <div className="flex items-center justify-between border-b border-slate-900 pb-3">
+                      <div className="flex items-center space-x-2">
+                        <Bitcoin className="w-6 h-6 text-amber-500" />
+                        <span className="text-lg font-black font-mono text-slate-100">{optionsAsset}</span>
+                        <span className="text-xs text-slate-500">▼</span>
+                        <span className="text-xs font-bold text-emerald-400 font-mono">+{optionsBtcChange.toFixed(2)}%</span>
+                      </div>
+                      <div className="flex items-center space-x-3 text-slate-500">
+                        <span className="cursor-pointer hover:text-slate-200 text-sm">📊</span>
+                        <span className="cursor-pointer hover:text-slate-200 text-sm">•••</span>
+                      </div>
+                    </div>
+
+                    {/* Buy/Sell Toggles & Margin Switch */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex bg-[#181a20] p-1 rounded-xl border border-slate-900 w-48">
+                        <button
+                          onClick={() => setOptionsActiveSide('Buy')}
+                          className={`flex-1 py-2.5 rounded-lg text-xs font-black font-mono transition-all ${
+                            optionsActiveSide === 'Buy' ? 'bg-[#10b981] text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
+                          }`}
+                        >
+                          Buy
+                        </button>
+                        <button
+                          onClick={() => setOptionsActiveSide('Sell')}
+                          className={`flex-1 py-2.5 rounded-lg text-xs font-black font-mono transition-all ${
+                            optionsActiveSide === 'Sell' ? 'bg-[#f43f5e] text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
+                          }`}
+                        >
+                          Sell
+                        </button>
+                      </div>
+
+                      {/* Margin toggle */}
+                      <div className="flex items-center space-x-2 text-xs font-mono">
+                        <span className="text-slate-400">Margin</span>
+                        <button
+                          onClick={() => setOptionsMargin(!optionsMargin)}
+                          className={`w-9 h-5 rounded-full p-0.5 transition-all duration-300 focus:outline-none ${
+                            optionsMargin ? 'bg-[#10b981]' : 'bg-slate-800'
+                          }`}
+                        >
+                          <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-all duration-300 ${
+                            optionsMargin ? 'translate-x-4' : 'translate-x-0'
+                          }`} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Limit Order Dropdown Selection */}
+                    <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-900 text-xs text-slate-400 font-mono">
+                      <div className="flex items-center space-x-2">
+                        <Info className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Order Type</span>
+                      </div>
+                      <select
+                        value={optionsOrderType}
+                        onChange={(e) => setOptionsOrderType(e.target.value as any)}
+                        className="bg-transparent border-none text-white font-bold outline-none cursor-pointer focus:ring-0"
+                      >
+                        <option value="Limit">Limit</option>
+                        <option value="Market">Market</option>
+                      </select>
+                    </div>
+
+                    {/* Price Input Form Field */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] uppercase font-bold text-slate-500 font-mono block">Price (USDT)</span>
+                      <div className="flex items-center justify-between bg-slate-950 rounded-xl border border-slate-900 overflow-hidden font-mono text-sm px-3 py-2">
+                        <button 
+                          onClick={() => setOptionsPrice(p => (Math.max(1, parseFloat(p) - 10)).toFixed(2))}
+                          className="text-slate-500 hover:text-white px-2 py-1 text-lg font-bold"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="text"
+                          value={optionsPrice}
+                          onChange={(e) => setOptionsPrice(e.target.value)}
+                          className="bg-transparent text-center text-white font-black w-full outline-none border-none text-sm focus:ring-0"
+                        />
+                        <button 
+                          onClick={() => setOptionsPrice(p => (parseFloat(p) + 10).toFixed(2))}
+                          className="text-slate-500 hover:text-white px-2 py-1 text-lg font-bold"
+                        >
+                          +
+                        </button>
+                        <span className="bg-slate-900 border border-slate-800 text-[10px] text-[#f0b90b] px-2.5 py-1 rounded-md font-black cursor-pointer hover:bg-slate-800 transition-all">BBO</span>
+                      </div>
+                    </div>
+
+                    {/* Amount Input Form Field */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] uppercase font-bold text-slate-500 font-mono block">Amount (BTC)</span>
+                      <div className="flex items-center justify-between bg-slate-950 rounded-xl border border-slate-900 overflow-hidden font-mono text-sm px-3 py-2">
+                        <button 
+                          onClick={() => setOptionsAmount(a => (Math.max(0.001, parseFloat(a) - 0.005)).toFixed(3))}
+                          className="text-slate-500 hover:text-white px-2 py-1 text-lg font-bold"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="text"
+                          value={optionsAmount}
+                          onChange={(e) => setOptionsAmount(e.target.value)}
+                          className="bg-transparent text-center text-white font-black w-full outline-none border-none text-sm focus:ring-0"
+                        />
+                        <button 
+                          onClick={() => setOptionsAmount(a => (parseFloat(a) + 0.005).toFixed(3))}
+                          className="text-slate-500 hover:text-white px-2 py-1 text-lg font-bold"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      {/* Slider Dots (0%, 25%, 50%, 75%, 100%) */}
+                      <div className="pt-2">
+                        <div className="relative h-1 bg-slate-950 rounded-full flex items-center justify-between">
+                          <div className="absolute top-0 left-0 h-1 bg-[#10b981] rounded-full" style={{ width: '25%' }}></div>
+                          {[0, 25, 50, 75, 100].map((pct) => (
+                            <button
+                              key={pct}
+                              onClick={() => {
+                                const totalVal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
+                                const allowedUsdt = (totalVal / 87.5) * (pct / 100);
+                                const btcAmt = allowedUsdt / optionsBtcPrice;
+                                setOptionsAmount(btcAmt.toFixed(4));
+                              }}
+                              className={`w-3.5 h-3.5 rounded-full border-2 focus:outline-none transition-all ${
+                                pct === 25 ? 'bg-[#10b981] border-[#10b981]' : 'bg-slate-950 border-slate-800 hover:border-slate-400'
+                              }`}
+                              title={`${pct}% Balance Allocation`}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex justify-between text-[9px] text-slate-500 font-mono pt-1">
+                          <span>0%</span>
+                          <span>25%</span>
+                          <span>50%</span>
+                          <span>75%</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Total calculation */}
+                    <div className="bg-[#121212]/50 p-4 rounded-xl border border-slate-900 flex justify-between items-center text-xs font-mono text-slate-400">
+                      <span>Total Value (USDT)</span>
+                      <span className="text-white font-black">
+                        {(parseFloat(optionsPrice) * parseFloat(optionsAmount) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
+                      </span>
+                    </div>
+
+                    {/* TP/SL and Iceberg checkboxes */}
+                    <div className="flex items-center space-x-6 text-xs text-slate-400 font-mono">
+                      <label className="flex items-center space-x-2 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={optionsTpsl}
+                          onChange={(e) => setOptionsTpsl(e.target.checked)}
+                          className="rounded border-slate-800 bg-slate-950 text-[#10b981] focus:ring-[#10b981]"
+                        />
+                        <span className="border-b border-dashed border-slate-600 group-hover:border-slate-300">TP/SL</span>
+                      </label>
+
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={optionsIceberg}
+                          onChange={(e) => setOptionsIceberg(e.target.checked)}
+                          className="rounded border-slate-800 bg-slate-950 text-[#10b981] focus:ring-[#10b981]"
+                        />
+                        <span>Iceberg</span>
+                      </label>
+                    </div>
+
+                    {/* Available balances stats */}
+                    <div className="bg-[#121212]/50 p-4 rounded-xl border border-slate-900 space-y-1 text-xs font-mono text-slate-400">
+                      <div className="flex justify-between items-center">
+                        <span>Available Balance (USDT)</span>
+                        <div className="flex items-center space-x-1.5 font-black text-slate-200">
+                          <span>₹{((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)).toLocaleString()}</span>
+                          <span className="text-slate-500 font-normal">({(((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)) / 87.5).toFixed(2)} USDT)</span>
+                          <span className="text-[#f0b90b] cursor-pointer text-sm font-black">+</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Max Market Acquisition</span>
+                        <span className="text-slate-200 font-black">
+                          {((((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)) / 87.5) / optionsBtcPrice).toFixed(6)} BTC
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Primary BUY/SELL Button (Replaces "Log In") */}
+                    <button
+                      onClick={handleExecuteOptionsTrade}
+                      className={`w-full py-4 rounded-2xl font-black text-white font-mono text-sm tracking-wide transition-all transform active:scale-[0.98] shadow-lg ${
+                        optionsActiveSide === 'Buy' 
+                          ? 'bg-[#10b981] hover:bg-emerald-400 shadow-emerald-500/10 hover:shadow-emerald-500/20' 
+                          : 'bg-[#f43f5e] hover:bg-rose-400 shadow-rose-500/10 hover:shadow-rose-500/20'
+                      }`}
+                    >
+                      {optionsActiveSide === 'Buy' ? 'Buy BTC' : 'Sell BTC'}
+                    </button>
+                  </div>
+
+                  {/* Right Column: High Fidelity Order Book (lg:col-span-5) */}
+                  <div className="lg:col-span-5 bg-slate-950/40 p-4 rounded-2xl border border-slate-900 text-left font-mono text-xs flex flex-col justify-between space-y-4">
+                    <div className="space-y-3">
+                      {/* Column titles */}
+                      <div className="flex justify-between text-[10px] text-slate-500 uppercase tracking-widest font-black">
+                        <span>Price (USDT)</span>
+                        <span>Amount (BTC)</span>
+                      </div>
+
+                      {/* Ask Prices (Red, Counting down to mid-price) */}
+                      <div className="space-y-1">
+                        {optionsAsks.map((ask, idx) => (
+                          <div key={`ask-${idx}`} className="flex justify-between hover:bg-rose-500/5 px-1 py-0.5 rounded transition-colors">
+                            <span className="text-rose-400 font-black">{ask.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            <span className="text-slate-300 font-medium">{ask.amount.toFixed(5)}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Middle Current Price Section */}
+                      <div className="py-2.5 my-2 border-y border-[#1e2026] text-center space-y-0.5">
+                        <div className="text-xl font-black text-emerald-400 flex items-center justify-center space-x-1.5">
+                          <span>{optionsBtcPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                          <span className="text-xs">▲</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500">
+                          ≈ ${optionsBtcPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </div>
+                      </div>
+
+                      {/* Bid Prices (Green, Listing down) */}
+                      <div className="space-y-1">
+                        {optionsBids.map((bid, idx) => (
+                          <div key={`bid-${idx}`} className="flex justify-between hover:bg-emerald-500/5 px-1 py-0.5 rounded transition-colors">
+                            <span className="text-emerald-400 font-black">{bid.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                            <span className="text-slate-300 font-medium">{bid.amount.toFixed(5)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Progress representation and decimals settings */}
+                    <div className="space-y-2 border-t border-[#1e2026] pt-3">
+                      <div className="flex items-center justify-between text-[10px] text-slate-500">
+                        <span>Buy Ratio (97.59%)</span>
+                        <span>Sell Ratio (2.41%)</span>
+                      </div>
+                      {/* Ratio slide bar */}
+                      <div className="h-1.5 w-full bg-rose-500/40 rounded-full overflow-hidden flex">
+                        <div className="bg-[#10b981] h-full" style={{ width: '97.59%' }}></div>
+                        <div className="bg-[#f43f5e] h-full" style={{ width: '2.41%' }}></div>
+                      </div>
+
+                      {/* Decimals Dropdown indicator */}
+                      <div className="flex justify-between items-center text-[10px] text-slate-400 pt-1">
+                        <span className="bg-slate-950 border border-slate-900 px-2 py-1 rounded">0.01 ▾</span>
+                        <span>📊 Grid Mode</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Open Orders / Holdings / Bots sub-tabs */}
+                <div className="bg-[#181a20] rounded-2xl border border-slate-800/80 p-5 text-left space-y-4">
+                  <div className="flex space-x-6 border-b border-slate-900 pb-3 text-xs font-mono font-black text-slate-400">
+                    <span className="text-[#f0b90b] border-b-2 border-[#f0b90b] pb-3 cursor-pointer">Open Orders (0)</span>
+                    <span className="hover:text-slate-200 cursor-pointer">Holdings (0)</span>
+                    <span className="hover:text-slate-200 cursor-pointer">Trading Bots</span>
+                  </div>
+                  <div className="py-6 text-center text-xs text-slate-500 font-mono">
+                    No active positions found in standard margin allocations.
+                  </div>
+                </div>
+
+                {/* Copy Trading Recommendation Banner mirroring bottom of Image 1 */}
+                <div className="bg-[#181a20] rounded-3xl border border-slate-800 p-5 text-left space-y-3.5">
+                  <span className="text-[10px] uppercase font-black tracking-widest text-slate-500 font-mono block">You may be interested in - Copy</span>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-950/60 p-4 rounded-2xl border border-slate-900">
+                    <div className="flex items-center space-x-3.5">
+                      <div className="bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl text-amber-500">
+                        ⭐
+                      </div>
+                      <div>
+                        <span className="text-xs font-black text-white font-mono block">cross-sectional-relative-strength-system</span>
+                        <span className="text-[10px] text-slate-500 font-mono">Elite Copier • 91 / 300 Followers</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-6">
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider font-mono">30D PnL</span>
+                        <span className="text-xs font-black text-emerald-400 font-mono font-bold">+7,541.37 USD</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider font-mono">30D ROI</span>
+                        <span className="text-xs font-black text-emerald-400 font-mono font-bold">+3.53%</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedTrader({ name: 'Cross-Sectional RSS' });
+                          setCopyAmount('5000');
+                        }}
+                        className="bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black font-mono text-[11px] px-4 py-2 rounded-xl transition-all shadow-md transform active:scale-95"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
           </motion.div>
         ) : activeHeaderTab === 'Grow' ? (
           <motion.div

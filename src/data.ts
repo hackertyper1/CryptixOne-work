@@ -46,7 +46,34 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   supportPhone: '8696860548',
   companyEmail: 'support@CryptixOne.com',
   scannerUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600',
-  qrCodeImage: ''
+  qrCodeImage: '',
+
+  // Default individual UPI IDs and QRs
+  upiUpiId: 'cryptixone.upi@sbi',
+  upiQrCode: '',
+  
+  upiQrUpiId: 'cryptixone.qr@sbi',
+  upiQrQrCode: '',
+  
+  paytmUpiId: 'cryptixone.paytm@sbi',
+  paytmQrCode: '',
+  
+  gpayUpiId: 'cryptixone.gpay@sbi',
+  gpayQrCode: '',
+  
+  phonepeUpiId: 'cryptixone.pe@sbi',
+  phonepeQrCode: '',
+  
+  icashUpiId: 'cryptixone.icash@sbi',
+  icashQrCode: '',
+  
+  gatepayUpiId: 'cryptixone.gate@sbi',
+  gatepayQrCode: '',
+
+  // Default Crypto addresses
+  binanceAddress: 'binance-pay-id-872910291',
+  tonkeeperAddress: 'UQCd3v0pP4H8A_UpxX5Wv8G9F_uS0qP9K3d2A1m7S8r5N6tY',
+  otherCryptoAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
 };
 
 // Simulated encryption helper (just base64 encoding with salt + standard AES mock string for visual representation)

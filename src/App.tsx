@@ -28,6 +28,51 @@ import {
   getDoc
 } from 'firebase/firestore';
 
+const synthesizeNotificationSound = () => {
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    
+    // Play a premium pleasant notification chime (C5 -> E5 -> G5)
+    const playNote = (freq: number, start: number, duration: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+      
+      gain.gain.setValueAtTime(0.15, start);
+      gain.gain.exponentialRampToValueAtTime(0.01, start + duration - 0.05);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start(start);
+      osc.stop(start + duration);
+    };
+    
+    const now = ctx.currentTime;
+    playNote(523.25, now, 0.2); // C5
+    playNote(659.25, now + 0.15, 0.2); // E5
+    playNote(783.99, now + 0.3, 0.4); // G5
+  } catch (e) {
+    console.log('Synth failed:', e);
+  }
+};
+
+const playMaturitySound = (soundEnabled: boolean) => {
+  if (!soundEnabled) return;
+  try {
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
+    audio.play().catch(() => {
+      synthesizeNotificationSound();
+    });
+  } catch (err) {
+    synthesizeNotificationSound();
+  }
+};
+
 export default function App() {
   // Navigation State: 'home' | 'plan' | 'trade' | 'market' | 'wallet' | 'account' | 'admin'
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -314,10 +359,7 @@ export default function App() {
                   });
 
                   // Play custom maturity sound
-                  if (soundEffectsEnabled) {
-                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
-                    audio.play().catch(e => console.log('Audio playback failed:', e));
-                  }
+                  playMaturitySound(soundEffectsEnabled);
 
                   // Dispatch device Web Notification
                   if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
