@@ -6,6 +6,7 @@ interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   setAuthMode: (mode: 'login' | 'signup') => void;
+  authMode?: 'login' | 'signup';
   isLoggedIn: boolean;
   currentUser: any;
   onLogout: () => void;
@@ -39,89 +40,74 @@ export function CryptixLogo({ className = "w-9 h-9" }: { className?: string }) {
           <stop offset="100%" stopColor="#334155" />
         </linearGradient>
 
+        {/* Glossy Reflection Gradient */}
+        <linearGradient id="gloss" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="white" stopOpacity="0.4" />
+          <stop offset="50%" stopColor="white" stopOpacity="0" />
+          <stop offset="100%" stopColor="white" stopOpacity="0.1" />
+        </linearGradient>
+
         {/* Outer Glow Filter */}
-        <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="2.5" result="blur" />
+        <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
 
-        {/* Radial Dark Background for the circle interior */}
-        <radialGradient id="sphereBg" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#080e22" />
-          <stop offset="70%" stopColor="#03050c" />
-          <stop offset="100%" stopColor="#010205" />
-        </radialGradient>
+        {/* Shadow for 3D effect */}
+        <filter id="deepShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.5" />
+        </filter>
       </defs>
 
-      {/* Outer Golden Glow Ring */}
-      <circle cx="50" cy="50" r="46" stroke="url(#goldGradient)" strokeWidth="1.2" filter="url(#goldGlow)" opacity="0.85" />
-      
-      {/* Middle Silver/Platinum Ring */}
-      <circle cx="50" cy="50" r="43.5" stroke="url(#silverGradient)" strokeWidth="1.8" />
-      
-      {/* Inner Thin Gold Ring */}
-      <circle cx="50" cy="50" r="41" stroke="url(#goldGradient)" strokeWidth="0.8" />
+      {/* Main Circular Frame */}
+      <circle cx="50" cy="50" r="48" fill="#05070a" stroke="url(#goldGradient)" strokeWidth="0.5" opacity="0.5" />
+      <circle cx="50" cy="50" r="46" stroke="url(#silverGradient)" strokeWidth="1.5" />
+      <circle cx="50" cy="50" r="44" stroke="url(#goldGradient)" strokeWidth="0.5" filter="url(#goldGlow)" />
 
-      {/* Inner Sphere Dark Ambient Background */}
-      <circle cx="50" cy="50" r="40" fill="url(#sphereBg)" />
-
-      {/* Candlestick & Trading lines elements inside the sphere */}
-      <g opacity="0.25">
-        {/* Bullish and Bearish Tiny Candlestick Bars */}
-        <line x1="32" y1="36" x2="32" y2="44" stroke="#D4AF37" strokeWidth="0.6" />
-        <rect x="30.5" y="38" width="3" height="4" fill="#D4AF37" />
-
-        <line x1="38" y1="46" x2="38" y2="58" stroke="#D4AF37" strokeWidth="0.6" />
-        <rect x="36.5" y="49" width="3" height="6" fill="#D4AF37" />
-
-        <line x1="68" y1="38" x2="68" y2="52" stroke="#AA7C11" strokeWidth="0.6" />
-        <rect x="66.5" y="41" width="3" height="8" fill="#AA7C11" />
-
-        <line x1="74" y1="48" x2="74" y2="62" stroke="#D4AF37" strokeWidth="0.6" />
-        <rect x="72.5" y="51" width="3" height="7" fill="#D4AF37" />
-
-        {/* Trend line dots */}
-        <path d="M 28 58 L 36 50 L 44 54 L 52 42 L 60 48 L 70 36" stroke="url(#goldGradient)" strokeWidth="0.8" fill="none" />
-        <circle cx="36" cy="50" r="1.2" fill="#FFFFFF" />
-        <circle cx="52" cy="42" r="1.2" fill="#FFFFFF" />
-        <circle cx="70" cy="36" r="1.2" fill="#FFFFFF" />
+      {/* Background Trading Elements */}
+      <g opacity="0.15">
+        <path d="M 20 60 L 30 50 L 40 55 L 55 35 L 70 45 L 80 30" stroke="url(#goldGradient)" strokeWidth="0.5" fill="none" />
+        <rect x="25" y="45" width="2" height="10" fill="#D4AF37" />
+        <rect x="35" y="40" width="2" height="15" fill="#D4AF37" />
+        <rect x="45" y="30" width="2" height="20" fill="#D4AF37" />
+        <rect x="65" y="35" width="2" height="12" fill="#D4AF37" />
       </g>
 
-      {/* Silver Crescent G/C Emblem */}
-      {/* Recreates the elegant chrome C curve from top-right down to bottom-right */}
-      <path 
-        d="M 62.5 31.5 
-           C 51.5 24.5, 34.5 28.5, 31.5 44.5 
-           C 28.5 60.5, 41.5 73.5, 54.5 72.5 
-           C 60.5 72.0, 64.5 68.5, 66.5 65.5 
-           L 57.5 61.5 
-           C 51.5 65.0, 41.5 63.5, 39.5 53.5 
-           C 37.5 43.5, 46.5 37.5, 53.5 38.5 
-           C 56.5 38.9, 59.5 41.5, 60.5 43.5 
-           Z" 
-        fill="url(#silverGradient)" 
-      />
+      {/* The Central "C1" Emblem Recreated from user image */}
+      <g filter="url(#deepShadow)">
+        {/* Outer Silver 'C' Part */}
+        <path 
+          d="M 68 35 
+             C 55 25, 32 30, 28 50 
+             C 24 70, 45 80, 65 72 
+             L 60 65 
+             C 45 72, 35 65, 35 50 
+             C 35 35, 48 32, 60 38 
+             Z" 
+          fill="url(#silverGradient)" 
+        />
 
-      {/* Gold Overlapping Number '1' Emblem */}
-      {/* Recreates the sharp, angular 1 with its distinct serif and dynamic base */}
-      <path 
-        d="M 49.5 41.5 
-           L 65.5 31.0 
-           L 65.5 61.5 
-           C 65.5 62.0, 68.5 62.0, 68.5 62.0 
-           L 68.5 68.0 
-           L 52.0 68.0 
-           L 52.0 62.0 
-           C 54.5 62.0, 57.5 62.0, 57.5 61.5 
-           L 57.5 42.5 
-           L 49.5 45.0 
-           Z" 
-        fill="url(#goldGradient)" 
-      />
+        {/* Inner Gold '1' / Arrow Part */}
+        <path 
+          d="M 45 42 
+             L 65 30 
+             L 72 65 
+             L 65 78 
+             L 60 70 
+             L 65 65 
+             L 60 45 
+             L 50 50 
+             Z" 
+          fill="url(#goldGradient)" 
+        />
+        
+        {/* Highlight edges for 3D look */}
+        <path d="M 65 30 L 72 65" stroke="white" strokeWidth="0.2" opacity="0.5" />
+        <path d="M 45 42 L 65 30" stroke="white" strokeWidth="0.2" opacity="0.5" />
+      </g>
 
-      {/* Dynamic Golden Flare Highlight on the top-left outer ring */}
-      <circle cx="21" cy="40" r="1.5" fill="#FFFFFF" filter="url(#goldGlow)" />
-      <circle cx="79" cy="42" r="1.2" fill="#FFFFFF" filter="url(#goldGlow)" />
+      {/* Glossy Reflection Overlay */}
+      <circle cx="50" cy="50" r="44" fill="url(#gloss)" opacity="0.3" pointerEvents="none" />
     </svg>
   );
 }
@@ -130,6 +116,7 @@ export default function Header({
   activeTab,
   setActiveTab,
   setAuthMode,
+  authMode,
   isLoggedIn,
   currentUser,
   onLogout,
@@ -149,10 +136,13 @@ export default function Header({
           {/* Branding (Desktop) */}
           <div className="flex items-center">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <CryptixLogo className="w-10 h-10" />
+              <div 
+                className="flex items-center space-x-3 cursor-pointer group"
+                onClick={() => setActiveTab('home')}
+              >
+                <CryptixLogo className="w-10 h-10 group-hover:scale-105 transition-transform" />
                 <div className="flex flex-col text-left">
-                  <span className="text-xl font-black tracking-tighter text-white font-sans leading-none">
+                  <span className="text-xl font-black tracking-tighter text-white font-sans leading-none group-hover:text-amber-500 transition-colors">
                     Cryptix<span className="text-amber-500 font-black">One</span>
                   </span>
                   <span className="text-[7.5px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-0.5 leading-none">
@@ -172,6 +162,17 @@ export default function Header({
           <div className="flex items-center space-x-2 md:space-x-4">
             {!isLoggedIn ? (
               <div className="flex items-center space-x-2">
+                <button
+                  id="btn-desktop-home-nav"
+                  onClick={() => setActiveTab('home')}
+                  className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
+                    activeTab === 'home'
+                      ? 'bg-white/10 text-white border border-white/10'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Home
+                </button>
                 <button
                   onClick={() => setAuthMode('login')}
                   className="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/5 transition-all"
@@ -259,7 +260,10 @@ export default function Header({
         {(activeTab === 'home' || activeTab === 'plan' || activeTab === 'account' || activeTab === 'market' || activeTab === 'trade' || activeTab === 'wallet') && (
           <div className="flex md:hidden w-full px-4 py-3 flex-row justify-between items-center bg-[#05070a]" id="mobile-header-bar">
             {/* Logo & Brand (Left) */}
-            <div className="flex items-center space-x-2">
+            <div 
+              className="flex items-center space-x-2 cursor-pointer"
+              onClick={() => setActiveTab('home')}
+            >
               <div className="p-1 text-amber-500">
                 <CryptixLogo className="w-8 h-8" />
               </div>

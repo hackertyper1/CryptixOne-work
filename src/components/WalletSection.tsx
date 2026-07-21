@@ -43,6 +43,7 @@ interface WalletSectionProps {
   onNavigateToTrade: () => void;
   onNavigateToPlans: () => void;
   onInvestmentRequestSubmit: (req: Omit<InvestmentRequest, 'id' | 'userId' | 'username' | 'status' | 'date'>) => void;
+  isApk?: boolean;
 }
 
 export default function WalletSection({
@@ -59,7 +60,8 @@ export default function WalletSection({
   onNavigateToAuth,
   onNavigateToTrade,
   onNavigateToPlans,
-  onInvestmentRequestSubmit
+  onInvestmentRequestSubmit,
+  isApk = false
 }: WalletSectionProps) {
   // Navigation internal state: 'deposit' | 'withdraw' | 'history'
   const [internalTab, setInternalTab] = useState<'deposit' | 'withdraw' | 'history'>('deposit');
@@ -298,27 +300,37 @@ export default function WalletSection({
   }
 
   return (
-    <div className="space-y-6 text-left bg-trading-animated" id="wallet-section-container">
-      {/* Compact Balance Bar (Always Visible) */}
-      <div className="grid grid-cols-3 gap-2 px-1" id="compact-balance-bar">
-        <div className="bg-[#0b101f] border border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center space-y-0.5">
-          <span className="text-[7px] text-slate-500 uppercase font-black tracking-widest">Profits</span>
-          <span className="text-[10px] font-black text-emerald-400 font-mono">{formatIndianCurrency(currentUser?.profitWallet || 0)}</span>
-        </div>
-        <div className="bg-[#0b101f] border border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center space-y-0.5">
-          <span className="text-[7px] text-slate-500 uppercase font-black tracking-widest">Main</span>
-          <span className="text-[10px] font-black text-white font-mono">{formatIndianCurrency(currentUser?.depositWallet || 0)}</span>
-        </div>
-        <div className="bg-[#0b101f] border border-white/5 p-3 rounded-2xl flex flex-col items-center justify-center space-y-0.5">
-          <span className="text-[7px] text-slate-500 uppercase font-black tracking-widest">Active</span>
-          <span className="text-[10px] font-black text-amber-500 font-mono">{formatIndianCurrency(currentUser?.activeInvestment || 0)}</span>
-        </div>
-      </div>
+    <div className="space-y-4 text-left bg-trading-animated" id="wallet-section-container">
+      {isApk ? (
+        <>
+          {/* Compact Balance Bar (Always Visible) */}
+          <div className="grid grid-cols-3 gap-2 px-1" id="compact-balance-bar">
+            <div className="bg-[#0b101f] border border-white/5 p-2 rounded-xl flex flex-col items-center justify-center">
+              <span className="text-[6px] text-slate-500 uppercase font-black tracking-widest">Profits</span>
+              <span className="text-[9px] font-black text-emerald-400 font-mono">{formatIndianCurrency(currentUser?.profitWallet || 0)}</span>
+            </div>
+            <div className="bg-[#0b101f] border border-white/5 p-2 rounded-xl flex flex-col items-center justify-center">
+              <span className="text-[6px] text-slate-500 uppercase font-black tracking-widest">Main</span>
+              <span className="text-[9px] font-black text-white font-mono">{formatIndianCurrency(currentUser?.depositWallet || 0)}</span>
+            </div>
+            <div className="bg-[#0b101f] border border-white/5 p-2 rounded-xl flex flex-col items-center justify-center">
+              <span className="text-[6px] text-slate-500 uppercase font-black tracking-widest">Active</span>
+              <span className="text-[9px] font-black text-amber-500 font-mono">{formatIndianCurrency(currentUser?.activeInvestment || 0)}</span>
+            </div>
+          </div>
 
-      {/* Modern Wallet UI based on video */}
-      <WalletHero onSetUpWallet={onNavigateToPlans} />
-      <LiveMarketChart />
-      <MarketAssetList />
+          <div className="scale-95 origin-top">
+            <WalletHero onSetUpWallet={onNavigateToPlans} />
+          </div>
+          <LiveMarketChart />
+          <MarketAssetList />
+        </>
+      ) : (
+        <>
+          <WalletHero onSetUpWallet={onNavigateToPlans} />
+          <LiveMarketChart />
+        </>
+      )}
 
       {/* Desktop Wallet Balance Cards Bar - Hidden on mobile */}
       <section className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6" id="wallet-statistics-bar">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LogIn, UserPlus, ShieldCheck, TrendingUp } from 'lucide-react';
+import { MousePointer2, Briefcase, Zap, Diamond } from 'lucide-react';
 
 interface AuthGateProps {
   onSelectLogin: () => void;
@@ -9,72 +9,80 @@ interface AuthGateProps {
 
 export default function AuthGate({ onSelectLogin, onSelectSignup }: AuthGateProps) {
   return (
-    <div className="min-h-screen bg-[#05070a] flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/5 blur-[120px] rounded-full" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 blur-[120px] rounded-full" />
+    <div className="min-h-screen bg-[#0b101f] flex flex-col items-center p-6 pt-12 relative overflow-hidden">
+      {/* Top Navigation for Guest */}
+      <div className="absolute top-6 left-0 right-0 px-6 flex justify-between items-center z-20">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-amber-500 rounded-lg rotate-45 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <div className="w-3 h-3 bg-slate-950 rounded-sm" />
+          </div>
+          <span className="text-sm font-black text-white tracking-tight">CRYPTIX<span className="text-amber-500">ONE</span></span>
+        </div>
+        <div className="flex items-center space-x-4">
+          <button onClick={onSelectLogin} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Login</button>
+          <button onClick={onSelectSignup} className="text-[10px] font-black text-amber-500 uppercase tracking-widest border border-amber-500/20 px-3 py-1.5 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 transition-all">Sign Up</button>
+        </div>
+      </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md space-y-10 relative z-10 text-center"
+        transition={{ delay: 0.1 }}
+        className="w-full max-w-md space-y-8 relative z-10 mt-20"
       >
-        {/* Logo */}
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-20 h-20 bg-amber-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-amber-500/20">
-            <ShieldCheck className="w-10 h-10 text-slate-950" />
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-3xl font-black text-white tracking-tighter">
-              CRYPTIX<span className="text-amber-500">ONE</span>
-            </h1>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Global Asset Settlement Network</p>
-          </div>
-        </div>
+        <h1 className="text-2xl font-black text-white text-center mb-10">Tell us about yourself!</h1>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-1 gap-4">
-          <button
-            onClick={onSelectLogin}
-            className="group flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 p-6 rounded-[2rem] transition-all"
-          >
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
-                <LogIn className="w-6 h-6" />
-              </div>
-              <div className="text-left">
-                <span className="block text-sm font-black text-white uppercase tracking-wider">Access Node</span>
-                <span className="text-[10px] text-slate-500 font-bold">Log in to your existing account</span>
-              </div>
-            </div>
-            <TrendingUp className="w-5 h-5 text-slate-700 group-hover:text-amber-500 transition-colors" />
-          </button>
-
+        {/* Action Cards */}
+        <div className="space-y-4">
           <button
             onClick={onSelectSignup}
-            className="group flex items-center justify-between bg-amber-500 hover:bg-amber-400 p-6 rounded-[2rem] transition-all shadow-xl shadow-amber-500/10"
+            className="w-full group bg-[#1e2330] hover:bg-[#252b3d] border border-slate-800/50 p-6 rounded-3xl transition-all text-left flex items-start space-x-5"
           >
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-slate-950 rounded-2xl flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
-                <UserPlus className="w-6 h-6" />
+            <div className="relative mt-1">
+              <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                <MousePointer2 className="w-6 h-6 rotate-12" />
               </div>
-              <div className="text-left">
-                <span className="block text-sm font-black text-slate-950 uppercase tracking-wider">Deploy Account</span>
-                <span className="text-[10px] text-slate-900/60 font-bold">Create new institutional credentials</span>
+              <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full p-1 border-2 border-[#1e2330]">
+                <Zap className="w-2.5 h-2.5 text-slate-950" />
               </div>
             </div>
-            <ShieldCheck className="w-5 h-5 text-slate-950/40" />
+            <div className="space-y-1">
+              <span className="block text-base font-black text-white">I'm New to Crypto</span>
+              <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+                I've heard about Bitcoin and I'm willing to trade more popular coins.
+              </p>
+            </div>
+          </button>
+
+          <button
+            onClick={onSelectLogin}
+            className="w-full group bg-[#1e2330] hover:bg-[#252b3d] border border-slate-800/50 p-6 rounded-3xl transition-all text-left flex items-start space-x-5"
+          >
+            <div className="relative mt-1">
+              <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                <Briefcase className="w-6 h-6" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full p-1 border-2 border-[#1e2330]">
+                <Diamond className="w-2.5 h-2.5 text-slate-950" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <span className="block text-base font-black text-white">I'm a Crypto Pro</span>
+              <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+                I'm experienced when it comes to crypto and feel confident to trade.
+              </p>
+            </div>
           </button>
         </div>
-
-        {/* Footer Info */}
-        <div className="pt-8">
-          <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-slate-900/50 border border-slate-800 rounded-full">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Secure Server Status: Active</span>
-          </div>
-        </div>
       </motion.div>
+
+      {/* Decorative dots (bottom) */}
+      <div className="mt-auto pb-10">
+        <div className="flex space-x-1.5">
+          <div className="w-1.5 h-1.5 bg-white rounded-full" />
+          <div className="w-1.5 h-1.5 bg-slate-700 rounded-full" />
+        </div>
+      </div>
     </div>
   );
 }

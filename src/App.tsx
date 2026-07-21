@@ -34,6 +34,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [mobileShowHome, setMobileShowHome] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isApk, setIsApk] = useState<boolean>(false);
   const [showSplash, setShowSplash] = useState<boolean>(true);
 
   useEffect(() => {
@@ -43,6 +44,17 @@ export default function App() {
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const checkIsApk = () => {
+      return window.matchMedia('(display-mode: standalone)').matches || 
+             (window.navigator as any).standalone || 
+             document.referrer.includes('android-app://') ||
+             window.location.search.includes('apk=1') ||
+             window.location.search.includes('apk=true');
+    };
+    setIsApk(checkIsApk());
   }, []);
 
   // Core Data Registries
@@ -779,9 +791,9 @@ export default function App() {
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col justify-between" id="app-root-container">
       <Toaster position="top-right" theme="dark" richColors closeButton />
       
-      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      {showSplash && isApk && <SplashScreen onComplete={() => setShowSplash(false)} />}
       
-      {!showSplash && !currentUser && activeTab !== 'admin' && activeTab !== 'account' && (
+      {!showSplash && isApk && !currentUser && activeTab !== 'admin' && activeTab !== 'account' && (
         <AuthGate 
           onSelectLogin={() => {
             setAuthMode('login');
@@ -795,7 +807,7 @@ export default function App() {
       )}
 
       {/* Header Navigation */}
-      {(!showSplash && (currentUser || activeTab === 'admin' || activeTab === 'account')) && (
+      {(!showSplash || !isApk) && (!isApk || currentUser || activeTab === 'admin' || activeTab === 'account') && (
         <Header
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -803,6 +815,7 @@ export default function App() {
             setAuthMode(mode);
             setActiveTab('account');
           }}
+          authMode={authMode}
           isLoggedIn={!!currentUser}
           currentUser={currentUser}
           onLogout={handleLogout}
@@ -815,7 +828,7 @@ export default function App() {
 
       <div className="flex-grow w-full">
         {/* Main Content Area */}
-        {(!showSplash && (currentUser || activeTab === 'admin' || activeTab === 'account')) && (
+        {(!showSplash || !isApk) && (!isApk || currentUser || activeTab === 'admin' || activeTab === 'account') && (
           <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
             {/* Desktop or Mobile view */}
             <>
@@ -890,6 +903,7 @@ export default function App() {
                 onNavigateToTrade={() => setActiveTab('trade')}
                 onNavigateToPlans={() => setActiveTab('plan')}
                 onInvestmentRequestSubmit={handleInvestmentRequestSubmit}
+                isApk={isApk}
               />
             )}
 
@@ -929,8 +943,8 @@ export default function App() {
       )}
       </div>
 
-      {/* Luxury Footer bar with regulatory clearance - Render ONLY on Home page */}
-      {activeTab === 'home' && (
+      {/* Luxury Footer bar with regulatory clearance - Render ONLY on Desktop Home page */}
+      {activeTab === 'home' && !isMobile && (
         <footer className="bg-[#050811] border-t border-slate-800/80 py-8 text-xs text-slate-500 font-mono" id="app-footer">
           <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
             {/* Logo Brand */}
