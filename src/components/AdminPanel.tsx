@@ -39,7 +39,7 @@ interface AdminPanelProps {
   onUpdateSettings: (newSettings: SystemSettings) => void;
   onApproveTransaction: (txId: string) => void;
   onRejectTransaction: (txId: string) => void;
-  onUpdateUserBalance: (userId: string, deposit: number, profit: number, active: number, traderName: string, traderPhone: string) => void;
+  onUpdateUserBalance: (userId: string, deposit: number, profit: number, active: number, traderName: string, traderPhone: string, slCode?: string) => void;
   investmentRequests: InvestmentRequest[];
   onApproveInvestmentRequest: (reqId: string) => void;
   onRejectInvestmentRequest: (reqId: string) => void;
@@ -98,6 +98,7 @@ export default function AdminPanel({
   const [whatsappInput, setWhatsappInput] = useState<string>(systemSettings.supportWhatsApp);
   const [phoneInput, setPhoneInput] = useState<string>(systemSettings.supportPhone);
   const [emailInput, setEmailInput] = useState<string>(systemSettings.companyEmail);
+  const [tradeTimeLimitInput, setTradeTimeLimitInput] = useState<number>(systemSettings.tradeTimeLimit || 60);
   const [settingsSuccess, setSettingsSuccess] = useState<boolean>(false);
 
   // Message states
@@ -126,6 +127,7 @@ export default function AdminPanel({
   const [editActive, setEditActive] = useState<number>(0);
   const [editTraderName, setEditTraderName] = useState<string>('');
   const [editTraderPhone, setEditTraderPhone] = useState<string>('');
+  const [editSlCode, setEditSlCode] = useState<string>('');
 
   // Encrypted Logs Toggle state
   const [decryptLogs, setDecryptLogs] = useState<boolean>(false);
@@ -134,7 +136,7 @@ export default function AdminPanel({
   const handleAdminAuth = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    if (adminUsername === 'admin' && adminPassword === 'Dubai@321') {
+    if (adminUsername === 'admin' && adminPassword === 'supabase') {
       setIsAdminAuthenticated(true);
     } else {
       setAuthError('Access denied. Invalid high-security administrator credentials.');
@@ -163,7 +165,8 @@ export default function AdminPanel({
       supportPhone: phoneInput,
       companyEmail: emailInput,
       scannerUrl: scannerUrlInput,
-      qrCodeImage: qrCodeImage
+      qrCodeImage: qrCodeImage,
+      tradeTimeLimit: Number(tradeTimeLimitInput) || 60
     });
     setSettingsSuccess(true);
     setTimeout(() => setSettingsSuccess(false), 3000);
@@ -206,11 +209,12 @@ export default function AdminPanel({
     setEditActive(user.activeInvestment);
     setEditTraderName(user.traderName);
     setEditTraderPhone(user.traderPhone);
+    setEditSlCode(user.slCode || '');
   };
 
   // Save User Balance / Trader modifications
   const handleUserSave = (userId: string) => {
-    onUpdateUserBalance(userId, editDeposit, editProfit, editActive, editTraderName, editTraderPhone);
+    onUpdateUserBalance(userId, editDeposit, editProfit, editActive, editTraderName, editTraderPhone, editSlCode);
     setEditingUserId(null);
   };
 
@@ -704,6 +708,19 @@ export default function AdminPanel({
                   id="settings-email-input"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
+                  className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Trade Duration Limit (Minutes)</label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  id="settings-tradelimit-input"
+                  value={tradeTimeLimitInput}
+                  onChange={(e) => setTradeTimeLimitInput(Number(e.target.value) || 60)}
                   className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
                 />
               </div>

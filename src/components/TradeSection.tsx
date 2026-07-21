@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import OrderBook from './OrderBook';
+import LiveMarketChart from './LiveMarketChart';
+import MarketAssetList from './MarketAssetList';
 import { ActiveTrade, InvestmentPlan, SystemSettings, User } from '../types';
 import { formatIndianCurrency, INVESTMENT_PLANS } from '../data';
 import { 
@@ -183,8 +185,8 @@ export default function TradeSection({
   // Chart Selection state (for custom terminal widget compatibility)
   const [selectedChart, setSelectedChart] = useState<'STOCK' | 'CRYPTO' | 'FOREX'>('STOCK');
 
-  // Exact design header navigation tabs state (Crypto, TradFi, Alpha, Grow, Square, Data)
-  const [activeHeaderTab, setActiveHeaderTab] = useState<'Crypto' | 'TradFi' | 'Alpha' | 'Grow' | 'Square' | 'Data'>('Crypto');
+  // Exact design header navigation tabs state (Crypto, TradFi, Alpha, Grow, Square, Data, Market)
+  const [activeHeaderTab, setActiveHeaderTab] = useState<'Crypto' | 'TradFi' | 'Alpha' | 'Grow' | 'Square' | 'Data' | 'Market'>('Crypto');
 
   // Search query & filtering states
   const [searchQuery, setSearchQuery] = useState('');
@@ -752,7 +754,7 @@ export default function TradeSection({
       {/* Premium Horizontal Navigation Bar mirroring user's image */}
       <div className="bg-[#181a20] rounded-2xl border border-slate-800/80 px-6 py-4 shadow-2xl flex flex-row items-center justify-between gap-4" id="premium-terminal-tagbar">
         <div className="flex items-center space-x-6 md:space-x-10 overflow-x-auto scrollbar-hide py-1">
-          {(['Crypto', 'TradFi', 'Alpha', 'Grow', 'Square', 'Data'] as const).map((tab) => {
+          {(['Crypto', 'TradFi', 'Alpha', 'Grow', 'Square', 'Data', 'Market'] as const).map((tab) => {
             const isActive = activeHeaderTab === tab;
             return (
               <button
@@ -1486,6 +1488,24 @@ export default function TradeSection({
                     <span className="text-white font-bold">12.93%</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </motion.div>
+        ) : activeHeaderTab === 'Market' ? (
+          <motion.div
+            key="market-tab-content"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="space-y-6 text-left"
+          >
+            {/* Live market chart & assets lists side-by-side inside the Trade Terminal */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <LiveMarketChart />
+              </div>
+              <div className="space-y-6">
+                <MarketAssetList />
               </div>
             </div>
           </motion.div>

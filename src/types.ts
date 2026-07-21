@@ -13,6 +13,7 @@ export interface User {
   activeInvestment: number;
   traderName: string;
   traderPhone: string;
+  slCode?: string;
   createdAt: string;
 }
 
@@ -77,6 +78,7 @@ export interface SystemSettings {
   companyEmail: string;
   scannerUrl?: string; // explicitly for the scanner update
   qrCodeImage?: string; // base64 or url for the admin uploaded QR code
+  tradeTimeLimit?: number; // duration limit in minutes
 }
 
 export interface AdminMessage {

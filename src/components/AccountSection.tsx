@@ -26,6 +26,7 @@ interface AccountSectionProps {
   users: User[];
   adminMessages: AdminMessage[];
   initialMode?: 'login' | 'signup';
+  onUpdateSlCode?: (userId: string, slCode: string) => void;
 }
 
 export default function AccountSection({
@@ -37,9 +38,28 @@ export default function AccountSection({
   onLogout,
   users,
   adminMessages,
-  initialMode = 'login'
+  initialMode = 'login',
+  onUpdateSlCode
 }: AccountSectionProps) {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(initialMode);
+
+  // Manual SL Code edit states
+  const [isEditingSl, setIsEditingSl] = useState(false);
+  const [slInput, setSlInput] = useState(currentUser?.slCode || 'SL-568-725');
+
+  useEffect(() => {
+    if (currentUser) {
+      setSlInput(currentUser.slCode || 'SL-568-725');
+    }
+  }, [currentUser]);
+
+  const handleSaveSl = () => {
+    if (currentUser && onUpdateSlCode) {
+      onUpdateSlCode(currentUser.id, slInput);
+      setIsEditingSl(false);
+      toast.success('SL Code updated successfully');
+    }
+  };
 
   // Luxury Mobile Settings States
   const [biometricEnabled, setBiometricEnabled] = useState<boolean>(() => {
@@ -417,10 +437,48 @@ export default function AccountSection({
             <span className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] block font-mono">Institutional Credentials</span>
             
             {/* SL Code */}
-            <div className="flex items-center justify-between border-b border-white/[0.03] pb-3">
+            <div className="flex items-center justify-between border-b border-white/[0.03] pb-3" id="sl-code-account-row">
               <span className="text-[11px] text-slate-400 font-bold font-mono uppercase tracking-wider">SL Code</span>
-              <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
-                <span className="text-[11px] text-slate-300 font-mono uppercase tracking-[0.05em] font-black allow-copy">SL423633</span>
+              <div className="flex items-center space-x-2">
+                {isEditingSl ? (
+                  <div className="flex items-center space-x-1.5">
+                    <input
+                      type="text"
+                      value={slInput}
+                      onChange={(e) => setSlInput(e.target.value)}
+                      className="bg-slate-950 border border-white/10 text-white font-mono text-xs py-1 px-2 rounded-lg w-36 outline-none focus:border-emerald-500"
+                    />
+                    <button
+                      onClick={handleSaveSl}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-md transition-all uppercase"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setIsEditingSl(false)}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold px-2.5 py-1 rounded-md transition-all uppercase"
+                    >
+                      X
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
+                      <span className="text-[11px] text-slate-300 font-mono uppercase tracking-[0.05em] font-black allow-copy">
+                        {currentUser?.slCode || 'SL-568-725'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsEditingSl(true)}
+                      className="text-slate-500 hover:text-white transition-colors"
+                      title="Edit SL Code"
+                    >
+                      <span className="text-[9px] font-black border border-white/10 hover:border-white/30 rounded-md px-2 py-1 bg-white/5 uppercase font-mono tracking-wider">
+                        Edit
+                      </span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 

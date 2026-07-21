@@ -372,6 +372,20 @@ export default function App() {
     userData: Omit<User, 'id' | 'depositWallet' | 'profitWallet' | 'activeInvestment' | 'traderName' | 'traderPhone' | 'createdAt'>,
     pass: string
   ) => {
+    const defaultSlCodes = [
+      'SL-568-725',
+      'SL-194-836',
+      'SL-807-451',
+      'SL-632-918',
+      'SL-275-604',
+      'SL-981-357',
+      'SL-416-829',
+      'SL-753-102',
+      'SL-248-690',
+      'SL-875-431'
+    ];
+    const randomSl = defaultSlCodes[Math.floor(Math.random() * defaultSlCodes.length)];
+
     const newUser: User = {
       ...userData,
       password: pass,
@@ -381,6 +395,7 @@ export default function App() {
       activeInvestment: 0,
       traderName: 'Rohit Singhania (Senior Trader)',
       traderPhone: '8696860548',
+      slCode: randomSl,
       createdAt: new Date().toISOString()
     };
 
@@ -572,7 +587,8 @@ export default function App() {
     profit: number,
     active: number,
     traderName: string,
-    traderPhone: string
+    traderPhone: string,
+    slCode?: string
   ) => {
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
@@ -582,7 +598,8 @@ export default function App() {
           profitWallet: profit,
           activeInvestment: active,
           traderName,
-          traderPhone
+          traderPhone,
+          slCode: slCode || u.slCode
         };
         if (currentUser && currentUser.id === userId) {
           setCurrentUser(updated);
@@ -593,7 +610,27 @@ export default function App() {
       return u;
     });
     saveUsersToStorage(updatedUsers);
-    addLog(`Manually modified balances and assigned trader support for client ID: ${userId}`, 'admin');
+    addLog(`Manually modified balances/details for client ID: ${userId}`, 'admin');
+  };
+
+  // 9.1 User Action: Edit SL Code manually
+  const handleUpdateSlCode = (userId: string, slCode: string) => {
+    const updatedUsers = users.map(u => {
+      if (u.id === userId) {
+        const updated = {
+          ...u,
+          slCode
+        };
+        if (currentUser && currentUser.id === userId) {
+          setCurrentUser(updated);
+          localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
+        }
+        return updated;
+      }
+      return u;
+    });
+    saveUsersToStorage(updatedUsers);
+    addLog(`Manually modified SL Code to: ${slCode}`, currentUser?.username || 'user');
   };
 
   // 9.5. Market Trade Action: Update current user wallets
@@ -921,6 +958,7 @@ export default function App() {
                 users={users}
                 adminMessages={adminMessages}
                 initialMode={authMode}
+                onUpdateSlCode={handleUpdateSlCode}
               />
             )}
 

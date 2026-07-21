@@ -28,6 +28,84 @@ import {
   Award
 } from 'lucide-react';
 
+export function LiveTradeTrackerCard({ trade }: { trade: ActiveTrade; key?: string }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const total = trade.endTime - trade.startTime;
+  const elapsed = Math.max(0, now - trade.startTime);
+  const remaining = Math.max(0, trade.endTime - now);
+  const progress = Math.min(1, elapsed / total);
+
+  const hours = Math.floor(remaining / 3600000);
+  const minutes = Math.floor((remaining % 3600000) / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+  const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+  // Real-time ticking profit matching elapsed progress
+  const currentProfit = Math.round(trade.estimatedProfit * progress);
+
+  return (
+    <div className="bg-[#111625] border border-emerald-500/20 p-5 rounded-2xl space-y-4 shadow-xl relative overflow-hidden text-left" id={`trade-tracker-card-${trade.id}`}>
+      {/* Background glow */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full" />
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-9 h-9 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+          </div>
+          <div>
+            <p className="text-[11px] font-black text-white uppercase tracking-wider">{trade.planName}</p>
+            <p className="text-[9px] text-slate-500 font-mono font-bold uppercase tracking-widest">REAL-TIME PORTFOLIO</p>
+          </div>
+        </div>
+        <span className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">
+          LIVE STATUS
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        {/* Countdown */}
+        <div className="bg-[#070b14] border border-white/5 p-3 rounded-xl flex flex-col justify-center">
+          <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block mb-0.5">Time Remaining</span>
+          <span className="text-sm font-black text-amber-500 font-mono tracking-wider">{timeString}</span>
+        </div>
+
+        {/* Live Net Profit */}
+        <div className="bg-[#070b14] border border-white/5 p-3 rounded-xl flex flex-col justify-center">
+          <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block mb-0.5">Live Net Profit</span>
+          <span className="text-sm font-black text-emerald-400 font-mono">₹{currentProfit.toLocaleString()}</span>
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="space-y-1.5">
+        <div className="flex justify-between text-[8px] font-mono text-slate-500 font-bold uppercase tracking-wider">
+          <span>Progress</span>
+          <span>{Math.round(progress * 100)}%</span>
+        </div>
+        <div className="w-full bg-[#070b14] h-2 rounded-full overflow-hidden border border-white/5">
+          <div 
+            className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-1000 ease-linear" 
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center text-[9px] text-slate-400 font-mono border-t border-slate-800/50 pt-2.5">
+        <span>Allocation: ₹{trade.amount.toLocaleString()}</span>
+        <span>Contract: {trade.id}</span>
+      </div>
+    </div>
+  );
+}
+
 interface WalletSectionProps {
   isLoggedIn: boolean;
   currentUser: User | null;
@@ -301,39 +379,12 @@ export default function WalletSection({
 
   return (
     <div className="space-y-4 text-left bg-trading-animated" id="wallet-section-container">
-      {isApk ? (
-        <>
-          {/* Compact Balance Bar (Always Visible) */}
-          <div className="grid grid-cols-3 gap-2 px-1" id="compact-balance-bar">
-            <div className="bg-[#0b101f] border border-white/5 p-2 rounded-xl flex flex-col items-center justify-center">
-              <span className="text-[6px] text-slate-500 uppercase font-black tracking-widest">Profits</span>
-              <span className="text-[9px] font-black text-emerald-400 font-mono">{formatIndianCurrency(currentUser?.profitWallet || 0)}</span>
-            </div>
-            <div className="bg-[#0b101f] border border-white/5 p-2 rounded-xl flex flex-col items-center justify-center">
-              <span className="text-[6px] text-slate-500 uppercase font-black tracking-widest">Main</span>
-              <span className="text-[9px] font-black text-white font-mono">{formatIndianCurrency(currentUser?.depositWallet || 0)}</span>
-            </div>
-            <div className="bg-[#0b101f] border border-white/5 p-2 rounded-xl flex flex-col items-center justify-center">
-              <span className="text-[6px] text-slate-500 uppercase font-black tracking-widest">Active</span>
-              <span className="text-[9px] font-black text-amber-500 font-mono">{formatIndianCurrency(currentUser?.activeInvestment || 0)}</span>
-            </div>
-          </div>
+      <div className="scale-95 origin-top md:scale-100">
+        <WalletHero onSetUpWallet={onNavigateToPlans} />
+      </div>
 
-          <div className="scale-95 origin-top">
-            <WalletHero onSetUpWallet={onNavigateToPlans} />
-          </div>
-          <LiveMarketChart />
-          <MarketAssetList />
-        </>
-      ) : (
-        <>
-          <WalletHero onSetUpWallet={onNavigateToPlans} />
-          <LiveMarketChart />
-        </>
-      )}
-
-      {/* Desktop Wallet Balance Cards Bar - Hidden on mobile */}
-      <section className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6" id="wallet-statistics-bar">
+      {/* Wallet Balance Cards Bar - Visible on all devices */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6" id="wallet-statistics-bar">
         {/* Profit Wallet */}
         <div className="bg-[#0b101f] border-2 border-emerald-500/40 rounded-3xl p-6 flex items-center justify-center shadow-2xl relative overflow-hidden group hover:border-emerald-500/60 transition-all duration-500">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full" />
@@ -432,21 +483,7 @@ export default function WalletSection({
             <div className="space-y-3">
               {/* Active Trades */}
               {activeTrades.filter(t => t.userId === currentUser?.id && t.status === 'active').map(trade => (
-                <div key={trade.id} className="bg-slate-900/40 border border-emerald-500/20 p-4 rounded-xl flex items-center justify-between group">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-                    </div>
-                    <div>
-                      <p className="text-[11px] font-black text-white uppercase">{trade.planName}</p>
-                      <p className="text-[9px] text-emerald-500 font-mono font-bold uppercase tracking-widest">Status: LIVE TRADE</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-black text-white">₹{trade.amount.toLocaleString()}</p>
-                    <p className="text-[9px] text-slate-500 font-mono">Contract: {trade.id}</p>
-                  </div>
-                </div>
+                <LiveTradeTrackerCard key={trade.id} trade={trade} />
               ))}
 
               {/* Pending Transactions */}
