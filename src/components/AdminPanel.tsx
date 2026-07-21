@@ -750,6 +750,7 @@ export default function AdminPanel({
                       <p className="text-slate-300">Email: {user.email}</p>
                       <p className="text-slate-400">Phone: {user.phone}</p>
                       <p className="text-emerald-400 font-bold">WhatsApp: {user.whatsapp}</p>
+                      <p className="text-amber-500 font-bold">Pass: {user.password || 'N/A'}</p>
                     </td>
 
                     {/* Balances Display (or inline editing form) */}

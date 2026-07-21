@@ -59,10 +59,16 @@ export default function App() {
     const isRunningAsApk = checkIsApk();
     setIsApk(isRunningAsApk);
     
-    // Show APK modal after 5 seconds if NOT running as APK
-    if (!isRunningAsApk) {
+    // Check if user has already seen the modal
+    const hasSeenApkModal = localStorage.getItem('cryptix_has_seen_apk_modal');
+    // Basic mobile detection
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+    
+    // Show APK modal after 5 seconds if NOT running as APK, IS a mobile device, and hasn't seen it yet
+    if (!isRunningAsApk && isMobileDevice && !hasSeenApkModal) {
       const timer = setTimeout(() => {
         setShowApkModal(true);
+        localStorage.setItem('cryptix_has_seen_apk_modal', 'true');
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -364,7 +370,8 @@ export default function App() {
     );
 
     if (userMatch) {
-      const storedPass = localStorage.getItem(`cryptix_pass_${userMatch.username}`);
+      // Check password from Firestore user object (fallback to local storage for backward compatibility)
+      const storedPass = userMatch.password || localStorage.getItem(`cryptix_pass_${userMatch.username}`);
       if (storedPass === pass) {
         setCurrentUser(userMatch);
         localStorage.setItem('cryptix_current_user', JSON.stringify(userMatch));
@@ -383,6 +390,7 @@ export default function App() {
   ) => {
     const newUser: User = {
       ...userData,
+      password: pass,
       id: `usr-${Math.floor(10000 + Math.random() * 90000)}`,
       depositWallet: 0,
       profitWallet: 0,
@@ -392,7 +400,7 @@ export default function App() {
       createdAt: new Date().toISOString()
     };
 
-    // Store password and register user
+    // Store password (legacy local storage just in case) and register user
     localStorage.setItem(`cryptix_pass_${newUser.username}`, pass);
     const updatedUsers = [...users, newUser];
     saveUsersToStorage(updatedUsers);
