@@ -399,13 +399,13 @@ export default function AccountSection({
             <div className="text-left flex-grow min-w-0">
               <div className="flex flex-col">
                 <div className="flex items-center space-x-2 mb-1 flex-wrap gap-y-1">
-                  <h3 className="text-xl font-black text-white tracking-tight truncate max-w-[150px]">{currentUser?.name}</h3>
+                  <h3 className="text-xl font-black text-white tracking-tight truncate max-w-[150px] allow-copy">{currentUser?.name}</h3>
                   <div className="bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center space-x-1 flex-shrink-0">
                     <ShieldCheck className="w-3 h-3 text-emerald-400" />
                     <span className="text-[8px] font-black text-emerald-400 uppercase tracking-tighter">Verified</span>
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-400 font-medium truncate">{currentUser?.email}</p>
+                <p className="text-[11px] text-slate-400 font-medium truncate allow-copy">{currentUser?.email}</p>
               </div>
             </div>
           </div>
@@ -420,7 +420,7 @@ export default function AccountSection({
             <div className="flex items-center justify-between border-b border-white/[0.03] pb-3">
               <span className="text-[11px] text-slate-400 font-bold font-mono uppercase tracking-wider">SL Code</span>
               <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
-                <span className="text-[11px] text-slate-300 font-mono uppercase tracking-[0.05em] font-black">SL423633</span>
+                <span className="text-[11px] text-slate-300 font-mono uppercase tracking-[0.05em] font-black allow-copy">SL423633</span>
               </div>
             </div>
 
@@ -428,7 +428,7 @@ export default function AccountSection({
             <div className="flex items-center justify-between border-b border-white/[0.03] pb-3">
               <span className="text-[11px] text-slate-400 font-bold font-mono uppercase tracking-wider">Username</span>
               <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
-                <span className="text-[11px] text-slate-300 font-mono tracking-wide font-black">{currentUser?.username}</span>
+                <span className="text-[11px] text-slate-300 font-mono tracking-wide font-black allow-copy">{currentUser?.username}</span>
               </div>
             </div>
 
@@ -436,7 +436,7 @@ export default function AccountSection({
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-slate-400 font-bold font-mono uppercase tracking-wider">Mobile No</span>
               <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg backdrop-blur-md">
-                <span className="text-[11px] text-slate-300 font-mono tracking-tighter font-black">+91 {currentUser?.phone}</span>
+                <span className="text-[11px] text-slate-300 font-mono tracking-tighter font-black allow-copy">+91 {currentUser?.phone}</span>
               </div>
             </div>
           </div>
@@ -543,7 +543,7 @@ export default function AccountSection({
             </div>
             <div className="text-left">
               <div className="flex items-center space-x-3 mb-2">
-                <h3 className="text-3xl font-black text-white tracking-tight">
+                <h3 className="text-3xl font-black text-white tracking-tight allow-copy">
                   {currentUser?.name}
                 </h3>
                 <div className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full flex items-center space-x-2">
@@ -551,7 +551,7 @@ export default function AccountSection({
                   <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Verified Institution</span>
                 </div>
               </div>
-              <p className="text-slate-400 font-medium">{currentUser?.email}</p>
+              <p className="text-slate-400 font-medium allow-copy">{currentUser?.email}</p>
             </div>
           </div>
           
@@ -568,7 +568,7 @@ export default function AccountSection({
             <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3">Client Identifier</span>
             <div className="flex items-center space-x-3">
               <UserIcon className="w-4 h-4 text-blue-500" />
-              <span className="text-sm font-black text-white font-mono">{currentUser?.username}</span>
+              <span className="text-sm font-black text-white font-mono allow-copy">{currentUser?.username}</span>
             </div>
           </div>
           
@@ -576,7 +576,7 @@ export default function AccountSection({
             <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3">Registered Mobile</span>
             <div className="flex items-center space-x-3">
               <Smartphone className="w-4 h-4 text-emerald-500" />
-              <span className="text-sm font-black text-white font-mono tracking-tighter">+91 {currentUser?.phone}</span>
+              <span className="text-sm font-black text-white font-mono tracking-tighter allow-copy">+91 {currentUser?.phone}</span>
             </div>
           </div>
 

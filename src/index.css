@@ -27,6 +27,17 @@
   body {
     @apply antialiased bg-bg-primary text-text-primary;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  .allow-copy {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
   }
 
   h1, h2, h3, h4, h5, h6 {

@@ -767,7 +767,7 @@ export default function WalletSection({
                     <div className="bg-[#03060c] border border-slate-850 p-2.5 rounded-lg flex justify-between items-center font-mono">
                       <div className="min-w-0">
                         <span className="text-[8px] text-slate-500 uppercase block tracking-wider">Secure UPI Address</span>
-                        <span className="text-slate-300 font-black text-[10px] truncate block">{systemSettings.upiId}</span>
+                        <span className="text-slate-300 font-black text-[10px] truncate block allow-copy">{systemSettings.upiId}</span>
                       </div>
                       <button
                         onClick={handleCopyUpi}

@@ -11,6 +11,7 @@ import AdminPanel from './components/AdminPanel';
 import MarketSection from './components/MarketSection';
 import SplashScreen from './components/SplashScreen';
 import AuthGate from './components/AuthGate';
+import ApkDownloadModal from './components/ApkDownloadModal';
 import { User, ActiveTrade, Transaction, SystemSettings, ActivityLog, InvestmentPlan, InvestmentRequest, AdminMessage } from './types';
 import { DEFAULT_SETTINGS, encryptPayload, INVESTMENT_PLANS } from './data';
 import { db } from './lib/firebase';
@@ -36,6 +37,7 @@ export default function App() {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isApk, setIsApk] = useState<boolean>(false);
   const [showSplash, setShowSplash] = useState<boolean>(true);
+  const [showApkModal, setShowApkModal] = useState<boolean>(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -54,7 +56,16 @@ export default function App() {
              window.location.search.includes('apk=1') ||
              window.location.search.includes('apk=true');
     };
-    setIsApk(checkIsApk());
+    const isRunningAsApk = checkIsApk();
+    setIsApk(isRunningAsApk);
+    
+    // Show APK modal after 5 seconds if NOT running as APK
+    if (!isRunningAsApk) {
+      const timer = setTimeout(() => {
+        setShowApkModal(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Core Data Registries
@@ -791,6 +802,8 @@ export default function App() {
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col justify-between" id="app-root-container">
       <Toaster position="top-right" theme="dark" richColors closeButton />
       
+      {showApkModal && <ApkDownloadModal onClose={() => setShowApkModal(false)} />}
+
       {showSplash && isApk && <SplashScreen onComplete={() => setShowSplash(false)} />}
       
       {!showSplash && isApk && !currentUser && activeTab !== 'admin' && activeTab !== 'account' && (
