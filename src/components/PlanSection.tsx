@@ -55,8 +55,8 @@ export default function PlanSection({
               const isBullish = index % 2 === 0;
               const colorClass = isBullish ? 'emerald' : 'rose';
               const strokeColor = isBullish ? '#10b981' : '#f43f5e';
-              const gradientId = `${colorClass}Gradient${index}`;
-
+              const gradientId = `gradient-${plan.id}`;
+              
               return (
                 <div 
                   key={plan.id}
@@ -73,14 +73,14 @@ export default function PlanSection({
                         className="animate-pulse"
                       />
                       <path 
-                        d={isBullish ? "M0 30 Q 20 25, 40 30 T 70 15 T 100 5 L 100 40 L 0 40 Z" : "M0 10 Q 20 15, 40 10 T 70 25 T 100 35 L 100 40 L 0 40 Z"} 
+                        d={isBullish ? "M0 30 Q 20 25, 40 30 T 70 15 T 100 5 V 40 H 0 Z" : "M0 10 Q 20 15, 40 10 T 70 25 T 100 35 V 40 H 0 Z"} 
                         fill={`url(#${gradientId})`} 
                         opacity="0.2"
                       />
                       <defs>
                         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={strokeColor} />
-                          <stop offset="100%" stopColor="transparent" />
+                          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.5" />
+                          <stop offset="100%" stopColor={strokeColor} stopOpacity="0" />
                         </linearGradient>
                       </defs>
                     </svg>

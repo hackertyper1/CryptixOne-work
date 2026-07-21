@@ -976,6 +976,10 @@ export default function App() {
                 isLoggedIn={!!currentUser}
                 currentUser={currentUser}
                 onExecuteTrade={handleExecuteTrade}
+                onNavigateToWallet={(subTab) => {
+                  setActiveTab('wallet');
+                  // We can add logic to set the specific subtab in WalletSection if needed
+                }}
                 onNavigateToHome={() => {
                   setActiveTab('account');
                   setSelectedPlanForInvestment(null);

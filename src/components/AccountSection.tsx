@@ -12,9 +12,12 @@ import {
   LogOut,
   ShieldCheck,
   Smartphone,
-  Fingerprint
+  Fingerprint,
+  TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+import TopTradersView from './TopTradersView';
 
 interface AccountSectionProps {
   isLoggedIn: boolean;
@@ -188,6 +191,12 @@ export default function AccountSection({
       dob: '2000-01-01' // default
     }, signupPass);
   };
+
+  const [view, setView] = useState<'profile' | 'security' | 'messages' | 'top-traders'>('profile');
+
+  if (isLoggedIn && view === 'top-traders') {
+    return <TopTradersView currentUser={currentUser} onBack={() => setView('profile')} />;
+  }
 
   if (!isLoggedIn) {
     return (
@@ -628,7 +637,7 @@ export default function AccountSection({
             <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3">Unique UID</span>
             <div className="flex items-center space-x-3">
               <Lock className="w-4 h-4 text-amber-500" />
-              <span className="text-sm font-black text-white font-mono">SL423633</span>
+              <span className="text-sm font-black text-white font-mono">{currentUser?.slCode || 'SL423633'}</span>
             </div>
           </div>
         </div>
@@ -652,6 +661,21 @@ export default function AccountSection({
 
       {/* Luxury Advisor & Compliance Sections (Desktop + Mobile Unified Luxury) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Top Traders Button */}
+        <button 
+          onClick={() => setView('top-traders')}
+          className="group relative flex flex-col items-center justify-center p-8 bg-[#05070a] border border-white/10 rounded-[2.5rem] hover:border-amber-500/30 transition-all overflow-hidden shadow-2xl"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <TrendingUp className="w-12 h-12 text-amber-500 mb-4 group-hover:scale-110 transition-transform" />
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1">Global Ranking</span>
+          <h4 className="text-xl font-black text-white uppercase tracking-tight">Top Traders Dashboard</h4>
+          <div className="mt-4 flex items-center space-x-2 bg-amber-500/10 px-4 py-1.5 rounded-full border border-amber-500/20">
+            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+            <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Real-time Ranking</span>
+          </div>
+        </button>
+
         {/* Advisor Card */}
         <section className="bg-[#05070a] border border-white/10 rounded-[2rem] p-8 shadow-xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-amber-500/10 transition-all" />

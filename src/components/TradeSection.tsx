@@ -166,6 +166,7 @@ interface TradeSectionProps {
   systemSettings?: SystemSettings;
   onChangeTab?: (tab: string) => void;
   onExecuteTrade?: (amount: number, estimatedProfit: number, assetName: string, durationLabel: string) => void;
+  onNavigateToWallet?: (subTab?: 'deposit' | 'withdraw' | 'history') => void;
 }
 
 export default function TradeSection({
@@ -176,7 +177,8 @@ export default function TradeSection({
   onInvestSelect,
   systemSettings,
   onChangeTab,
-  onExecuteTrade
+  onExecuteTrade,
+  onNavigateToWallet
 }: TradeSectionProps) {
   // Calculator states
   const [selectedPlanId, setSelectedPlanId] = useState<string>(INVESTMENT_PLANS[0].id);
@@ -1897,7 +1899,13 @@ export default function TradeSection({
                         <div className="flex items-center space-x-1.5 font-black text-slate-200">
                           <span>₹{((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)).toLocaleString()}</span>
                           <span className="text-slate-500 font-normal">({(((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)) / 87.5).toFixed(2)} USDT)</span>
-                          <span className="text-[#f0b90b] cursor-pointer text-sm font-black">+</span>
+                          <button 
+                            type="button"
+                            onClick={() => onNavigateToWallet?.('deposit')}
+                            className="text-[#f0b90b] hover:text-yellow-400 text-sm font-black transition-colors px-1"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
@@ -2054,14 +2062,10 @@ export default function TradeSection({
                 </p>
               </div>
               <button
-                onClick={() => {
-                  const calcEl = document.getElementById('profit-calculator-section');
-                  if (calcEl) calcEl.scrollIntoView({ behavior: 'smooth' });
-                  setSelectedPlanId(INVESTMENT_PLANS[1]?.id || INVESTMENT_PLANS[0].id);
-                }}
-                className="bg-indigo-500 hover:bg-indigo-400 text-white font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all whitespace-nowrap shadow-lg shadow-indigo-500/20"
+                onClick={() => onNavigateToWallet?.('deposit')}
+                className="bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all whitespace-nowrap shadow-lg shadow-amber-500/20"
               >
-                View More
+                Setup Wallet
               </button>
             </div>
 

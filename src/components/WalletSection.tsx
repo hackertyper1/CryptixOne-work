@@ -388,7 +388,11 @@ export default function WalletSection({
   return (
     <div className="space-y-4 text-left bg-trading-animated" id="wallet-section-container">
       <div className="scale-95 origin-top md:scale-100">
-        <WalletHero onSetUpWallet={onNavigateToPlans} />
+        <WalletHero onSetUpWallet={() => {
+          setInternalTab('deposit');
+          setSelectedPaymentMethod(null);
+          setPaymentStep('select_method');
+        }} />
       </div>
 
       {/* Wallet Balance Cards Bar - Visible on all devices */}
@@ -757,10 +761,10 @@ export default function WalletSection({
                       className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-emerald-600/15 border border-emerald-500/20 rounded-lg flex items-center justify-center p-1">
-                          <img src="https://www.gstatic.com/images/branding/product/2x/gpay_96dp.png" alt="GPay" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Google_Pay_%28GPay%29_Logo_%282020%29.svg" alt="GPay" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                         </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Google Pay by UPI</span>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Google Pay (GPay)</span>
                       </div>
                       <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">G-pay</span>
                     </button>
@@ -775,12 +779,30 @@ export default function WalletSection({
                       className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-indigo-600/15 border border-indigo-500/20 rounded-lg flex items-center justify-center p-1.5">
-                          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ_C9I_x9z_B0H_B9u0C9z1G9z2E9S2T2R2Q&s" alt="PhonePe" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        <div className="w-8 h-8 bg-[#5f259f] border border-indigo-500/20 rounded-lg flex items-center justify-center p-1.5">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="w-full h-full object-contain brightness-0 invert" referrerPolicy="no-referrer" />
                         </div>
                         <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Phone Pay by UPI</span>
                       </div>
                       <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">PhonePe</span>
+                    </button>
+
+                    {/* Paytm Business */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedPaymentMethod('Paytm Business');
+                        setPaymentStep('scan_qr');
+                      }}
+                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo.svg" alt="Paytm" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                        </div>
+                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Paytm Business</span>
+                      </div>
+                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Paytm</span>
                     </button>
 
                     {/* Binance Pay */}
