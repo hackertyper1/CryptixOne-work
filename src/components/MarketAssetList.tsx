@@ -25,7 +25,7 @@ export default function MarketAssetList() {
       </div>
       
       <div className="space-y-4">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {ASSETS.map((asset, i) => (
             <motion.div 
               key={asset.symbol}

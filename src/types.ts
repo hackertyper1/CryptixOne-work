@@ -130,5 +130,4 @@ export interface StockTicker {
   price: number;
   change: number;
   trend: 'up' | 'down';
-  logo: string;
 }

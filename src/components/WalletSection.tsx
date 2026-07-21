@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { User, Transaction, SystemSettings, InvestmentPlan, InvestmentRequest } from '../types';
+import { User, Transaction, SystemSettings, InvestmentPlan, InvestmentRequest, ActiveTrade } from '../types';
 import { formatIndianCurrency, INVESTMENT_PLANS } from '../data';
+import WalletHero from './WalletHero';
+import LiveMarketChart from './LiveMarketChart';
 import { 
   Wallet, 
   TrendingUp, 
@@ -20,7 +22,9 @@ import {
   QrCode,
   ShieldAlert,
   ShieldCheck,
-  User as UserIcon
+  User as UserIcon,
+  Activity,
+  Award
 } from 'lucide-react';
 
 interface WalletSectionProps {
@@ -28,12 +32,15 @@ interface WalletSectionProps {
   currentUser: User | null;
   systemSettings: SystemSettings;
   transactions: Transaction[];
+  activeTrades: ActiveTrade[];
+  investmentRequests: InvestmentRequest[];
   onSubmitDeposit: (tx: Omit<Transaction, 'id' | 'userId' | 'username' | 'userPhone' | 'status' | 'date'>) => void;
   onSubmitWithdrawal: (amount: number, details: any) => boolean;
   selectedPlanForInvestment: InvestmentPlan | null;
   setSelectedPlanForInvestment: (plan: InvestmentPlan | null) => void;
   onNavigateToAuth: () => void;
   onNavigateToTrade: () => void;
+  onNavigateToPlans: () => void;
   onInvestmentRequestSubmit: (req: Omit<InvestmentRequest, 'id' | 'userId' | 'username' | 'status' | 'date'>) => void;
 }
 
@@ -42,12 +49,15 @@ export default function WalletSection({
   currentUser,
   systemSettings,
   transactions,
+  activeTrades,
+  investmentRequests,
   onSubmitDeposit,
   onSubmitWithdrawal,
   selectedPlanForInvestment,
   setSelectedPlanForInvestment,
   onNavigateToAuth,
   onNavigateToTrade,
+  onNavigateToPlans,
   onInvestmentRequestSubmit
 }: WalletSectionProps) {
   // Navigation internal state: 'deposit' | 'withdraw' | 'history'
@@ -287,7 +297,11 @@ export default function WalletSection({
   }
 
   return (
-    <div className="space-y-10 text-left" id="wallet-section-container">
+    <div className="space-y-10 text-left bg-trading-animated" id="wallet-section-container">
+      {/* Modern Wallet UI based on video */}
+      <WalletHero onSetUpWallet={onNavigateToPlans} />
+      <LiveMarketChart />
+
       {/* Desktop Wallet Balance Cards Bar - Hidden on mobile */}
       <section className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6" id="wallet-statistics-bar">
         {/* Profit Wallet */}
@@ -371,7 +385,93 @@ export default function WalletSection({
 
       {/* SUB TAB VIEW: DEPOSIT FUNDS */}
       {internalTab === 'deposit' && (
-        !selectedPlanForInvestment ? (
+        <div className="space-y-6">
+          {/* 1. Active & Pending Trades Tracker - ALWAYS SHOW ABOVE SELECTION */}
+          <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-4" id="active-trades-tracker">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-black text-white uppercase tracking-wider font-display">Active Trades Tracker</h3>
+              </div>
+              <span className="text-[10px] text-slate-500 font-mono font-bold uppercase">Live Audit</span>
+            </div>
+
+            {/* List of active and pending trades */}
+            <div className="space-y-3">
+              {/* Active Trades */}
+              {activeTrades.filter(t => t.userId === currentUser?.id && t.status === 'active').map(trade => (
+                <div key={trade.id} className="bg-slate-900/40 border border-emerald-500/20 p-4 rounded-xl flex items-center justify-between group">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black text-white uppercase">{trade.planName}</p>
+                      <p className="text-[9px] text-emerald-500 font-mono font-bold uppercase tracking-widest">Status: LIVE TRADE</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-black text-white">₹{trade.amount.toLocaleString()}</p>
+                    <p className="text-[9px] text-slate-500 font-mono">Contract: {trade.id}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Pending Transactions */}
+              {transactions.filter(tx => tx.userId === currentUser?.id && tx.status === 'pending' && tx.type === 'deposit').map(tx => (
+                <div key={tx.id} className="bg-slate-900/40 border border-amber-500/20 p-4 rounded-xl flex items-center justify-between opacity-80">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500">
+                      <Clock className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black text-white uppercase">Inbound Deposit</p>
+                      <p className="text-[9px] text-amber-500 font-mono font-bold uppercase tracking-widest">Status: PENDING APPROVAL</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-black text-white">₹{tx.amount.toLocaleString()}</p>
+                    <p className="text-[9px] text-slate-500 font-mono">Ref: {tx.utr || tx.id}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Pending Investment Requests */}
+              {investmentRequests.filter(req => req.userId === currentUser?.id && req.status === 'pending').map(req => (
+                <div key={req.id} className="bg-slate-900/40 border border-amber-500/20 p-4 rounded-xl flex items-center justify-between opacity-80">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500">
+                      <Smartphone className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black text-white uppercase">{req.planCategory} Request</p>
+                      <p className="text-[9px] text-amber-500 font-mono font-bold uppercase tracking-widest">Status: PENDING AUDIT</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-black text-white">₹{req.amount.toLocaleString()}</p>
+                    <p className="text-[9px] text-slate-500 font-mono">Audit: {req.id}</p>
+                  </div>
+                </div>
+              ))}
+
+              {activeTrades.filter(t => t.userId === currentUser?.id && t.status === 'active').length === 0 &&
+               transactions.filter(tx => tx.userId === currentUser?.id && tx.status === 'pending' && tx.type === 'deposit').length === 0 &&
+               investmentRequests.filter(req => req.userId === currentUser?.id && req.status === 'pending').length === 0 && (
+                <div className="py-8 text-center space-y-2">
+                  <div className="w-12 h-12 bg-slate-800/30 rounded-2xl flex items-center justify-center text-slate-600 mx-auto border border-slate-800/50">
+                    <ShieldAlert className="w-6 h-6" />
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest font-black">No active or pending allocations found</p>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* 2. Institutional Allocation Section */}
+          {!selectedPlanForInvestment ? (
           // NO PLAN SELECTED - Show compact Selection prompt with a gorgeous dropdown or slots list
           <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 text-center relative overflow-hidden" id="deposit-select-plan-first">
             <div className="absolute top-0 left-1/2 w-48 h-48 bg-emerald-500/5 blur-[80px] -translate-x-1/2 -mt-24" />
@@ -422,12 +522,12 @@ export default function WalletSection({
             {/* Header with plan details */}
             <div className="border-b border-slate-800/60 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
               <div className="space-y-1">
-                <div className="inline-flex items-center space-x-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] font-mono">
+                <div className="inline-flex items-center space-x-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] font-mono">
                   <ShieldCheck className="w-3 h-3" />
                   <span>Sovereign Settlement Gateway</span>
                 </div>
                 <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">
-                  {selectedPlanForInvestment.category} <span className="text-amber-500">PROTOCOL</span>
+                  {selectedPlanForInvestment.category} <span className="text-emerald-500">PROTOCOL</span>
                 </h4>
                 <p className="text-[9px] text-slate-500 font-mono uppercase tracking-widest font-black">Audit: HFT-LEDGER-V4</p>
               </div>
@@ -437,35 +537,60 @@ export default function WalletSection({
                   <span className="text-base font-black text-white">₹{selectedPlanForInvestment.amount.toLocaleString()}</span>
                 </div>
                 <div className="space-y-0.5 text-right pl-4 border-l border-slate-800/50">
-                  <span className="text-[8px] text-amber-500 uppercase font-black tracking-widest block">Projected Yield</span>
+                  <span className="text-[8px] text-emerald-500 uppercase font-black tracking-widest block">Projected Yield</span>
                   <span className="text-base font-black text-emerald-400">₹{selectedPlanForInvestment.estimatedProfit.toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
-            {/* STEP 1: Select Payment Method */}
+            {/* Verification and Protocol Info - Added to push payment methods down */}
+            <div className="bg-[#040813]/60 border border-slate-800/40 p-4 rounded-xl space-y-3 relative z-10">
+              <div className="flex items-start space-x-3">
+                <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                  <ShieldAlert className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div className="space-y-1">
+                  <h6 className="text-xs font-black text-slate-200 uppercase tracking-wider">Audit & Compliance verification</h6>
+                  <p className="text-[10px] text-slate-400 leading-relaxed font-medium">
+                    This allocation is monitored by the Ministry of Finance digital asset protocols. Your capital is secured via SBI Finance institutional yield buffers.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50">
+                  <span className="text-[8px] text-slate-500 uppercase font-black block mb-0.5">Node Priority</span>
+                  <span className="text-[10px] text-emerald-400 font-mono font-bold">HIGH-SPEED-V8</span>
+                </div>
+                <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50">
+                  <span className="text-[8px] text-slate-500 uppercase font-black block mb-0.5">Liquidity Lock</span>
+                  <span className="text-[10px] text-amber-500 font-mono font-bold">60 MINUTE CYCLE</span>
+                </div>
+              </div>
+            </div>
+
+            {/* STEP 1: Select Payment Method - Now at the bottom */}
             {paymentStep === 'select_method' && (
-              <div className="space-y-5 animate-fadeIn">
-                <div className="text-center space-y-1 py-2">
-                  <h5 className="text-sm font-black text-slate-200">Choose your Preferred Payment Method</h5>
-                  <p className="text-xs text-slate-400">Select any of the 4 direct UPI processors below to reveal the secure QR code.</p>
+              <div className="space-y-5 animate-fadeIn relative z-10 pt-4 border-t border-slate-800/60">
+                <div className="text-center space-y-1">
+                  <h5 className="text-xs font-black text-slate-200 uppercase tracking-widest">Select Payment Processor</h5>
+                  <p className="text-[10px] text-slate-500 font-medium">Secure instant routing via verified UPI nodes</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {/* Google Pay */}
                   <button
                     onClick={() => {
                       setSelectedPaymentMethod('Google Pay');
                       setPaymentStep('scan_qr');
                     }}
-                    className="flex items-center space-x-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl text-left transition-all group relative overflow-hidden"
+                    className="flex flex-col items-center justify-center space-y-3 bg-[#0c1425] hover:bg-[#121b33] border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all group relative"
                   >
-                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png" alt="GPay" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2.5 shadow-lg group-hover:scale-110 transition-transform">
+                      <img src="https://www.gstatic.com/images/branding/product/2x/gpay_96dp.png" alt="GPay" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
-                    <div>
-                      <span className="text-xs font-black text-white block">Google Pay</span>
-                      <span className="text-[10px] text-slate-400 leading-none">Instant Secure GPay UPI Router</span>
+                    <span className="text-[11px] font-black text-white uppercase tracking-widest">Google Pay</span>
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ArrowUpRight className="w-3 h-3 text-emerald-500" />
                     </div>
                   </button>
 
@@ -475,14 +600,14 @@ export default function WalletSection({
                       setSelectedPaymentMethod('Phone Pay');
                       setPaymentStep('scan_qr');
                     }}
-                    className="flex items-center space-x-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl text-left transition-all group relative overflow-hidden"
+                    className="flex flex-col items-center justify-center space-y-3 bg-[#0c1425] hover:bg-[#121b33] border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all group relative"
                   >
-                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
-                      <img src="https://seeklogo.com/images/P/phonepe-logo-DD3F320342-seeklogo.com.png" alt="PhonePe" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2 shadow-lg group-hover:scale-110 transition-transform">
+                      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ_C9I_x9z_B0H_B9u0C9z1G9z2E9S2T2R2Q&s" alt="PhonePe" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
-                    <div>
-                      <span className="text-xs font-black text-white block">Phone Pay</span>
-                      <span className="text-[10px] text-slate-400 leading-none">Instant Secure PhonePe Protocol</span>
+                    <span className="text-[11px] font-black text-white uppercase tracking-widest">Phone Pay</span>
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ArrowUpRight className="w-3 h-3 text-emerald-500" />
                     </div>
                   </button>
 
@@ -492,14 +617,14 @@ export default function WalletSection({
                       setSelectedPaymentMethod('Paytm');
                       setPaymentStep('scan_qr');
                     }}
-                    className="flex items-center space-x-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl text-left transition-all group relative overflow-hidden"
+                    className="flex flex-col items-center justify-center space-y-3 bg-[#0c1425] hover:bg-[#121b33] border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all group relative"
                   >
-                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/512px-Paytm_Logo_%28standalone%29.svg.png" alt="Paytm" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2 shadow-lg group-hover:scale-110 transition-transform">
+                      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-M9S9Z9P9_B0H_B9u0C9z1G9z2E9S2T2R2Q&s" alt="Paytm" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
-                    <div>
-                      <span className="text-xs font-black text-white block">Paytm</span>
-                      <span className="text-[10px] text-slate-400 leading-none">Direct Paytm Merchant Ingress</span>
+                    <span className="text-[11px] font-black text-white uppercase tracking-widest">Paytm</span>
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ArrowUpRight className="w-3 h-3 text-emerald-500" />
                     </div>
                   </button>
 
@@ -509,25 +634,25 @@ export default function WalletSection({
                       setSelectedPaymentMethod('Bhim Upi');
                       setPaymentStep('scan_qr');
                     }}
-                    className="flex items-center space-x-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl text-left transition-all group relative overflow-hidden"
+                    className="flex flex-col items-center justify-center space-y-3 bg-[#0c1425] hover:bg-[#121b33] border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition-all group relative"
                   >
-                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2 group-hover:scale-110 transition-transform">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo.png/512px-UPI-Logo.png" alt="BHIM UPI" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2.5 shadow-lg group-hover:scale-110 transition-transform">
+                      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR61z-oK7X7H-V6W2qR1fD8eL4eE9W2e3Y2eA&s" alt="BHIM UPI" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                     </div>
-                    <div>
-                      <span className="text-xs font-black text-white block">Bhim Upi</span>
-                      <span className="text-[10px] text-slate-400 leading-none">National BHIM Interface</span>
+                    <span className="text-[11px] font-black text-white uppercase tracking-widest">BHIM UPI</span>
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ArrowUpRight className="w-3 h-3 text-emerald-500" />
                     </div>
                   </button>
                 </div>
 
-                <div className="flex justify-center pt-3">
+                <div className="flex justify-center pt-2">
                   <button
                     onClick={() => setSelectedPlanForInvestment(null)}
-                    className="text-xs text-slate-400 hover:text-white font-mono flex items-center space-x-1.5 transition-all"
+                    className="text-[10px] text-slate-500 hover:text-slate-300 font-mono font-bold flex items-center space-x-1.5 transition-all uppercase tracking-tighter"
                   >
                     <ArrowLeft className="w-3 h-3" />
-                    <span>Change Investment Plan</span>
+                    <span>Change Allocation Slot</span>
                   </button>
                 </div>
               </div>
@@ -805,7 +930,17 @@ export default function WalletSection({
                     <span>Open WhatsApp</span>
                   </a>
                   <button
-                    onClick={onNavigateToTrade}
+                    onClick={() => {
+                      setPaymentStep('select_method');
+                      setSelectedPaymentMethod(null);
+                      setSelectedPlanForInvestment(null);
+                      setInternalTab('deposit');
+                      // Scroll to tracker
+                      setTimeout(() => {
+                        const element = document.getElementById('active-trades-tracker');
+                        if (element) element.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }}
                     className="inline-flex items-center justify-center space-x-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3.5 rounded-lg text-xs tracking-wider uppercase transition-all shadow-md shadow-amber-500/20"
                   >
                     <TrendingUp className="w-4 h-4" />
@@ -824,8 +959,9 @@ export default function WalletSection({
               </div>
             )}
           </section>
-        )
-      )}
+        )}
+      </div>
+    )}
 
       {/* SUB TAB VIEW: WITHDRAW PROFIT */}
       {internalTab === 'withdraw' && (
@@ -1082,6 +1218,27 @@ export default function WalletSection({
       {/* SUB TAB VIEW: TRANSACTION HISTORY LOGS */}
       {internalTab === 'history' && (
         <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-5 shadow-xl" id="transaction-history-logs-sub-tab">
+          {/* Small Profit Dashboard */}
+          <div className="grid grid-cols-2 gap-3 mb-6 bg-[#040813]/60 p-4 rounded-2xl border border-slate-800/40 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full" />
+            <div className="space-y-1">
+              <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Available Profits</span>
+              <span className="text-sm font-black text-white">{formatIndianCurrency(currentUser?.profitWallet || 0)}</span>
+              <div className="flex items-center space-x-1">
+                <TrendingUp className="w-2.5 h-2.5 text-emerald-500" />
+                <span className="text-[8px] text-emerald-500 font-bold uppercase tracking-tight">+0.00% Today</span>
+              </div>
+            </div>
+            <div className="space-y-1 pl-3 border-l border-slate-800/50">
+              <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Active Capital</span>
+              <span className="text-sm font-black text-white">{formatIndianCurrency(currentUser?.depositWallet || 0)}</span>
+              <div className="flex items-center space-x-1">
+                <Activity className="w-2.5 h-2.5 text-amber-500" />
+                <span className="text-[8px] text-amber-500 font-bold uppercase tracking-tight">V8-Audit Active</span>
+              </div>
+            </div>
+          </div>
+
           <div className="border-b border-slate-800/60 pb-3 mb-4">
             <h4 className="text-base font-extrabold text-white uppercase tracking-wider font-display">My Transaction Ledger</h4>
             <p className="text-[10px] text-slate-400 font-sans">Full cryptographic history of your capital allocations, deposits, and withdrawal settlements.</p>

@@ -23,29 +23,20 @@ export const INVESTMENT_PLANS: InvestmentPlan[] = [
 ];
 
 export const INITIAL_TICKERS: StockTicker[] = [
-  { symbol: 'SBI-IN', name: 'State Bank of India', price: 843.50, change: 1.45, trend: 'up', logo: 'https://logo.clearbit.com/sbi.co.in' },
-  { symbol: 'RELIANCE', name: 'Reliance Industries', price: 2452.10, change: -0.65, trend: 'down', logo: 'https://logo.clearbit.com/ril.com' },
-  { symbol: 'TCS', name: 'Tata Consultancy Services', price: 3824.75, change: 2.10, trend: 'up', logo: 'https://logo.clearbit.com/tcs.com' },
-  { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', price: 1642.30, change: 0.85, trend: 'up', logo: 'https://logo.clearbit.com/hdfcbank.com' },
-  { symbol: 'INFY', name: 'Infosys Ltd', price: 1489.15, change: -1.20, trend: 'down', logo: 'https://logo.clearbit.com/infosys.com' },
-  { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', price: 1124.90, change: 1.95, trend: 'up', logo: 'https://logo.clearbit.com/icicibank.com' },
-  { symbol: 'NIFTY 50', name: 'Nifty Index', price: 23512.40, change: 0.72, trend: 'up', logo: 'https://logo.clearbit.com/nseindia.com' },
-  { symbol: 'SENSEX', name: 'BSE Sensex', price: 77215.10, change: 0.68, trend: 'up', logo: 'https://logo.clearbit.com/bseindia.com' },
-  { symbol: 'BTC-INR', name: 'Bitcoin', price: 5412980, change: 3.42, trend: 'up', logo: 'https://logo.clearbit.com/bitcoin.org' },
-  { symbol: 'ETH-INR', name: 'Ethereum', price: 284150, change: -1.15, trend: 'down', logo: 'https://logo.clearbit.com/ethereum.org' },
-  { symbol: 'SOL-INR', name: 'Solana', price: 14500, change: 5.67, trend: 'up', logo: 'https://logo.clearbit.com/solana.com' },
-  { symbol: 'DOGE-INR', name: 'Dogecoin', price: 12.45, change: -2.34, trend: 'down', logo: 'https://logo.clearbit.com/dogecoin.com' },
-  { symbol: 'ADA-INR', name: 'Cardano', price: 38.20, change: 0.98, trend: 'up', logo: 'https://logo.clearbit.com/cardano.org' },
-  { symbol: 'XRP-INR', name: 'XRP', price: 55.60, change: -0.45, trend: 'down', logo: 'https://logo.clearbit.com/ripple.com' },
-  // Adding more stocks to reach 140+
-  ...Array.from({ length: 130 }, (_, i) => ({
-    symbol: `STK${i + 1}`,
-    name: `Company ${i + 15}`,
-    price: Math.random() * 1000 + 100,
-    change: Math.random() * 10 - 5,
-    trend: (Math.random() > 0.5 ? 'up' : 'down') as 'up' | 'down',
-    logo: `https://logo.clearbit.com/example${i + 15}.com`
-  }))
+  { symbol: 'SBI-IN', name: 'State Bank of India', price: 843.50, change: 1.45, trend: 'up' },
+  { symbol: 'RELIANCE', name: 'Reliance Industries', price: 2452.10, change: -0.65, trend: 'down' },
+  { symbol: 'TCS', name: 'Tata Consultancy Services', price: 3824.75, change: 2.10, trend: 'up' },
+  { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', price: 1642.30, change: 0.85, trend: 'up' },
+  { symbol: 'INFY', name: 'Infosys Ltd', price: 1489.15, change: -1.20, trend: 'down' },
+  { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', price: 1124.90, change: 1.95, trend: 'up' },
+  { symbol: 'NIFTY 50', name: 'Nifty Index', price: 23512.40, change: 0.72, trend: 'up' },
+  { symbol: 'SENSEX', name: 'BSE Sensex', price: 77215.10, change: 0.68, trend: 'up' },
+  { symbol: 'BTC-INR', name: 'Bitcoin / INR', price: 5412980, change: 3.42, trend: 'up' },
+  { symbol: 'ETH-INR', name: 'Ethereum / INR', price: 284150, change: -1.15, trend: 'down' },
+  { symbol: 'SOL-INR', name: 'Solana / INR', price: 14500, change: 5.67, trend: 'up' },
+  { symbol: 'DOGE-INR', name: 'Dogecoin / INR', price: 12.45, change: -2.34, trend: 'down' },
+  { symbol: 'ADA-INR', name: 'Cardano / INR', price: 38.20, change: 0.98, trend: 'up' },
+  { symbol: 'XRP-INR', name: 'XRP / INR', price: 55.60, change: -0.45, trend: 'down' }
 ];
 
 export const DEFAULT_SETTINGS: SystemSettings = {

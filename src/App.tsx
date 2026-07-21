@@ -11,6 +11,20 @@ import AdminPanel from './components/AdminPanel';
 import MarketSection from './components/MarketSection';
 import { User, ActiveTrade, Transaction, SystemSettings, ActivityLog, InvestmentPlan, InvestmentRequest, AdminMessage } from './types';
 import { DEFAULT_SETTINGS, encryptPayload, INVESTMENT_PLANS } from './data';
+import { db } from './lib/firebase';
+import { 
+  collection, 
+  onSnapshot, 
+  doc, 
+  setDoc, 
+  updateDoc, 
+  addDoc, 
+  query, 
+  orderBy, 
+  limit,
+  getDocs,
+  getDoc
+} from 'firebase/firestore';
 
 export default function App() {
   // Navigation State: 'home' | 'plan' | 'trade' | 'market' | 'wallet' | 'account' | 'admin'
@@ -41,7 +55,7 @@ export default function App() {
   // Selection states
   const [selectedPlanForInvestment, setSelectedPlanForInvestment] = useState<InvestmentPlan | null>(null);
 
-  // 1. Initial Seeding and Local Storage Synchronization
+  // 1. Initial Seeding and Firestore Synchronization
   useEffect(() => {
     // Check for secure admin access URL parameter
     const params = new URLSearchParams(window.location.search);
@@ -49,110 +63,88 @@ export default function App() {
       setActiveTab('admin');
     }
 
-    // Sync System Settings
-    const storedSettings = localStorage.getItem('cryptix_settings');
-    if (storedSettings) {
-      setSystemSettings(JSON.parse(storedSettings));
-    } else {
-      localStorage.setItem('cryptix_settings', JSON.stringify(DEFAULT_SETTINGS));
-    }
+    // Real-time System Settings
+    const settingsRef = doc(db, 'settings', 'config');
+    const unsubscribeSettings = onSnapshot(settingsRef, (settingsSnap) => {
+      if (settingsSnap.exists()) {
+        setSystemSettings(settingsSnap.data() as SystemSettings);
+      } else {
+        // Seed if missing
+        setDoc(settingsRef, DEFAULT_SETTINGS);
+        setSystemSettings(DEFAULT_SETTINGS);
+      }
+    }, (error) => {
+      console.error("Settings snapshot error:", error);
+    });
 
-    // Sync Users
-    const storedUsers = localStorage.getItem('cryptix_users');
-    let seededUsers: User[] = [];
-    if (storedUsers) {
-      seededUsers = JSON.parse(storedUsers);
-      setUsers(seededUsers);
-    } else {
-      // Seed initial mock user for easy preview testing
-      const seedUser: User = {
-        id: 'user-seed-1',
-        name: 'Aarav Sharma',
-        username: 'aarav77',
-        email: 'aarav@gmail.com',
-        phone: '9876543210',
-        whatsapp: '9876543210',
-        profession: 'Software Consultant',
-        dob: '1995-05-15',
-        depositWallet: 5000,
-        profitWallet: 14999,
-        activeInvestment: 0,
-        traderName: 'Rohit Singhania (Senior Trader)',
-        traderPhone: '8696860548',
-        createdAt: new Date().toISOString()
-      };
-      seededUsers = [seedUser];
-      localStorage.setItem('cryptix_users', JSON.stringify(seededUsers));
-      localStorage.setItem('cryptix_pass_aarav77', 'pass123'); // seed password
-      setUsers(seededUsers);
-    }
-
-    // Sync Current Logged User
-    const storedCurrentUser = localStorage.getItem('cryptix_current_user');
-    if (storedCurrentUser) {
-      const parsedUser = JSON.parse(storedCurrentUser);
-      // reload from master user array to get fresh balances
-      const freshUser = seededUsers.find((u: User) => u.username === parsedUser.username);
-      setCurrentUser(freshUser || parsedUser);
-    }
-
-    // Sync Transactions
-    const storedTxs = localStorage.getItem('cryptix_transactions');
-    if (storedTxs) {
-      setTransactions(JSON.parse(storedTxs));
-    } else {
-      const initialTxs: Transaction[] = [
-        {
-          id: 'TX-1001',
-          userId: 'user-seed-1',
-          username: 'aarav77',
-          userPhone: '9876543210',
-          type: 'deposit',
-          amount: 5000,
-          status: 'completed',
-          date: new Date(Date.now() - 3600000 * 24).toLocaleString(),
-          utr: '417281923052'
+    // Real-time Users
+    const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
+      const usersData = snapshot.docs.map(doc => ({ ...doc.data() } as User));
+      setUsers(usersData);
+      
+      // Update current user if logged in
+      const storedCurrentUser = localStorage.getItem('cryptix_current_user');
+      if (storedCurrentUser) {
+        const parsedUser = JSON.parse(storedCurrentUser);
+        const freshUser = usersData.find(u => u.username === parsedUser.username);
+        if (freshUser) {
+          setCurrentUser(freshUser);
+          localStorage.setItem('cryptix_current_user', JSON.stringify(freshUser));
         }
-      ];
-      localStorage.setItem('cryptix_transactions', JSON.stringify(initialTxs));
-      setTransactions(initialTxs);
-    }
+      }
+    }, (error) => {
+      console.error("Users snapshot error:", error);
+    });
 
-    // Sync Active Trades
-    const storedTrades = localStorage.getItem('cryptix_trades');
-    if (storedTrades) {
-      setActiveTrades(JSON.parse(storedTrades));
-    }
+    // Real-time Transactions
+    const unsubscribeTransactions = onSnapshot(query(collection(db, 'transactions'), orderBy('date', 'desc')), (snapshot) => {
+      const txs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Transaction));
+      setTransactions(txs);
+    }, (error) => {
+      console.error("Transactions snapshot error:", error);
+    });
 
-    // Sync Logs
-    const storedLogs = localStorage.getItem('cryptix_logs');
-    if (storedLogs) {
-      setActivityLogs(JSON.parse(storedLogs));
-    } else {
-      const initialLogs: ActivityLog[] = [
-        {
-          id: 'LOG-8801',
-          timestamp: new Date().toLocaleString(),
-          action: 'Platform initialized with Ministry of Finance audit structure',
-          username: 'system',
-          encryptedPayload: encryptPayload({ msg: 'Core initialized successfully.' })
-        }
-      ];
-      localStorage.setItem('cryptix_logs', JSON.stringify(initialLogs));
-      setActivityLogs(initialLogs);
-    }
+    // Real-time Active Trades
+    const unsubscribeTrades = onSnapshot(collection(db, 'trades'), (snapshot) => {
+      const trades = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as ActiveTrade));
+      setActiveTrades(trades);
+    }, (error) => {
+      console.error("Trades snapshot error:", error);
+    });
 
-    // Sync Investment Requests
-    const storedRequests = localStorage.getItem('cryptix_investment_requests');
-    if (storedRequests) {
-      setInvestmentRequests(JSON.parse(storedRequests));
-    }
+    // Real-time Logs
+    const unsubscribeLogs = onSnapshot(query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(100)), (snapshot) => {
+      const logs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as ActivityLog));
+      setActivityLogs(logs);
+    }, (error) => {
+      console.error("Logs snapshot error:", error);
+    });
 
-    // Sync Admin Messages
-    const storedMessages = localStorage.getItem('cryptix_admin_messages');
-    if (storedMessages) {
-      setAdminMessages(JSON.parse(storedMessages));
-    }
+    // Real-time Investment Requests
+    const unsubscribeRequests = onSnapshot(query(collection(db, 'requests'), orderBy('date', 'desc')), (snapshot) => {
+      const reqs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as InvestmentRequest));
+      setInvestmentRequests(reqs);
+    }, (error) => {
+      console.error("Requests snapshot error:", error);
+    });
+
+    // Real-time Admin Messages
+    const unsubscribeMessages = onSnapshot(query(collection(db, 'messages'), orderBy('timestamp', 'desc')), (snapshot) => {
+      const msgs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AdminMessage));
+      setAdminMessages(msgs);
+    }, (error) => {
+      console.error("Messages snapshot error:", error);
+    });
+
+    return () => {
+      unsubscribeSettings();
+      unsubscribeUsers();
+      unsubscribeTransactions();
+      unsubscribeTrades();
+      unsubscribeLogs();
+      unsubscribeRequests();
+      unsubscribeMessages();
+    };
   }, []);
 
   // Redirect guest or logged in user to permitted sections only
@@ -179,56 +171,66 @@ export default function App() {
     }
   }, []);
 
-  // Sync balances and users to local storage on changes
-  const saveUsersToStorage = (updatedUsers: User[]) => {
+  // Sync balances and users to Firestore on changes
+  const saveUsersToStorage = async (updatedUsers: User[]) => {
     setUsers(updatedUsers);
-    localStorage.setItem('cryptix_users', JSON.stringify(updatedUsers));
+    // Sync each user to Firestore
+    for (const user of updatedUsers) {
+      await setDoc(doc(db, 'users', user.id), user);
+    }
   };
 
-  const saveTransactionsToStorage = (updatedTxs: Transaction[]) => {
+  const saveTransactionsToStorage = async (updatedTxs: Transaction[]) => {
     setTransactions(updatedTxs);
-    localStorage.setItem('cryptix_transactions', JSON.stringify(updatedTxs));
+    for (const tx of updatedTxs) {
+      await setDoc(doc(db, 'transactions', tx.id), tx);
+    }
   };
 
-  const saveTradesToStorage = (updatedTrades: ActiveTrade[]) => {
+  const saveTradesToStorage = async (updatedTrades: ActiveTrade[]) => {
     setActiveTrades(updatedTrades);
-    localStorage.setItem('cryptix_trades', JSON.stringify(updatedTrades));
+    for (const trade of updatedTrades) {
+      await setDoc(doc(db, 'trades', trade.id), trade);
+    }
   };
 
-  const saveInvestmentRequestsToStorage = (updatedRequests: InvestmentRequest[]) => {
+  const saveInvestmentRequestsToStorage = async (updatedRequests: InvestmentRequest[]) => {
     setInvestmentRequests(updatedRequests);
-    localStorage.setItem('cryptix_investment_requests', JSON.stringify(updatedRequests));
+    for (const req of updatedRequests) {
+      await setDoc(doc(db, 'requests', req.id), req);
+    }
   };
 
-  const saveAdminMessagesToStorage = (updated: AdminMessage[]) => {
+  const saveAdminMessagesToStorage = async (updated: AdminMessage[]) => {
     setAdminMessages(updated);
-    localStorage.setItem('cryptix_admin_messages', JSON.stringify(updated));
+    for (const msg of updated) {
+      await setDoc(doc(db, 'messages', msg.id), msg);
+    }
   };
 
-  const handleSendMessage = (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => {
+  const handleSendMessage = async (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => {
+    const id = `MSG-${Math.floor(1000 + Math.random() * 9000)}`;
     const newMsg: AdminMessage = {
       ...msg,
-      id: `MSG-${Math.floor(1000 + Math.random() * 9000)}`,
+      id,
       sender: 'admin',
       timestamp: new Date().toLocaleString(),
       read: false
     };
-    const updated = [newMsg, ...adminMessages];
-    saveAdminMessagesToStorage(updated);
+    await setDoc(doc(db, 'messages', id), newMsg);
     addLog(`Sent ${msg.type} message to ${msg.recipientId}: ${msg.subject}`, 'admin');
   };
 
-  const addLog = (action: string, username: string) => {
+  const addLog = async (action: string, username: string) => {
+    const id = `LOG-${Math.floor(1000 + Math.random() * 9000)}`;
     const newLog: ActivityLog = {
-      id: `LOG-${Math.floor(1000 + Math.random() * 9000)}`,
+      id,
       timestamp: new Date().toLocaleString(),
       action,
       username,
       encryptedPayload: encryptPayload({ action, username, time: Date.now() })
     };
-    const updated = [newLog, ...activityLogs];
-    setActivityLogs(updated);
-    localStorage.setItem('cryptix_logs', JSON.stringify(updated));
+    await setDoc(doc(db, 'logs', id), newLog);
   };
 
   // 2. Active Trade Countdown Mature & Payout Loop
@@ -660,9 +662,8 @@ export default function App() {
   };
 
   // 10. Admin Action: Save Website Setting Configurations
-  const handleUpdateSettings = (newSettings: SystemSettings) => {
-    setSystemSettings(newSettings);
-    localStorage.setItem('cryptix_settings', JSON.stringify(newSettings));
+  const handleUpdateSettings = async (newSettings: SystemSettings) => {
+    await setDoc(doc(db, 'settings', 'config'), newSettings);
     addLog('System configs, UPI details, and priority QR code scanners updated', 'admin');
   };
 
@@ -854,6 +855,8 @@ export default function App() {
                 currentUser={currentUser}
                 systemSettings={systemSettings}
                 transactions={transactions}
+                activeTrades={activeTrades}
+                investmentRequests={investmentRequests}
                 onSubmitDeposit={handleDepositSubmit}
                 onSubmitWithdrawal={handleWithdrawalSubmit}
                 selectedPlanForInvestment={selectedPlanForInvestment}
@@ -862,7 +865,8 @@ export default function App() {
                   setActiveTab('account');
                   setSelectedPlanForInvestment(null);
                 }}
-                onNavigateToTrade={() => setActiveTab('plan')}
+                onNavigateToTrade={() => setActiveTab('trade')}
+                onNavigateToPlans={() => setActiveTab('plan')}
                 onInvestmentRequestSubmit={handleInvestmentRequestSubmit}
               />
             )}

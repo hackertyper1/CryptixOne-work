@@ -1,8 +1,114 @@
 {
   "entities": {
+    "User": {
+      "title": "User",
+      "description": "Application user profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "username": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "profession": { "type": "string" },
+        "dob": { "type": "string" },
+        "depositWallet": { "type": "number" },
+        "profitWallet": { "type": "number" },
+        "activeInvestment": { "type": "number" },
+        "traderName": { "type": "string" },
+        "traderPhone": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial transaction (deposit/withdrawal)",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "userPhone": { "type": "string" },
+        "type": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string" },
+        "date": { "type": "string" },
+        "utr": { "type": "string" }
+      }
+    },
+    "ActiveTrade": {
+      "title": "ActiveTrade",
+      "description": "Ongoing trading contract",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "amount": { "type": "number" },
+        "estimatedProfit": { "type": "number" },
+        "planName": { "type": "string" },
+        "duration": { "type": "string" },
+        "startTime": { "type": "number" },
+        "endTime": { "type": "number" },
+        "status": { "type": "string" },
+        "currentProfit": { "type": "number" }
+      }
+    },
+    "SystemSettings": {
+      "title": "SystemSettings",
+      "description": "Global application configuration",
+      "type": "object",
+      "properties": {
+        "qrCodeUrl": { "type": "string" },
+        "upiId": { "type": "string" },
+        "supportWhatsApp": { "type": "string" },
+        "supportPhone": { "type": "string" },
+        "companyEmail": { "type": "string" }
+      }
+    },
+    "AdminMessage": {
+      "title": "AdminMessage",
+      "description": "Direct or broadcast message from admin",
+      "type": "object",
+      "properties": {
+        "sender": { "type": "string" },
+        "recipientId": { "type": "string" },
+        "subject": { "type": "string" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" }
+      }
+    },
+    "InvestmentRequest": {
+      "title": "InvestmentRequest",
+      "description": "Custom investment verification request",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "amount": { "type": "number" },
+        "utr": { "type": "string" },
+        "status": { "type": "string" },
+        "date": { "type": "string" }
+      }
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "Audit trail log entry",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string" },
+        "action": { "type": "string" },
+        "username": { "type": "string" },
+        "encryptedPayload": { "type": "string" }
+      }
+    },
     "Post": {
       "title": "Post",
-      "description": "A social post about market analysis",
+      "description": "Social market analysis post",
       "type": "object",
       "properties": {
         "authorName": { "type": "string" },
@@ -16,6 +122,34 @@
     }
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "User" },
+      "description": "Collection of user profiles"
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "Transaction" },
+      "description": "Collection of financial transactions"
+    },
+    "/trades/{tradeId}": {
+      "schema": { "$ref": "ActiveTrade" },
+      "description": "Collection of active trades"
+    },
+    "/settings/config": {
+      "schema": { "$ref": "SystemSettings" },
+      "description": "Global system settings"
+    },
+    "/messages/{messageId}": {
+      "schema": { "$ref": "AdminMessage" },
+      "description": "Collection of admin messages"
+    },
+    "/requests/{requestId}": {
+      "schema": { "$ref": "InvestmentRequest" },
+      "description": "Collection of investment requests"
+    },
+    "/logs/{logId}": {
+      "schema": { "$ref": "ActivityLog" },
+      "description": "Collection of activity logs"
+    },
     "/posts/{postId}": {
       "schema": { "$ref": "Post" },
       "description": "Collection of social posts"

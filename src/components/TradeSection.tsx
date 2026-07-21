@@ -39,7 +39,121 @@ import {
 import { toast } from 'sonner';
 
 // Strict Asset Configurations matching provided image data exactly
-import { CRYPTO_ASSETS, TRADFI_ASSETS, ALPHA_ASSETS, getLogoUrl } from '../data/assets';
+const CRYPTO_ASSETS = [
+  { symbol: 'BTC/USDT', label: 'Bitcoin', extra: '4,102,401.90', price: 94120.00, change: 1.45, multiplier: '10x', icon: 'BTC' },
+  { symbol: 'ETH/USDT', label: 'Ethereum', extra: '2,903,412.10', price: 3420.00, change: 2.10, multiplier: '10x', icon: 'ETH' },
+  { symbol: 'SOL/USDT', label: 'Solana', extra: '1,500,412.50', price: 165.20, change: 5.67, multiplier: '10x', icon: 'OTHER' },
+  { symbol: 'DOGE/USDT', label: 'Dogecoin', extra: '900,412.10', price: 0.14, change: -2.34, multiplier: '10x', icon: 'OTHER' },
+  { symbol: 'BNB/USDT', label: 'BNB', extra: '1,324,291.50', price: 592.50, change: 0.85, multiplier: '10x', icon: 'BNB' },
+  { symbol: 'NEXO/USDT', label: 'Nexo', extra: '329,023.10', price: 0.762, change: 0.93, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'KERNEL/USDT', label: 'KernelDAO', extra: '324,291.76', price: 0.0338, change: -1.74, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'MANA/USDT', label: 'Decentraland', extra: '325,222.90', price: 0.0697, change: 0.29, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'LUNA/USDT', label: 'Terra', extra: '325,049.88', price: 0.0460, change: -0.22, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'FOGO/USDT', label: 'FOGO', extra: '324,304.49', price: 0.00911, change: 1.11, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'JUV/USDT', label: 'Juventus Fan Token', extra: '322,445.78', price: 0.327, change: -0.61, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'COMP/USDT', label: 'Compound', extra: '318,013.52', price: 17.03, change: -0.70, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'MEME/USDT', label: 'Memecoin', extra: '313,793.98', price: 0.000532, change: -0.37, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'USUAL/USDT', label: 'Usual', extra: '310,221.37', price: 0.00860, change: 1.03, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'Fartcoin/USDT', label: 'Fartcoin Meme Token', extra: '302,401.90', price: 0.13837, change: 4.77, multiplier: '5x', icon: 'OTHER' },
+  { symbol: 'HANA/USDT', label: 'Hana Network', extra: '298,142.10', price: 0.043309, change: 20.36, multiplier: '5x', icon: 'OTHER' }
+];
+
+const renderAssetIcon = (iconType: string) => {
+  switch (iconType) {
+    case 'BTC': return <Bitcoin className="w-5 h-5 text-amber-500" />;
+    case 'ETH': return <CircleDollarSign className="w-5 h-5 text-slate-400" />;
+    case 'BNB': return <CircleDollarSign className="w-5 h-5 text-amber-400" />;
+    default: return <Coins className="w-5 h-5 text-slate-500" />;
+  }
+};
+
+const TRADFI_ASSETS = [
+  { symbol: 'BILL', label: 'BILL Holdings, Inc.', extra: '$22.11M Vol', price: 0.025135, change: -5.76 },
+  { symbol: 'HANA', label: 'Hana Network Tokenized', extra: '$16.03M Vol', price: 0.043309, change: 20.36 },
+  { symbol: 'NVDAon', label: 'Nvidia Corp Tokenized', extra: '$13.35M Vol', price: 203.95, change: 0.59 },
+  { symbol: 'LAB', label: 'Laboratory Corp', extra: '$10.85M Vol', price: 0.15348, change: -0.81 },
+  { symbol: 'RTX', label: 'Raytheon Technologies', extra: '$8.01M Vol', price: 1.13471, change: 11.34 },
+  { symbol: 'ON', label: 'ON Semiconductor', extra: '$6.30M Vol', price: 0.13668, change: 11.17 },
+  { symbol: 'ESPORTS', label: 'Esports Entertainment', extra: '$5.93M Vol', price: 0.019404, change: -14.89 },
+  { symbol: 'BASED', label: 'Based Base Protocol', extra: '$5.89M Vol', price: 0.086082, change: -10.08 },
+  { symbol: 'EVAA', label: 'Evaa Protocol', extra: '$5.86M Vol', price: 0.95989, change: 23.94 },
+  { symbol: 'AGT', label: 'Agorand Tokenized', extra: '$5.82M Vol', price: 0.011552, change: -16.47 },
+  { symbol: 'BSB', label: 'BSB Tokenized x4', extra: '$3.81M Vol', price: 0.13374, change: -1.08 },
+  { symbol: 'CAP', label: 'Cap Protocol x4', extra: '$3.29M Vol', price: 0.0214, change: 14.90 },
+  { symbol: 'BEAT', label: 'Beatport Token', extra: '$3.27M Vol', price: 2.45917, change: 5.35 },
+  { symbol: 'AVAAI', label: 'Ava AI Token', extra: '$3.05M Vol', price: 0.0083038, change: -20.23 },
+  { symbol: 'SIREN', label: 'Siren Token', extra: '$2.93M Vol', price: 0.031327, change: 19.82 },
+  { symbol: 'VVV', label: 'VVV Global Equity', extra: '$2.91M Vol', price: 11.52, change: -0.49 },
+  { symbol: 'ZEREBRO', label: 'Zerebro AI Token', extra: '$2.71M Vol', price: 0.037049, change: -8.72 },
+  { symbol: 'STAR', label: 'Star Securities', extra: '$2.62M Vol', price: 0.17951, change: -11.97 },
+  { symbol: 'TRADOOR', label: 'Tradoor Protocol', extra: '$2.59M Vol', price: 0.49592, change: 2.96 },
+  { symbol: 'TAG', label: 'Tag Tokenized', extra: '$2.38M Vol', price: 0.0011741, change: -1.62 },
+  { symbol: 'SENTIS', label: 'Sentis AI Solutions', extra: '$2.34M Vol', price: 0.19797, change: 1.18 },
+  { symbol: 'EDGE', label: 'Edge Finance', extra: '$2.31M Vol', price: 0.40792, change: -0.15 },
+  { symbol: 'VELVET', label: 'Velvet Capital', extra: '$1.89M Vol', price: 0.53977, change: 5.49 },
+  { symbol: 'IN', label: 'IN Tokenized', extra: '$1.85M Vol', price: 0.040882, change: -5.84 },
+  { symbol: 'MAGMA', label: 'Magma Staking', extra: '$1.78M Vol', price: 0.31225, change: 4.88 },
+  { symbol: 'CRCLon', label: 'Circle Internet Group Tokenized', extra: '$1.77M Vol', price: 65.56, change: 7.71 },
+  { symbol: 'UAI', label: 'Universal AI Token', extra: '$1.77M Vol', price: 0.32102, change: -7.19 },
+  { symbol: 'Fartcoin', label: 'Fartcoin Meme Token', extra: '$1.70M Vol', price: 0.13837, change: 4.77 },
+  { symbol: 'JCT', label: 'JCT Tokenized', extra: '$1.67M Vol', price: 0.0041165, change: -5.88 },
+  { symbol: 'RAVE', label: 'Rave Tokenized', extra: '$1.66M Vol', price: 0.28299, change: -4.26 },
+  { symbol: 'AOP', label: 'Alliance of Planets', extra: '$1.64M Vol', price: 0.043122, change: 7.38 },
+  { symbol: 'IDOL', label: 'Idol Tokenized', extra: '$1.58M Vol', price: 0.015116, change: -12.60 },
+  { symbol: 'GWEI', label: 'Gwei Tokenized', extra: '$1.46M Vol', price: 0.028064, change: -4.70 },
+  { symbol: 'MUon', label: 'Micron Technology Inc. Tokenized', extra: '$1.14M Vol', price: 888.37, change: 4.83 },
+  { symbol: 'IVVon', label: 'iShares Core S&P 500 Tokenized', extra: '$810.7k Vol', price: 748.44, change: 0.29 },
+  { symbol: 'SPYon', label: 'SPDR S&P 500 ETF Tokenized', extra: '$771.5k Vol', price: 744.93, change: 0.33 },
+  { symbol: 'GOOGLon', label: 'Alphabet Inc. Tokenized', extra: '$686.6k Vol', price: 354.61, change: 1.94 },
+  { symbol: 'TSLAon', label: 'Tesla, Inc. Tokenized', extra: '$433.7k Vol', price: 372.85, change: -2.33 },
+  { symbol: 'AAPLon', label: 'Apple Inc. Tokenized', extra: '$357.0k Vol', price: 324.25, change: -2.80 },
+  { symbol: 'MSFTon', label: 'Microsoft Corp Tokenized', extra: '$194.4k Vol', price: 401.84, change: 2.03 },
+  { symbol: 'AMDon', label: 'Advanced Micro Devices Tokenized', extra: '$156.4k Vol', price: 508.94, change: 4.32 },
+  { symbol: 'TQQQon', label: 'ProShares UltraPro QQQ Tokenized', extra: '$153.6k Vol', price: 69.04, change: 2.91 },
+  { symbol: 'QCOMon', label: 'Qualcomm Inc Tokenized', extra: '$152.5k Vol', price: 171.96, change: 0.27 },
+  { symbol: 'ORCLon', label: 'Oracle Corp Tokenized', extra: '$126.1k Vol', price: 122.49, change: -3.15 },
+  { symbol: 'INTCon', label: 'Intel Corp Tokenized', extra: '$115.6k Vol', price: 98.40, change: 5.33 },
+  { symbol: 'COINon', label: 'Coinbase Global Inc. Tokenized', extra: '$95.5k Vol', price: 161.74, change: 2.89 },
+  { symbol: 'MRVLon', label: 'Marvell Technology Tokenized', extra: '$80.6k Vol', price: 198.25, change: 6.60 },
+  { symbol: 'BMNRon', label: 'Bitmine Immersion Tokenized', extra: '$80.5k Vol', price: 16.67, change: 6.12 },
+  { symbol: 'BABAon', label: 'Alibaba Group Tokenized', extra: '$77.9k Vol', price: 121.31, change: 5.34 },
+  { symbol: 'AVGOon', label: 'Broadcom Inc. Tokenized', extra: '$21.6k Vol', price: 381.60, change: 3.49 },
+  { symbol: 'LLYon', label: 'Eli Lilly & Co. Tokenized', extra: '$11.0k Vol', price: 1168.15, change: -0.44 },
+  { symbol: 'SQQQon', label: 'ProShares UltraPro Short QQQ Tokenized', extra: '$10.3k Vol', price: 41.81, change: -2.74 },
+  { symbol: 'COPon', label: 'ConocoPhillips Tokenized', extra: '$10.1k Vol', price: 116.58, change: 1.25 },
+  { symbol: 'VRTon', label: 'Vertiv Holdings Co. Tokenized', extra: '$8.4k Vol', price: 294.27, change: 1.92 },
+  { symbol: 'MARAon', label: 'MARA Holdings Inc. Tokenized', extra: '$7.2k Vol', price: 11.82, change: 10.83 },
+  { symbol: 'GLDon', label: 'SPDR Gold Shares Tokenized', extra: '$7.2k Vol', price: 367.76, change: -0.09 },
+  { symbol: 'COSTon', label: 'Costco Wholesale Corp Tokenized', extra: '$6.6k Vol', price: 936.04, change: -0.44 },
+  { symbol: 'CVXon', label: 'Chevron Corp Tokenized', extra: '$4.6k Vol', price: 190.11, change: 1.23 },
+  { symbol: 'ASMLon', label: 'ASML Holding NV Tokenized', extra: '$4.2k Vol', price: 1737.70, change: -0.24 },
+  { symbol: 'PALLon', label: 'abrdn Physical Palladium Tokenized', extra: '$57.2 Vol', price: 22.98, change: 1.23 },
+  { symbol: 'PBRon', label: 'Petroleo Brasileiro Tokenized', extra: '$31.0 Vol', price: 18.22, change: 1.59 },
+  { symbol: 'ANETon', label: 'Arista Networks Inc. Tokenized', extra: '$18.3 Vol', price: 170.23, change: 1.13 },
+  { symbol: 'ACNon', label: 'Accenture PLC Tokenized', extra: '$16.6 Vol', price: 144.33, change: 0.32 },
+  { symbol: 'TCOMon', label: 'Trip.com Group Tokenized', extra: '$2.6 Vol', price: 44.33, change: 4.94 },
+  { symbol: 'GMEon', label: 'GameStop Corp. Tokenized', extra: '$1.2 Vol', price: 21.81, change: -0.10 },
+  { symbol: 'TSMon', label: 'Taiwan Semiconductor Tokenized', extra: '$15.2k Vol', price: 404.14, change: 1.27 },
+  { symbol: 'APPon', label: 'Applovin Corp Tokenized', extra: '$15.1k Vol', price: 429.38, change: 1.00 },
+  { symbol: 'OXYon', label: 'Occidental Petroleum Tokenized', extra: '$19.8k Vol', price: 55.61, change: 1.24 },
+  { symbol: 'PDDon', label: 'PDD Holdings Inc. Tokenized', extra: '$19.6k Vol', price: 86.66, change: 2.96 },
+  { symbol: 'ARMon', label: 'Arm Holdings plc Tokenized', extra: '$18.9k Vol', price: 271.91, change: 2.93 },
+  { symbol: 'ADBEon', label: 'Adobe Inc. Tokenized', extra: '$17.0k Vol', price: 234.31, change: -1.28 }
+];
+
+const ALPHA_ASSETS = [
+  { symbol: 'EVAA', label: 'Evaa Protocol', extra: 'Vol: $5.86M', price: 0.95989, change: 23.94 },
+  { symbol: 'HANA', label: 'Hana Network', extra: 'Vol: $16.03M', price: 0.043309, change: 20.36 },
+  { symbol: 'ARX', label: 'ARX Protocol', extra: 'Vol: $1.11B', price: 0.16347, change: 10.07 },
+  { symbol: 'quq', label: 'QUQ Token', extra: 'Vol: $161.03M', price: 0.0038559, change: -0.04 },
+  { symbol: 'UP', label: 'UP token', extra: 'Vol: $138.75M', price: 0.33049, change: 1.42 },
+  { symbol: 'O', label: 'O-Securities', extra: 'Vol: $124.61M', price: 0.62511, change: 6.98 },
+  { symbol: 'BLUAI', label: 'BlueAI Ecosystem', extra: 'Vol: $83.38M', price: 0.012294, change: 5.23 },
+  { symbol: 'AKE', label: 'Ake.Finance', extra: 'Vol: $56.04M', price: 0.0016604, change: -13.00 },
+  { symbol: 'UB', label: 'UB Network', extra: 'Vol: $47.07M', price: 0.097238, change: 10.48 },
+  { symbol: 'BEE', label: 'BEE Chain', extra: 'Vol: $40.91M', price: 0.046452, change: 2.30 },
+  { symbol: 'NES', label: 'NES Systems', extra: 'Vol: $35.12M', price: 0.22543, change: -1.69 }
+];
 
 interface TradeSectionProps {
   activeTrades: ActiveTrade[];
@@ -685,8 +799,7 @@ export default function TradeSection({
       {/* Main Dynamic View Content */}
       <AnimatePresence mode="wait">
         
-        {/* TAB 1: CRYPTO LIST COMPONENT */}
-        {activeHeaderTab === 'Crypto' && (
+        {activeHeaderTab === 'Crypto' ? (
           <motion.div
             key="crypto-tab-content"
             initial={{ opacity: 0, y: 15 }}
@@ -694,6 +807,72 @@ export default function TradeSection({
             exit={{ opacity: 0, y: -15 }}
             className="bg-[#121212] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-5 text-left"
           >
+            {/* MIXED LIVE TRADING STREAM - NEW REQUESTED SECTION */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {/* Trending */}
+              <div className="bg-[#1e2026] border border-slate-800 p-4 rounded-2xl space-y-3 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-2 opacity-5">
+                  <TrendingUp className="w-12 h-12 text-emerald-500" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trending Assets</h5>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => setSelectedAsset(CRYPTO_ASSETS[0])}>
+                    <span className="text-[11px] font-bold text-white">BTC/USDT</span>
+                    <span className="text-[11px] font-mono text-emerald-400">+2.45%</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => setSelectedAsset(CRYPTO_ASSETS[2])}>
+                    <span className="text-[11px] font-bold text-white">SOL/USDT</span>
+                    <span className="text-[11px] font-mono text-emerald-400">+5.67%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Perps */}
+              <div className="bg-[#1e2026] border border-slate-800 p-4 rounded-2xl space-y-3 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-2 opacity-5">
+                  <Zap className="w-12 h-12 text-amber-500" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">High-Leverage Perps</h5>
+                  <span className="text-[8px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded font-black">50x LIVE</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => { setCryptoSubFilter('USDⓈ-M'); setSelectedAsset(CRYPTO_ASSETS[1]); }}>
+                    <span className="text-[11px] font-bold text-white">ETH-PERP</span>
+                    <span className="text-[11px] font-mono text-amber-500">20x LEV</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => { setCryptoSubFilter('COIN-M'); setSelectedAsset(CRYPTO_ASSETS[4]); }}>
+                    <span className="text-[11px] font-bold text-white">BNB-PERP</span>
+                    <span className="text-[11px] font-mono text-amber-500">50x LEV</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Securities */}
+              <div className="bg-[#1e2026] border border-slate-800 p-4 rounded-2xl space-y-3 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-2 opacity-5">
+                  <ShieldCheck className="w-12 h-12 text-cyan-500" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Securities</h5>
+                  <Globe className="w-3 h-3 text-cyan-500" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => { setActiveHeaderTab('TradFi'); setSelectedChart('STOCK'); }}>
+                    <span className="text-[11px] font-bold text-white">NVDA Corp</span>
+                    <span className="text-[11px] font-mono text-emerald-400">$124.20</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => { setActiveHeaderTab('TradFi'); setSelectedChart('STOCK'); }}>
+                    <span className="text-[11px] font-bold text-white">AAPL Stock</span>
+                    <span className="text-[11px] font-mono text-rose-400">$220.15</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Search and Category Badges */}
             <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
               <div className="relative flex-1">
@@ -760,7 +939,9 @@ export default function TradeSection({
                         className="group hover:bg-[#1e2026]/50 cursor-pointer transition-all border-b border-slate-900/40"
                       >
                         <td className="py-4 flex items-center space-x-3">
-                          <img src={getLogoUrl(coin.label)} alt={coin.label} className="w-8 h-8 rounded-full border border-slate-800 bg-slate-900" />
+                          <div className="bg-slate-900/50 p-2 rounded-xl border border-slate-800">
+                            {renderAssetIcon(coin.icon)}
+                          </div>
                           <div>
                             <div className="flex items-center space-x-2">
                               <span className="text-sm font-black text-white tracking-tight font-mono">{coin.symbol}</span>
@@ -789,10 +970,7 @@ export default function TradeSection({
               </table>
             </div>
           </motion.div>
-        )}
-
-        {/* TAB 2: TRADFI LIST COMPONENT */}
-        {activeHeaderTab === 'TradFi' && (
+        ) : activeHeaderTab === 'TradFi' ? (
           <motion.div
             key="tradfi-tab-content"
             initial={{ opacity: 0, y: 15 }}
@@ -857,7 +1035,9 @@ export default function TradeSection({
                         className="group hover:bg-[#1e2026]/50 cursor-pointer transition-all border-b border-slate-900/40"
                       >
                         <td className="py-4 flex items-center space-x-3">
-                          <img src={getLogoUrl(stock.label)} alt={stock.label} className="w-8 h-8 rounded-full border border-slate-800 bg-slate-900" />
+                          <div className="bg-cyan-500/10 p-2.5 rounded-xl border border-cyan-500/20">
+                            <Zap className="w-4 h-4 text-cyan-400" />
+                          </div>
                           <div>
                             <span className="text-sm font-black text-white tracking-tight font-mono">{stock.symbol}</span>
                             <span className="text-[11px] text-slate-500 font-medium block">{stock.label} | {stock.extra}</span>
@@ -883,10 +1063,7 @@ export default function TradeSection({
               </table>
             </div>
           </motion.div>
-        )}
-
-        {/* TAB 3: ALPHA WEB3 LIST COMPONENT */}
-        {activeHeaderTab === 'Alpha' && (
+        ) : activeHeaderTab === 'Alpha' ? (
           <motion.div
             key="alpha-tab-content"
             initial={{ opacity: 0, y: 15 }}
@@ -950,7 +1127,9 @@ export default function TradeSection({
                         className="group hover:bg-[#1e2026]/50 cursor-pointer transition-all border-b border-slate-900/40"
                       >
                         <td className="py-4 flex items-center space-x-3">
-                          <img src={getLogoUrl(token.label)} alt={token.label} className="w-8 h-8 rounded-full border border-slate-800 bg-slate-900" />
+                          <div className="bg-amber-500/15 p-2.5 rounded-xl border border-amber-500/30">
+                            <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
+                          </div>
                           <div>
                             <span className="text-sm font-black text-white tracking-tight font-mono">${token.symbol}</span>
                             <span className="text-[11px] text-slate-500 font-medium block">{token.label} | {token.extra}</span>
@@ -976,10 +1155,7 @@ export default function TradeSection({
               </table>
             </div>
           </motion.div>
-        )}
-
-        {/* TAB 4: GROW SECTION */}
-        {activeHeaderTab === 'Grow' && (
+        ) : activeHeaderTab === 'Grow' ? (
           <motion.div
             key="grow-tab-content"
             initial={{ opacity: 0, y: 15 }}
@@ -1104,10 +1280,7 @@ export default function TradeSection({
               </div>
             </div>
           </motion.div>
-        )}
-
-        {/* TAB 5: SQUARE SOCIAL CHAT */}
-        {activeHeaderTab === 'Square' && (
+        ) : activeHeaderTab === 'Square' ? (
           <motion.div
             key="square-tab-content"
             initial={{ opacity: 0, y: 15 }}
@@ -1182,10 +1355,7 @@ export default function TradeSection({
               ))}
             </div>
           </motion.div>
-        )}
-
-        {/* TAB 6: DATA REPORTING SECTION */}
-        {activeHeaderTab === 'Data' && (
+        ) : activeHeaderTab === 'Data' ? (
           <motion.div
             key="data-tab-content"
             initial={{ opacity: 0, y: 15 }}
@@ -1319,162 +1489,9 @@ export default function TradeSection({
               </div>
             </div>
           </motion.div>
-        )}
+        ) : null}
 
       </AnimatePresence>
-
-      {/* 2. User Active Micro-Investment Trades Tracker */}
-      <section className="bg-slate-950 rounded-[2.5rem] border border-slate-800 p-8 md:p-10 shadow-2xl text-left relative overflow-hidden" id="user-active-trades-section">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-10 border-b border-slate-900 pb-6 relative z-10">
-          <div className="space-y-2">
-            <div className="inline-flex items-center space-x-2 bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border border-emerald-500/20">
-              <Clock className="w-3.5 h-3.5 animate-spin-slow" />
-              <span>Active Cycle Synchronized</span>
-            </div>
-            <h3 className="text-2xl md:text-4xl font-black text-white tracking-tighter font-display uppercase">
-              Active <span className="text-emerald-500">Trades</span> Tracker
-            </h3>
-            <p className="text-slate-500 text-xs font-medium max-w-xl">
-              Monitor your real-time investment performance. Payouts are automatically added to your profit wallet upon completion.
-            </p>
-          </div>
-          
-          <div className="flex items-center space-x-2 bg-[#050914] px-4 py-2 rounded-2xl border border-slate-800">
-            <span className="text-[10px] font-mono text-slate-500 uppercase font-black tracking-widest">Active Contracts</span>
-            <span className="text-lg font-black text-white font-mono">{activeTrades.length}</span>
-          </div>
-        </div>
-
-        {!isLoggedIn ? (
-          <div className="text-center py-16 bg-slate-950/40 rounded-[2rem] border border-dashed border-slate-800 space-y-6">
-            <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto border border-slate-800">
-              <Lock className="w-8 h-8 text-slate-700" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-lg font-black text-white uppercase font-display tracking-tight">Identity Verification Required</p>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">Please authenticate your session to access restricted terminal allocation data.</p>
-            </div>
-            <button
-              onClick={onNavigateToHome}
-              className="bg-[#f0b90b] hover:bg-yellow-500 text-slate-950 font-black px-8 py-3 rounded-2xl text-[10px] tracking-[0.2em] uppercase transition-all shadow-xl shadow-[#f0b90b]/20"
-            >
-              Sign In To Terminal
-            </button>
-          </div>
-        ) : activeTrades.length === 0 ? (
-          <div className="text-center py-16 bg-[#060912] rounded-[2rem] border border-dashed border-slate-800 space-y-6">
-            <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto border border-slate-800 opacity-50">
-              <Activity className="w-8 h-8 text-slate-600" />
-            </div>
-            <div className="space-y-2">
-              <p className="text-lg font-black text-white uppercase font-display tracking-tight">No Active Allocations</p>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto font-mono">Terminal currently idle. No institutional contracts detected in your portfolio node.</p>
-            </div>
-            <button
-              onClick={() => {
-                setActiveHeaderTab('Crypto');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="bg-[#f0b90b] hover:bg-yellow-500 text-[#0a0f1d] font-black px-10 py-4 rounded-2xl text-[10px] tracking-[0.2em] uppercase transition-all shadow-2xl shadow-[#f0b90b]/30"
-            >
-              Initialize New Allocation
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {activeTrades.map(trade => {
-              const totalSecs = (trade.endTime - trade.startTime) / 1000;
-              const elapsedSecs = Math.max(0, (now - trade.startTime) / 1000);
-              const percent = Math.min(100, (elapsedSecs / totalSecs) * 100);
-              const isFinished = elapsedSecs >= totalSecs;
-
-              const floatingProfit = isFinished 
-                ? trade.estimatedProfit 
-                : Math.min(trade.estimatedProfit, (elapsedSecs / totalSecs) * trade.estimatedProfit + (Math.sin(elapsedSecs / 5) * (trade.estimatedProfit * 0.01)));
-
-              const remainingSecs = Math.max(0, Math.floor((trade.endTime - now) / 1000));
-              const displayMinutes = Math.floor(remainingSecs / 60);
-              const displaySeconds = remainingSecs % 60;
-
-              return (
-                <div 
-                  key={trade.id} 
-                  className="bg-[#0b101f] border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-500"
-                >
-                  <div className="absolute top-0 left-0 bottom-0 w-2 bg-gradient-to-b from-emerald-500 to-cyan-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-emerald-500/10 transition-colors" />
-
-                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 uppercase tracking-[0.2em] font-mono">
-                          {trade.planName.toUpperCase()} PROTOCOL ACTIVE
-                        </span>
-                        <span className="text-[9px] text-slate-500 font-mono font-black tracking-widest">NODE_ID: {trade.id}</span>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[9px] text-slate-500 uppercase font-mono font-black tracking-widest">Allocated Capital</p>
-                        <h4 className="text-3xl font-black text-white font-mono tracking-tighter">
-                          {formatIndianCurrency(trade.amount)}
-                        </h4>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-8 font-mono">
-                      <div className="space-y-1">
-                        <span className="text-[9px] text-slate-500 uppercase font-black tracking-widest block">Cycle Window</span>
-                        <div className="text-lg font-black text-white flex items-center">
-                          <Clock className="w-4 h-4 mr-2 text-emerald-500" />
-                          {isFinished ? (
-                            <span className="text-emerald-400 text-sm tracking-widest">SETTLED</span>
-                          ) : (
-                            <span>{displayMinutes.toString().padStart(2, '0')}:{displaySeconds.toString().padStart(2, '0')}</span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-1 text-right">
-                        <span className="text-[9px] text-emerald-500/50 uppercase font-black tracking-widest block">Live Yield</span>
-                        <span className="text-2xl font-black text-emerald-400 tabular-nums">
-                          +{formatIndianCurrency(Math.max(0, floatingProfit))}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 relative z-10">
-                    <div className="flex justify-between items-end">
-                      <div className="flex items-center space-x-2 text-[10px] text-slate-500 font-mono font-black uppercase tracking-widest">
-                        <div className={`w-2 h-2 rounded-full ${isFinished ? 'bg-emerald-500' : 'bg-emerald-500 animate-pulse'}`} />
-                        <span>{isFinished ? 'Contract Matured' : 'Real-time Execution In-progress'}</span>
-                      </div>
-                      <span className="text-[10px] text-white font-mono font-black">{percent.toFixed(2)}%</span>
-                    </div>
-                    <div className="w-full bg-[#050914] h-3 rounded-full overflow-hidden p-0.5 border border-slate-800 shadow-inner">
-                      <div 
-                        className="bg-gradient-to-r from-emerald-500 via-cyan-400 to-emerald-500 h-full rounded-full transition-all duration-1000 ease-linear shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                        style={{ width: `${percent}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div className="pt-5 border-t border-slate-800/50 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono relative z-10">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-slate-500 uppercase font-black tracking-widest">Maturity Payload:</span>
-                      <span className="text-white font-black">{formatIndianCurrency(trade.amount + trade.estimatedProfit)}</span>
-                    </div>
-                    <div className="bg-[#050914] px-4 py-2 rounded-xl border border-slate-800 text-slate-500 font-black tracking-tighter uppercase">
-                      Automatic Liquid Settlement to <span className="text-emerald-400">Profit Ledger</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
 
       {/* 3. Interactive Profit Calculator Section (Moved to Bottom) */}
       <section 
