@@ -644,9 +644,9 @@ export default function TradeSection({
     }
 
     const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-    if (availableBal < amt) {
-      toast.error('Insufficient Capital Reserves', {
-        description: `Your available system balance is ₹${availableBal.toLocaleString()}. Please complete a deposit form.`,
+    if (amt > availableBal) {
+      toast.warning('Trade Amount Exceeds Total Balance', {
+        description: `Warning: You are attempting to place a trade of ₹${amt.toLocaleString()}, which exceeds your current total wallet balance of ₹${availableBal.toLocaleString()}. Please reduce the amount or deposit more funds.`,
       });
       return;
     }
@@ -731,8 +731,10 @@ export default function TradeSection({
     }
 
     const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-    if (availableBal < amt) {
-      toast.error('Insufficient Wallet Capital');
+    if (amt > availableBal) {
+      toast.warning('Trade Amount Exceeds Total Balance', {
+        description: `Warning: You are attempting to copy with ₹${amt.toLocaleString()}, which exceeds your current total wallet balance of ₹${availableBal.toLocaleString()}.`,
+      });
       return;
     }
 
