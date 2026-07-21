@@ -475,12 +475,6 @@ export default function WalletSection({
         >
           History
         </button>
-        <button
-          onClick={onNavigateToAuth}
-          className="flex-1 py-2.5 sm:py-3 rounded-xl transition-all text-slate-500 hover:text-white"
-        >
-          Account
-        </button>
       </div>
 
       {/* SUB TAB VIEW: DEPOSIT FUNDS */}

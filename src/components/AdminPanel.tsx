@@ -1835,42 +1835,105 @@ export default function AdminPanel({
                             {isCompleted ? (
                               <span className="text-slate-600 text-[10px]">No Override Possible</span>
                             ) : (
-                              <div className="flex items-center justify-end space-x-2">
-                                <input
-                                  type="number"
-                                  min="1"
-                                  placeholder="Mins"
-                                  className="bg-slate-900 border border-slate-800 text-white rounded px-2 py-1 w-16 text-center text-[11px] outline-none focus:border-red-500"
-                                  defaultValue={remainingMins}
-                                  id={`override-input-${trade.id}`}
-                                />
-                                <button
-                                  onClick={async () => {
-                                    const inputEl = document.getElementById(`override-input-${trade.id}`) as HTMLInputElement;
-                                    if (inputEl) {
-                                      const mins = parseInt(inputEl.value);
-                                      if (isNaN(mins) || mins < 1) {
-                                        toast.error('Invalid Minutes', { description: 'Please specify a positive integer value.' });
-                                        return;
+                              <div className="flex flex-col items-end space-y-1.5 max-w-[240px] ml-auto">
+                                <div className="flex items-center space-x-1">
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    placeholder="Mins"
+                                    className="bg-slate-900 border border-slate-800 text-white rounded px-2 py-1 w-16 text-center text-[11px] outline-none focus:border-red-500"
+                                    defaultValue={remainingMins}
+                                    id={`override-input-${trade.id}`}
+                                  />
+                                  <button
+                                    onClick={async () => {
+                                      const inputEl = document.getElementById(`override-input-${trade.id}`) as HTMLInputElement;
+                                      if (inputEl) {
+                                        const mins = parseInt(inputEl.value);
+                                        if (isNaN(mins) || mins < 1) {
+                                          toast.error('Invalid Minutes', { description: 'Please specify a positive integer value.' });
+                                          return;
+                                        }
+                                        try {
+                                          const newEndTime = Date.now() + (mins * 60 * 1000);
+                                          await updateDoc(doc(db, 'trades', trade.id), {
+                                            endTime: newEndTime,
+                                            startTime: Date.now() // resets start to now for progress tracking
+                                          });
+                                          toast.success('Trade Duration Updated!', {
+                                            description: `Trade ${trade.id} set to mature in ${mins} minute(s).`
+                                          });
+                                        } catch (err: any) {
+                                          toast.error('Firestore Update Failed', { description: err.message });
+                                        }
                                       }
+                                    }}
+                                    className="bg-red-500 hover:bg-red-400 text-slate-950 px-2 py-1 rounded text-[10px] uppercase font-black"
+                                    title="Set remaining minutes from now"
+                                  >
+                                    Set
+                                  </button>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <span className="text-[9px] text-slate-500 uppercase font-bold mr-1">Increase:</span>
+                                  <button
+                                    onClick={async () => {
                                       try {
-                                        const newEndTime = Date.now() + (mins * 60 * 1000);
+                                        const currentEnd = Math.max(Date.now(), trade.endTime);
+                                        const newEndTime = currentEnd + (15 * 60 * 1000);
                                         await updateDoc(doc(db, 'trades', trade.id), {
-                                          endTime: newEndTime,
-                                          startTime: Date.now() // resets start to now for progress tracking
+                                          endTime: newEndTime
                                         });
-                                        toast.success('Trade Duration Updated!', {
-                                          description: `Trade ${trade.id} set to mature in ${mins} minute(s).`
+                                        toast.success('Added 15 Minutes!', {
+                                          description: `Trade ${trade.id} extended by 15 mins.`
                                         });
                                       } catch (err: any) {
                                         toast.error('Firestore Update Failed', { description: err.message });
                                       }
-                                    }
-                                  }}
-                                  className="bg-red-500 hover:bg-red-400 text-slate-950 px-2 py-1 rounded text-[10px] uppercase font-black"
-                                >
-                                  Update
-                                </button>
+                                    }}
+                                    className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-1.5 py-0.5 rounded text-[9px] font-bold"
+                                  >
+                                    +15m
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        const currentEnd = Math.max(Date.now(), trade.endTime);
+                                        const newEndTime = currentEnd + (30 * 60 * 1000);
+                                        await updateDoc(doc(db, 'trades', trade.id), {
+                                          endTime: newEndTime
+                                        });
+                                        toast.success('Added 30 Minutes!', {
+                                          description: `Trade ${trade.id} extended by 30 mins.`
+                                        });
+                                      } catch (err: any) {
+                                        toast.error('Firestore Update Failed', { description: err.message });
+                                      }
+                                    }}
+                                    className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-1.5 py-0.5 rounded text-[9px] font-bold"
+                                  >
+                                    +30m
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        const currentEnd = Math.max(Date.now(), trade.endTime);
+                                        const newEndTime = currentEnd + (60 * 60 * 1000);
+                                        await updateDoc(doc(db, 'trades', trade.id), {
+                                          endTime: newEndTime
+                                        });
+                                        toast.success('Added 1 Hour!', {
+                                          description: `Trade ${trade.id} extended by 60 mins.`
+                                        });
+                                      } catch (err: any) {
+                                        toast.error('Firestore Update Failed', { description: err.message });
+                                      }
+                                    }}
+                                    className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-1.5 py-0.5 rounded text-[9px] font-bold"
+                                  >
+                                    +1h
+                                  </button>
+                                </div>
                               </div>
                             )}
                           </td>
