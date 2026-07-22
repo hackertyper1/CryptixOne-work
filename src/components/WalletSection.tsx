@@ -143,6 +143,8 @@ export default function WalletSection({
 }: WalletSectionProps) {
   // Navigation internal state: 'deposit' | 'withdraw' | 'history'
   const [internalTab, setInternalTab] = useState<'deposit' | 'withdraw' | 'history'>('deposit');
+  const [isManualMode, setIsManualMode] = useState(false);
+  const [showManualMethods, setShowManualMethods] = useState(false);
 
   // Custom Investment Payment Flow States
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
@@ -181,6 +183,7 @@ export default function WalletSection({
   // Sync selected investment plan if available
   useEffect(() => {
     if (selectedPlanForInvestment) {
+      setIsManualMode(false);
       setDepositAmount(selectedPlanForInvestment.amount);
       setInternalTab('deposit');
       setPaymentStep('select_method');
@@ -389,9 +392,12 @@ export default function WalletSection({
     <div className="space-y-4 text-left bg-trading-animated" id="wallet-section-container">
       <div className="scale-95 origin-top md:scale-100">
         <WalletHero onSetUpWallet={() => {
+          setIsManualMode(true);
+          setShowManualMethods(false);
           setInternalTab('deposit');
           setSelectedPaymentMethod(null);
           setPaymentStep('select_method');
+          setDepositAmount(1000);
         }} />
       </div>
 
@@ -555,9 +561,10 @@ export default function WalletSection({
           </section>
 
           {/* 2. Institutional Allocation Section */}
-          {!selectedPlanForInvestment ? (
-          // NO PLAN SELECTED - Show compact Selection prompt with a gorgeous dropdown or slots list
-          <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 text-center relative overflow-hidden" id="deposit-select-plan-first">
+          <div id="deposit-protocol-section">
+            {(!selectedPlanForInvestment && !isManualMode) ? (
+            // NO PLAN SELECTED - Show compact Selection prompt with a gorgeous dropdown or slots list
+            <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 text-center relative overflow-hidden" id="deposit-select-plan-first">
             <div className="absolute top-0 left-1/2 w-48 h-48 bg-emerald-500/5 blur-[80px] -translate-x-1/2 -mt-24" />
             
             <div className="flex justify-center relative z-10">
@@ -611,20 +618,53 @@ export default function WalletSection({
                   <span>Sovereign Settlement Gateway</span>
                 </div>
                 <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">
-                  {selectedPlanForInvestment.category} <span className="text-emerald-500">PROTOCOL</span>
+                  {isManualMode ? 'Custom Deposit' : selectedPlanForInvestment?.category} <span className="text-emerald-500">PROTOCOL</span>
                 </h4>
                 <p className="text-[9px] text-slate-500 font-mono uppercase tracking-widest font-black">Audit: HFT-LEDGER-V4</p>
               </div>
-              <div className="bg-[#060b17] border border-slate-800/50 p-4 rounded-2xl font-mono text-xs flex items-center justify-between md:space-x-8 shadow-inner">
-                <div className="space-y-0.5">
-                  <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Deployment Capital</span>
-                  <span className="text-base font-black text-white">₹{selectedPlanForInvestment.amount.toLocaleString()}</span>
+              
+              {isManualMode ? (
+                <div className="bg-[#060b17] border border-slate-800/50 p-4 rounded-2xl font-mono text-xs flex flex-col space-y-3 shadow-inner min-w-[200px]">
+                  <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Manual Allocation Amount</span>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-black">₹</span>
+                    <input 
+                      type="number"
+                      min="1000"
+                      value={depositAmount}
+                      onChange={(e) => {
+                        setDepositAmount(Number(e.target.value));
+                        setShowManualMethods(false);
+                      }}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg py-2 pl-7 pr-3 text-white font-black outline-none focus:border-emerald-500 transition-colors"
+                      placeholder="1000"
+                    />
+                  </div>
+                  {depositAmount < 1000 && (
+                    <span className="text-[8px] text-rose-500 font-bold uppercase tracking-tight">Min amount: ₹1,000</span>
+                  )}
+                  {!showManualMethods && (
+                    <button
+                      onClick={() => setShowManualMethods(true)}
+                      disabled={depositAmount < 1000}
+                      className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-[9px] rounded-xl uppercase tracking-widest transition-all"
+                    >
+                      Continue to Payment
+                    </button>
+                  )}
                 </div>
-                <div className="space-y-0.5 text-right pl-4 border-l border-slate-800/50">
-                  <span className="text-[8px] text-emerald-500 uppercase font-black tracking-widest block">Projected Yield</span>
-                  <span className="text-base font-black text-emerald-400">₹{selectedPlanForInvestment.estimatedProfit.toLocaleString()}</span>
+              ) : selectedPlanForInvestment && (
+                <div className="bg-[#060b17] border border-slate-800/50 p-4 rounded-2xl font-mono text-xs flex items-center justify-between md:space-x-8 shadow-inner">
+                  <div className="space-y-0.5">
+                    <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Deployment Capital</span>
+                    <span className="text-base font-black text-white">₹{selectedPlanForInvestment.amount.toLocaleString()}</span>
+                  </div>
+                  <div className="space-y-0.5 text-right pl-4 border-l border-slate-800/50">
+                    <span className="text-[8px] text-emerald-500 uppercase font-black tracking-widest block">Projected Yield</span>
+                    <span className="text-base font-black text-emerald-400">₹{selectedPlanForInvestment.estimatedProfit.toLocaleString()}</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Verification and Protocol Info - Added to push payment methods down */}
@@ -653,13 +693,16 @@ export default function WalletSection({
             </div>
 
             {/* STEP 1: Select Payment Method - Custom "Choose deposit method" Layout */}
-            {paymentStep === 'select_method' && (
+            {paymentStep === 'select_method' && (selectedPlanForInvestment || (isManualMode && showManualMethods)) && (
               <div className="space-y-6 animate-fadeIn relative z-10 pt-4 border-t border-slate-800/60 text-left">
                 {/* Header line with close button */}
                 <div className="flex items-center justify-between">
                   <h5 className="text-sm font-black text-white uppercase tracking-wider font-display">Choose Deposit Method</h5>
                   <button 
-                    onClick={() => setSelectedPlanForInvestment(null)}
+                    onClick={() => {
+                      setSelectedPlanForInvestment(null);
+                      setIsManualMode(false);
+                    }}
                     className="p-1 bg-slate-900/60 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-all"
                     type="button"
                   >
@@ -700,11 +743,12 @@ export default function WalletSection({
                     {/* Upi */}
                     <button
                       type="button"
+                      disabled={depositAmount < 1000}
                       onClick={() => {
                         setSelectedPaymentMethod('Upi');
                         setPaymentStep('scan_qr');
                       }}
-                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-purple-600/15 border border-purple-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-purple-400">
@@ -718,11 +762,12 @@ export default function WalletSection({
                     {/* Upi QR */}
                     <button
                       type="button"
+                      disabled={depositAmount < 1000}
                       onClick={() => {
                         setSelectedPaymentMethod('Upi QR');
                         setPaymentStep('scan_qr');
                       }}
-                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-blue-600/15 border border-blue-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-blue-400">
@@ -736,11 +781,12 @@ export default function WalletSection({
                     {/* Paytm by UPI */}
                     <button
                       type="button"
+                      disabled={depositAmount < 1000}
                       onClick={() => {
                         setSelectedPaymentMethod('Paytm by UPI');
                         setPaymentStep('scan_qr');
                       }}
-                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-cyan-600/15 border border-cyan-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-cyan-400">
@@ -754,14 +800,15 @@ export default function WalletSection({
                     {/* Google Pay by UPI */}
                     <button
                       type="button"
+                      disabled={depositAmount < 1000}
                       onClick={() => {
                         setSelectedPaymentMethod('Google Pay by UPI');
                         setPaymentStep('scan_qr');
                       }}
-                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1">
+                        <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1.5 shadow-sm">
                           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Google_Pay_%28GPay%29_Logo_%282020%29.svg" alt="GPay" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                         </div>
                         <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Google Pay (GPay)</span>
@@ -772,11 +819,12 @@ export default function WalletSection({
                     {/* Phone Pay by UPI */}
                     <button
                       type="button"
+                      disabled={depositAmount < 1000}
                       onClick={() => {
                         setSelectedPaymentMethod('Phone Pay by UPI');
                         setPaymentStep('scan_qr');
                       }}
-                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-[#5f259f] border border-indigo-500/20 rounded-lg flex items-center justify-center p-1.5">
@@ -790,14 +838,15 @@ export default function WalletSection({
                     {/* Paytm Business */}
                     <button
                       type="button"
+                      disabled={depositAmount < 1000}
                       onClick={() => {
                         setSelectedPaymentMethod('Paytm Business');
                         setPaymentStep('scan_qr');
                       }}
-                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1">
+                        <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1 shadow-sm">
                           <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo.svg" alt="Paytm" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                         </div>
                         <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Paytm Business</span>
@@ -808,11 +857,12 @@ export default function WalletSection({
                     {/* Binance Pay */}
                     <button
                       type="button"
+                      disabled={depositAmount < 1000}
                       onClick={() => {
                         setSelectedPaymentMethod('Binance Pay');
                         setPaymentStep('scan_qr');
                       }}
-                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-amber-600/15 border border-amber-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-amber-400">
@@ -826,11 +876,12 @@ export default function WalletSection({
                     {/* iCash.One */}
                     <button
                       type="button"
+                      disabled={depositAmount < 1000}
                       onClick={() => {
                         setSelectedPaymentMethod('iCash.One');
                         setPaymentStep('scan_qr');
                       }}
-                      className="flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full"
+                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-slate-600/15 border border-slate-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-slate-350">
@@ -1111,8 +1162,8 @@ export default function WalletSection({
                           </div>
                         </div>
 
-                        <p className="text-[9px] text-slate-500 leading-tight">
-                          💡 Ensure you send the exact transaction amount of <b className="text-slate-300">₹{selectedPlanForInvestment.amount.toLocaleString()}</b> on the correct chain protocol.
+                        <p className="text-[9px] text-slate-500 font-mono leading-tight">
+                          💡 Ensure you send the exact transaction amount of <b className="text-slate-300">₹{depositAmount.toLocaleString()}</b> on the correct chain protocol.
                         </p>
                       </div>
 
@@ -1199,7 +1250,7 @@ export default function WalletSection({
 
                         {/* Copy UPI Address Details */}
                         <div className="bg-[#03060c] border border-slate-850 p-2.5 rounded-lg flex justify-between items-center font-mono">
-                          <div className="min-w-0">
+                          <div className="min-w-0 pr-2">
                             <span className="text-[8px] text-slate-500 uppercase block tracking-wider">Secure UPI Address</span>
                             <span className="text-slate-300 font-black text-[10px] truncate block allow-copy font-mono select-all">{details.upiId}</span>
                           </div>
@@ -1402,6 +1453,7 @@ export default function WalletSection({
                       setPaymentStep('select_method');
                       setSelectedPaymentMethod(null);
                       setSelectedPlanForInvestment(null);
+                      setIsManualMode(false);
                       setInternalTab('deposit');
                       // Scroll to tracker
                       setTimeout(() => {
@@ -1428,6 +1480,7 @@ export default function WalletSection({
             )}
           </section>
         )}
+        </div>
       </div>
     )}
 
