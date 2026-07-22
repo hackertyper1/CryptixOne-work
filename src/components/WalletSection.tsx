@@ -551,8 +551,8 @@ export default function WalletSection({
                   setPaymentStep('success');
                   window.open(waLink, '_blank');
                 } else {
-                  // Plan investment moves to blank trading form
-                  setFormUtr('');
+                  // Plan investment moves to blank trading form, but keeps the UTR
+                  setFormUtr(utr);
                   setPaymentStep('trading_form');
                 }
               }}
@@ -600,11 +600,10 @@ export default function WalletSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">UTR / Ref Number</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">UTR / Ref Number (Captured)</label>
                     <input 
-                      type="text" required value={formUtr} onChange={(e) => setFormUtr(e.target.value)}
-                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
-                      placeholder="12-digit UTR"
+                      type="text" disabled value={formUtr}
+                      className="w-full bg-[#060b17]/50 border border-slate-800/50 rounded-xl py-3 px-4 text-slate-400 font-bold outline-none cursor-not-allowed"
                     />
                   </div>
                 </div>

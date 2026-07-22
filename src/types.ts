@@ -75,6 +75,7 @@ export interface SystemSettings {
   upiId: string;
   supportWhatsApp: string;
   supportPhone: string;
+  traderName?: string;
   companyEmail: string;
   scannerUrl?: string; // explicitly for the scanner update
   qrCodeImage?: string; // base64 or url for the admin uploaded QR code

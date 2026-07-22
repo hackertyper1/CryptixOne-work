@@ -107,6 +107,7 @@ export default function AdminPanel({
   const [whatsappInput, setWhatsappInput] = useState<string>(systemSettings.supportWhatsApp);
   const [phoneInput, setPhoneInput] = useState<string>(systemSettings.supportPhone);
   const [emailInput, setEmailInput] = useState<string>(systemSettings.companyEmail);
+  const [traderNameInput, setTraderNameInput] = useState<string>(systemSettings.traderName || 'Vikram Singhania');
   const [tradeTimeLimitInput, setTradeTimeLimitInput] = useState<number>(systemSettings.tradeTimeLimit || 60);
   const [settingsSuccess, setSettingsSuccess] = useState<boolean>(false);
 
@@ -149,6 +150,7 @@ export default function AdminPanel({
     setWhatsappInput(systemSettings.supportWhatsApp || '');
     setPhoneInput(systemSettings.supportPhone || '');
     setEmailInput(systemSettings.companyEmail || '');
+    setTraderNameInput(systemSettings.traderName || 'Vikram Singhania');
     setTradeTimeLimitInput(systemSettings.tradeTimeLimit || 60);
 
     setUpiUpiId(systemSettings.upiUpiId || 'cryptixone.upi@sbi');
@@ -245,6 +247,7 @@ export default function AdminPanel({
       upiId: upiIdInput,
       supportWhatsApp: whatsappInput,
       supportPhone: phoneInput,
+      traderName: traderNameInput,
       companyEmail: emailInput,
       scannerUrl: scannerUrlInput,
       qrCodeImage: qrCodeImage,
@@ -809,6 +812,18 @@ export default function AdminPanel({
                   id="settings-phone-input"
                   value={phoneInput}
                   onChange={(e) => setPhoneInput(e.target.value)}
+                  className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Trader Name (Global)</label>
+                <input
+                  type="text"
+                  required
+                  id="settings-tradername-input"
+                  value={traderNameInput}
+                  onChange={(e) => setTraderNameInput(e.target.value)}
                   className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
                 />
               </div>

@@ -75,7 +75,15 @@ const playMaturitySound = (soundEnabled: boolean) => {
 
 export default function App() {
   // Navigation State: 'home' | 'plan' | 'trade' | 'market' | 'wallet' | 'account' | 'admin'
-  const [activeTab, setActiveTab] = useState<string>('home');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const stored = localStorage.getItem('cryptix_active_tab');
+    return stored || 'home';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('cryptix_active_tab', activeTab);
+  }, [activeTab]);
+
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [mobileShowHome, setMobileShowHome] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -105,7 +113,10 @@ export default function App() {
 
   // Core Data Registries
   const [users, setUsers] = useState<User[]>([]);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const stored = localStorage.getItem('cryptix_current_user');
+    return stored ? JSON.parse(stored) : null;
+  });
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeTrades, setActiveTrades] = useState<ActiveTrade[]>([]);
   const [systemSettings, setSystemSettings] = useState<SystemSettings>(DEFAULT_SETTINGS);
@@ -224,6 +235,9 @@ export default function App() {
     // Scroll to top on every tab change
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    // Wait for initial users load before redirecting
+    if (users.length === 0 && !currentUser) return;
+
     if (currentUser) {
       if (activeTab === 'home') {
         setActiveTab('plan'); // redirect logged-in user away from home
@@ -233,7 +247,7 @@ export default function App() {
         setActiveTab('home'); // redirect guests away from internal pages
       }
     }
-  }, [currentUser, activeTab]);
+  }, [currentUser, activeTab, users.length]);
 
   // Check for hidden admin mode in URL on mount
   useEffect(() => {

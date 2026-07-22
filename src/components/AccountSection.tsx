@@ -693,15 +693,15 @@ export default function AccountSection({
           <div className="space-y-4">
             <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5">
               <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest block mb-1">Assigned Officer</span>
-              <p className="text-sm font-black text-white">{currentUser?.traderName || 'Rohit Singhania (Senior Trader)'}</p>
+              <p className="text-sm font-black text-white">{systemSettings.traderName || currentUser?.traderName || 'Vikram Singhania (Senior Trader)'}</p>
               <div className="mt-2 flex items-center space-x-1.5">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Active & Monitoring</span>
+                <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Active & Monitoring</span>
               </div>
             </div>
 
             <a
-              href={`https://wa.me/91${currentUser?.traderPhone || systemSettings.supportWhatsApp}?text=Hello%20Sir,%20I%20am%20registered%20as%20${currentUser?.username}%20on%20CryptixOne.%20Please%20guide%20my%20investment%20portfolio.`}
+              href={`https://wa.me/91${systemSettings.supportWhatsApp || currentUser?.traderPhone || '800324109'}?text=Hello%20Sir,%20I%20am%20registered%20as%20${currentUser?.username}%20on%20CryptixOne.%20Please%20guide%20my%20investment%20portfolio.`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center space-x-2 py-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-[10px] rounded-2xl uppercase tracking-[0.15em] transition-all shadow-xl active:scale-95"
