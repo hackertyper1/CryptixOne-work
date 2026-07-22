@@ -4,6 +4,7 @@ import { formatIndianCurrency, INVESTMENT_PLANS } from '../data';
 import WalletHero from './WalletHero';
 import LiveMarketChart from './LiveMarketChart';
 import MarketAssetList from './MarketAssetList';
+import PaymentVerification from './PaymentVerification';
 import { 
   Wallet, 
   TrendingUp, 
@@ -188,14 +189,15 @@ export default function WalletSection({
       setInternalTab('deposit');
       setPaymentStep('select_method');
       setSelectedPaymentMethod(null);
-      setFormFullName(currentUser?.name || '');
-      setFormEmail(currentUser?.email || '');
-      setFormPhone(currentUser?.phone || '');
-      setFormProfession(currentUser?.profession || '');
-      setFormDob(currentUser?.dob || '');
+      // Ensure form starts blank as per user request
+      setFormFullName('');
+      setFormEmail('');
+      setFormPhone('');
+      setFormProfession('');
+      setFormDob('');
       setFormUtr('');
     }
-  }, [selectedPlanForInvestment, currentUser]);
+  }, [selectedPlanForInvestment]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -388,6 +390,275 @@ export default function WalletSection({
     );
   }
 
+  // ISOATED VIEW FOR PAYMENT FLOW (Plans and Manual Deposits)
+  // When a plan is chosen or manual continue to pay is clicked, show ONLY the payment section
+  if (selectedPlanForInvestment || (isManualMode && showManualMethods)) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl bg-[#0b101f] border border-white/5 rounded-[2rem] p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[100px] -mr-32 -mt-32" />
+          
+          {/* STEP 1: Select Payment Method */}
+          {paymentStep === 'select_method' && (
+            <div className="space-y-8 animate-fadeIn relative z-10 text-left">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tight font-display">
+                    Choose <span className="text-emerald-500">Deposit Method</span>
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em] font-black">
+                    {selectedPlanForInvestment ? `${selectedPlanForInvestment.category} Allocation` : `Custom Principal: ₹${depositAmount.toLocaleString()}`}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => {
+                    setSelectedPlanForInvestment(null);
+                    setIsManualMode(false);
+                    setShowManualMethods(false);
+                    setPaymentStep('select_method');
+                  }}
+                  className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-all"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* 1. Google Pay */}
+                <button
+                  onClick={() => { setSelectedPaymentMethod('Google Pay'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-2 shadow-sm">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Google_Pay_%28GPay%29_Logo_%282020%29.svg" alt="GPay" className="w-full h-full object-contain" />
+                    </div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">Google Pay</span>
+                  </div>
+                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Secure</span>
+                </button>
+
+                {/* 2. PhonePe */}
+                <button
+                  onClick={() => { setSelectedPaymentMethod('Phone Pay'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-[#5f259f] rounded-xl flex items-center justify-center p-2">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="w-full h-full object-contain brightness-0 invert" />
+                    </div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">PhonePe</span>
+                  </div>
+                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Instant</span>
+                </button>
+
+                {/* 3. Paytm */}
+                <button
+                  onClick={() => { setSelectedPaymentMethod('Paytm'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo.svg" alt="Paytm" className="w-full h-full object-contain" />
+                    </div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">Paytm</span>
+                  </div>
+                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Business</span>
+                </button>
+
+                {/* 4. UPI */}
+                <button
+                  onClick={() => { setSelectedPaymentMethod('UPI'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-purple-600/10 border border-purple-500/20 rounded-xl flex items-center justify-center font-black text-[10px] text-purple-400">
+                      UPI
+                    </div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">Any UPI App</span>
+                  </div>
+                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Flexible</span>
+                </button>
+
+                {/* 5. Binance Pay */}
+                <button
+                  onClick={() => { setSelectedPaymentMethod('Binance Pay'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-[#f3ba2f]/10 border border-[#f3ba2f]/20 rounded-xl flex items-center justify-center p-2">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Binance_Logo.svg" alt="Binance" className="w-full h-full object-contain" />
+                    </div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">Binance Pay</span>
+                  </div>
+                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Crypto</span>
+                </button>
+
+                {/* 6. iCash.One */}
+                <button
+                  onClick={() => { setSelectedPaymentMethod('iCash.One'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-emerald-600/10 border border-emerald-500/20 rounded-xl flex items-center justify-center">
+                       <div className="text-[12px] font-black text-emerald-500 font-mono">iC</div>
+                    </div>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">iCash.One</span>
+                  </div>
+                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Node Pay</span>
+                </button>
+              </div>
+              
+              <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 flex items-start space-x-3">
+                <ShieldCheck className="w-5 h-5 text-emerald-500/60 shrink-0 mt-0.5" />
+                <p className="text-[10px] text-slate-400 leading-relaxed font-medium uppercase tracking-tight">
+                  You are depositing <span className="text-white font-bold">₹{depositAmount.toLocaleString()}</span> into your trading balance. Verification is automated via SBI institutional nodes.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: Payment Verification (QR & UTR) */}
+          {paymentStep === 'scan_qr' && selectedPaymentMethod && (
+            <PaymentVerification 
+              method={selectedPaymentMethod}
+              amount={depositAmount}
+              upiId={systemSettings.upiId}
+              isCrypto={selectedPaymentMethod === 'Binance Pay'}
+              address={systemSettings.binanceAddress}
+              onCancel={() => setPaymentStep('select_method')}
+              onVerify={(utr) => {
+                if (isManualMode) {
+                  onSubmitDeposit({
+                    type: 'deposit',
+                    amount: depositAmount,
+                    utr: utr,
+                    detailsForm: {
+                      name: currentUser?.name || 'Manual Trader',
+                      phone: currentUser?.phone || '',
+                      email: currentUser?.email || '',
+                      whatsapp: currentUser?.whatsapp || '',
+                      profession: 'Trader',
+                      dob: '1995-01-01'
+                    }
+                  });
+                  const message = `*MANUAL DEPOSIT VERIFICATION*\n\n` +
+                    `• *Amount:* ₹${depositAmount.toLocaleString()}\n` +
+                    `• *UTR:* ${utr}\n\n` +
+                    `Please verify my manual deposit.`;
+                  const waLink = `https://wa.me/91${systemSettings.supportWhatsApp}?text=${encodeURIComponent(message)}`;
+                  setLastSubmittedMsg(waLink);
+                  setPaymentStep('success');
+                  window.open(waLink, '_blank');
+                } else {
+                  // Plan investment moves to blank trading form
+                  setFormUtr('');
+                  setPaymentStep('trading_form');
+                }
+              }}
+            />
+          )}
+
+          {/* STEP 3: Trading Form (Blank) */}
+          {paymentStep === 'trading_form' && (
+            <div className="space-y-6 animate-fadeIn text-left">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tight font-display">
+                    Trading <span className="text-emerald-500">Application</span>
+                  </h3>
+                  <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em] font-black">
+                    Finalize your {selectedPlanForInvestment?.category} investment
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleTradingFormSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                    <input 
+                      type="text" required value={formFullName} onChange={(e) => setFormFullName(e.target.value)}
+                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
+                      placeholder="Enter full name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                    <input 
+                      type="email" required value={formEmail} onChange={(e) => setFormEmail(e.target.value)}
+                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
+                    <input 
+                      type="tel" required value={formPhone} onChange={(e) => setFormPhone(e.target.value)}
+                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
+                      placeholder="+91"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">UTR / Ref Number</label>
+                    <input 
+                      type="text" required value={formUtr} onChange={(e) => setFormUtr(e.target.value)}
+                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
+                      placeholder="12-digit UTR"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-2xl uppercase tracking-[0.3em] transition-all shadow-xl shadow-emerald-500/20"
+                >
+                  Activate Trading Plan
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* STEP 4: Success State */}
+          {paymentStep === 'success' && (
+            <div className="py-10 text-center space-y-6 animate-fadeIn">
+              <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto border-4 border-emerald-500/20">
+                <CheckCircle2 className="w-10 h-10" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Deposit Initiated</h3>
+                <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                  Your transaction is being verified by our institutional nodes. Verification usually completes within 5-10 minutes.
+                </p>
+              </div>
+              <div className="flex flex-col space-y-3">
+                <a 
+                  href={lastSubmittedMsg} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] rounded-xl uppercase tracking-widest transition-all flex items-center justify-center space-x-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Contact Support on WhatsApp</span>
+                </a>
+                <button
+                  onClick={() => {
+                    setSelectedPlanForInvestment(null);
+                    setIsManualMode(false);
+                    setShowManualMethods(false);
+                    setPaymentStep('select_method');
+                  }}
+                  className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-black text-[10px] rounded-xl uppercase tracking-widest transition-all"
+                >
+                  Return to Dashboard
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 text-left bg-trading-animated" id="wallet-section-container">
       <div className="scale-95 origin-top md:scale-100">
@@ -562,88 +833,78 @@ export default function WalletSection({
 
           {/* 2. Institutional Allocation Section */}
           <div id="deposit-protocol-section">
-            {(!selectedPlanForInvestment && !isManualMode) ? (
-            // NO PLAN SELECTED - Show compact Selection prompt with a gorgeous dropdown or slots list
-            <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 text-center relative overflow-hidden" id="deposit-select-plan-first">
-            <div className="absolute top-0 left-1/2 w-48 h-48 bg-emerald-500/5 blur-[80px] -translate-x-1/2 -mt-24" />
-            
-            <div className="flex justify-center relative z-10">
-              <div className="w-12 h-12 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                <TrendingUp className="w-6 h-6 animate-pulse" />
-              </div>
-            </div>
-            <div className="space-y-2 max-w-md mx-auto relative z-10">
-              <h3 className="text-lg md:text-xl font-black text-white font-display uppercase tracking-tight">Institutional <span className="text-emerald-500">Allocation</span></h3>
-              <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
-                Please select a verified trading contract slot from the registry below to initialize the sovereign capital settlement protocol.
-              </p>
-            </div>
-            
-            <div className="max-w-md mx-auto relative z-10">
-              <label className="text-[8px] uppercase font-mono tracking-[0.2em] text-slate-500 font-black block mb-2 text-left">Registry Identification</label>
-              <div className="relative group">
-                <select
-                  className="w-full bg-[#070b14]/80 border border-slate-800 text-slate-250 font-mono font-bold py-3 px-4 rounded-xl text-[11px] outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer shadow-inner"
-                  onChange={(e) => {
-                    const matched = INVESTMENT_PLANS.find(p => p.id === e.target.value);
-                    if (matched) {
-                      setSelectedPlanForInvestment(matched);
-                    }
-                  }}
-                  defaultValue=""
-                >
-                  <option value="" disabled>IDENTIFY TRADING CONTRACT SLOT...</option>
-                  {INVESTMENT_PLANS.map(p => (
-                    <option key={p.id} value={p.id} className="bg-[#0b101f]">
-                      [{p.category}] PRINCIPAL: ₹{p.amount.toLocaleString()} | YIELD: ₹{p.estimatedProfit.toLocaleString()}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-emerald-500">
-                  <ArrowDownRight className="w-4 h-4" />
-                </div>
-              </div>
-            </div>
-          </section>
-        ) : (
-          // PLAN SELECTED - Show multi-step secure payment flow
-          <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 relative overflow-hidden" id="custom-investment-gateway">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 blur-[80px] -mr-24 -mt-24" />
-            
-            {/* Header with plan details */}
-            <div className="border-b border-slate-800/60 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-              <div className="space-y-1">
-                <div className="inline-flex items-center space-x-1.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] font-mono">
-                  <ShieldCheck className="w-3 h-3" />
-                  <span>Sovereign Settlement Gateway</span>
-                </div>
-                <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">
-                  {isManualMode ? 'Custom Deposit' : selectedPlanForInvestment?.category} <span className="text-emerald-500">PROTOCOL</span>
-                </h4>
-                <p className="text-[9px] text-slate-500 font-mono uppercase tracking-widest font-black">Audit: HFT-LEDGER-V4</p>
-              </div>
-              
-              {isManualMode ? (
-                <div className="bg-[#060b17] border border-slate-800/50 p-4 rounded-2xl font-mono text-xs flex flex-col space-y-3 shadow-inner min-w-[200px]">
-                  <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Manual Allocation Amount</span>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-black">₹</span>
-                    <input 
-                      type="number"
-                      min="1000"
-                      value={depositAmount}
-                      onChange={(e) => {
-                        setDepositAmount(Number(e.target.value));
-                        setShowManualMethods(false);
-                      }}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg py-2 pl-7 pr-3 text-white font-black outline-none focus:border-emerald-500 transition-colors"
-                      placeholder="1000"
-                    />
+            {/* If no plan is selected and not in manual payment mode, show the selection dropdown */}
+            {!selectedPlanForInvestment && !isManualMode && (
+              <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 text-center relative overflow-hidden" id="deposit-select-plan-first">
+                <div className="absolute top-0 left-1/2 w-48 h-48 bg-emerald-500/5 blur-[80px] -translate-x-1/2 -mt-24" />
+                
+                <div className="flex justify-center relative z-10">
+                  <div className="w-12 h-12 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                    <TrendingUp className="w-6 h-6 animate-pulse" />
                   </div>
-                  {depositAmount < 1000 && (
-                    <span className="text-[8px] text-rose-500 font-bold uppercase tracking-tight">Min amount: ₹1,000</span>
-                  )}
-                  {!showManualMethods && (
+                </div>
+                <div className="space-y-2 max-w-md mx-auto relative z-10">
+                  <h3 className="text-lg md:text-xl font-black text-white font-display uppercase tracking-tight">Institutional <span className="text-emerald-500">Allocation</span></h3>
+                  <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
+                    Please select a verified trading contract slot from the registry below to initialize the sovereign capital settlement protocol.
+                  </p>
+                </div>
+                
+                <div className="max-w-md mx-auto relative z-10">
+                  <label className="text-[8px] uppercase font-mono tracking-[0.2em] text-slate-500 font-black block mb-2 text-left">Registry Identification</label>
+                  <div className="relative group">
+                    <select
+                      className="w-full bg-[#070b14]/80 border border-slate-800 text-slate-250 font-mono font-bold py-3 px-4 rounded-xl text-[11px] outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer shadow-inner"
+                      onChange={(e) => {
+                        const matched = INVESTMENT_PLANS.find(p => p.id === e.target.value);
+                        if (matched) {
+                          setSelectedPlanForInvestment(matched);
+                        }
+                      }}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>IDENTIFY TRADING CONTRACT SLOT...</option>
+                      {INVESTMENT_PLANS.map(p => (
+                        <option key={p.id} value={p.id} className="bg-[#0b101f]">
+                          [{p.category}] PRINCIPAL: ₹{p.amount.toLocaleString()} | YIELD: ₹{p.estimatedProfit.toLocaleString()}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-emerald-500">
+                      <ArrowDownRight className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* If in manual mode but haven't clicked continue, show amount input */}
+            {isManualMode && !showManualMethods && (
+              <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 relative overflow-hidden">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                  <div className="space-y-1 text-left">
+                    <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">
+                      Custom Deposit <span className="text-emerald-500">PROTOCOL</span>
+                    </h4>
+                    <p className="text-[9px] text-slate-500 font-mono uppercase tracking-widest font-black">Audit: HFT-LEDGER-V4</p>
+                  </div>
+                  
+                  <div className="bg-[#060b17] border border-slate-800/50 p-4 rounded-2xl font-mono text-xs flex flex-col space-y-3 shadow-inner min-w-[200px] text-left">
+                    <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Manual Allocation Amount</span>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-black">₹</span>
+                      <input 
+                        type="number"
+                        min="1000"
+                        value={depositAmount}
+                        onChange={(e) => setDepositAmount(Number(e.target.value))}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-lg py-2 pl-7 pr-3 text-white font-black outline-none focus:border-emerald-500 transition-colors"
+                        placeholder="1000"
+                      />
+                    </div>
+                    {depositAmount < 1000 && (
+                      <span className="text-[8px] text-rose-500 font-bold uppercase tracking-tight">Min amount: ₹1,000</span>
+                    )}
                     <button
                       onClick={() => setShowManualMethods(true)}
                       disabled={depositAmount < 1000}
@@ -651,838 +912,13 @@ export default function WalletSection({
                     >
                       Continue to Payment
                     </button>
-                  )}
-                </div>
-              ) : selectedPlanForInvestment && (
-                <div className="bg-[#060b17] border border-slate-800/50 p-4 rounded-2xl font-mono text-xs flex items-center justify-between md:space-x-8 shadow-inner">
-                  <div className="space-y-0.5">
-                    <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block">Deployment Capital</span>
-                    <span className="text-base font-black text-white">₹{selectedPlanForInvestment.amount.toLocaleString()}</span>
-                  </div>
-                  <div className="space-y-0.5 text-right pl-4 border-l border-slate-800/50">
-                    <span className="text-[8px] text-emerald-500 uppercase font-black tracking-widest block">Projected Yield</span>
-                    <span className="text-base font-black text-emerald-400">₹{selectedPlanForInvestment.estimatedProfit.toLocaleString()}</span>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Verification and Protocol Info - Added to push payment methods down */}
-            <div className="bg-[#040813]/60 border border-slate-800/40 p-4 rounded-xl space-y-3 relative z-10">
-              <div className="flex items-start space-x-3">
-                <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                  <ShieldAlert className="w-5 h-5 text-emerald-500" />
-                </div>
-                <div className="space-y-1">
-                  <h6 className="text-xs font-black text-slate-200 uppercase tracking-wider">Audit & Compliance verification</h6>
-                  <p className="text-[10px] text-slate-400 leading-relaxed font-medium">
-                    This allocation is monitored by the Ministry of Finance digital asset protocols. Your capital is secured via SBI Finance institutional yield buffers.
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50">
-                  <span className="text-[8px] text-slate-500 uppercase font-black block mb-0.5">Node Priority</span>
-                  <span className="text-[10px] text-emerald-400 font-mono font-bold">HIGH-SPEED-V8</span>
-                </div>
-                <div className="bg-slate-900/50 p-2.5 rounded-lg border border-slate-800/50">
-                  <span className="text-[8px] text-slate-500 uppercase font-black block mb-0.5">Liquidity Lock</span>
-                  <span className="text-[10px] text-amber-500 font-mono font-bold">60 MINUTE CYCLE</span>
-                </div>
-              </div>
-            </div>
-
-            {/* STEP 1: Select Payment Method - Custom "Choose deposit method" Layout */}
-            {paymentStep === 'select_method' && (selectedPlanForInvestment || (isManualMode && showManualMethods)) && (
-              <div className="space-y-6 animate-fadeIn relative z-10 pt-4 border-t border-slate-800/60 text-left">
-                {/* Header line with close button */}
-                <div className="flex items-center justify-between">
-                  <h5 className="text-sm font-black text-white uppercase tracking-wider font-display">Choose Deposit Method</h5>
-                  <button 
-                    onClick={() => {
-                      setSelectedPlanForInvestment(null);
-                      setIsManualMode(false);
-                    }}
-                    className="p-1 bg-slate-900/60 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-all"
-                    type="button"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Subheader Banner */}
-                <div className="bg-emerald-500/10 border border-emerald-500/15 p-3 rounded-2xl flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <ShieldCheck className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-wide">Trusted by 1.2 million users</p>
-                    <p className="text-[9px] text-slate-400 leading-tight">Your funds available 24/7, manage them whenever it suits you</p>
-                  </div>
-                </div>
-
-                {/* Decorative secure asset allocation card */}
-                <div className="bg-gradient-to-br from-emerald-950/40 via-[#0e2124]/40 to-slate-950 border border-emerald-500/10 p-4 rounded-2xl flex justify-between items-center relative overflow-hidden shadow-inner">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full" />
-                  <div className="space-y-1 relative z-10">
-                    <p className="text-[8px] uppercase tracking-widest text-slate-500 font-mono font-black">Secure Ledger Allocation Node</p>
-                    <h6 className="text-[13px] font-black text-white uppercase">INSTANT ROUTING GATEWAY</h6>
-                    <p className="text-[9px] font-mono text-emerald-400/85">SBI • HFT • NODE_V8_ACTIVE</p>
-                  </div>
-                  <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-lg relative z-10 flex-shrink-0">
-                    <span className="text-slate-950 text-[14px] font-black font-mono">₿</span>
-                  </div>
-                </div>
-
-                {/* POPULAR SECTION */}
-                <div className="space-y-2.5">
-                  <h6 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest block">⭐ Popular</h6>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {/* Upi */}
-                    <button
-                      type="button"
-                      disabled={depositAmount < 1000}
-                      onClick={() => {
-                        setSelectedPaymentMethod('Upi');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-purple-600/15 border border-purple-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-purple-400">
-                          UPI
-                        </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Upi</span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Instant</span>
-                    </button>
-
-                    {/* Upi QR */}
-                    <button
-                      type="button"
-                      disabled={depositAmount < 1000}
-                      onClick={() => {
-                        setSelectedPaymentMethod('Upi QR');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-600/15 border border-blue-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-blue-400">
-                          QR
-                        </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Upi QR</span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Scan QR</span>
-                    </button>
-
-                    {/* Paytm by UPI */}
-                    <button
-                      type="button"
-                      disabled={depositAmount < 1000}
-                      onClick={() => {
-                        setSelectedPaymentMethod('Paytm by UPI');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-cyan-600/15 border border-cyan-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-cyan-400">
-                          Paytm
-                        </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Paytm by UPI</span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Upi node</span>
-                    </button>
-
-                    {/* Google Pay by UPI */}
-                    <button
-                      type="button"
-                      disabled={depositAmount < 1000}
-                      onClick={() => {
-                        setSelectedPaymentMethod('Google Pay by UPI');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1.5 shadow-sm">
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Google_Pay_%28GPay%29_Logo_%282020%29.svg" alt="GPay" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                        </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Google Pay (GPay)</span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">G-pay</span>
-                    </button>
-
-                    {/* Phone Pay by UPI */}
-                    <button
-                      type="button"
-                      disabled={depositAmount < 1000}
-                      onClick={() => {
-                        setSelectedPaymentMethod('Phone Pay by UPI');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-[#5f259f] border border-indigo-500/20 rounded-lg flex items-center justify-center p-1.5">
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="w-full h-full object-contain brightness-0 invert" referrerPolicy="no-referrer" />
-                        </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Phone Pay by UPI</span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">PhonePe</span>
-                    </button>
-
-                    {/* Paytm Business */}
-                    <button
-                      type="button"
-                      disabled={depositAmount < 1000}
-                      onClick={() => {
-                        setSelectedPaymentMethod('Paytm Business');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1 shadow-sm">
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo.svg" alt="Paytm" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                        </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Paytm Business</span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Paytm</span>
-                    </button>
-
-                    {/* Binance Pay */}
-                    <button
-                      type="button"
-                      disabled={depositAmount < 1000}
-                      onClick={() => {
-                        setSelectedPaymentMethod('Binance Pay');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-amber-600/15 border border-amber-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-amber-400">
-                          Binance
-                        </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">Binance Pay</span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Crypto</span>
-                    </button>
-
-                    {/* iCash.One */}
-                    <button
-                      type="button"
-                      disabled={depositAmount < 1000}
-                      onClick={() => {
-                        setSelectedPaymentMethod('iCash.One');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className={`flex items-center justify-between p-3.5 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-xl transition-all group text-left w-full ${depositAmount < 1000 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-slate-600/15 border border-slate-500/20 rounded-lg flex items-center justify-center font-black font-mono text-[9px] text-slate-350">
-                          iCash
-                        </div>
-                        <span className="text-[11px] font-extrabold text-white uppercase tracking-wider">iCash.One</span>
-                      </div>
-                      <span className="text-[9px] text-slate-500 font-mono font-bold uppercase group-hover:text-emerald-400 transition-colors">Instant</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* CRYPTO WALLETS SECTION */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <h6 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest flex items-center space-x-2">
-                      <span>🌐 Crypto wallets</span>
-                    </h6>
-                    <span className="px-2 py-0.5 bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-[8px] uppercase rounded font-mono tracking-wider animate-pulse">
-                      + PAYBACK 5%
-                    </span>
-                  </div>
-                  <p className="text-[9px] text-slate-400 leading-tight bg-slate-950/40 p-2.5 rounded-lg border border-orange-500/5 font-mono">
-                    Deposit in crypto and get 5% payback instantly - straight to your profit account balance.
-                  </p>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {/* Gate Pay */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPaymentMethod('Gate Pay');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-orange-500/30 rounded-xl transition-all group text-left w-full"
-                    >
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-7 h-7 bg-red-600/10 border border-red-500/15 rounded-lg flex items-center justify-center font-black font-mono text-[8px] text-red-400">
-                          Gate
-                        </div>
-                        <span className="text-[10px] font-black text-white uppercase tracking-wider">Gate Pay</span>
-                      </div>
-                    </button>
-
-                    {/* Tonkeeper Pay (USDT) */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPaymentMethod('Tonkeeper Pay (USDT)');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-orange-500/30 rounded-xl transition-all group text-left w-full"
-                    >
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-7 h-7 bg-blue-600/10 border border-blue-500/15 rounded-lg flex items-center justify-center font-black font-mono text-[8px] text-blue-400">
-                          TON
-                        </div>
-                        <span className="text-[10px] font-black text-white uppercase tracking-wider">Tonkeeper USDT</span>
-                      </div>
-                    </button>
-
-                    {/* Other cryptocurrencies */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPaymentMethod('Other cryptocurrencies');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-orange-500/30 rounded-xl transition-all group text-left w-full"
-                    >
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-7 h-7 bg-amber-600/10 border border-amber-500/15 rounded-lg flex items-center justify-center font-black font-mono text-[8px] text-amber-400">
-                          CRYP
-                        </div>
-                        <span className="text-[10px] font-black text-white uppercase tracking-wider">Other Crypto</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                {/* INTERNET BANKING SECTION */}
-                <div className="space-y-2.5">
-                  <h6 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest block">🏛️ Internet banking</h6>
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Upi */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPaymentMethod('Upi');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/60 rounded-xl transition-all hover:border-emerald-500/30 text-left w-full"
-                    >
-                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-wider">Upi Fast-settlement</span>
-                    </button>
-
-                    {/* Upi QR */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPaymentMethod('Upi QR');
-                        setPaymentStep('scan_qr');
-                      }}
-                      className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/60 rounded-xl transition-all hover:border-emerald-500/30 text-left w-full"
-                    >
-                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-wider">Upi QR Scan banking</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* OTHER SECTION */}
-                <div className="space-y-2.5">
-                  <h6 className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-widest block">📁 Other</h6>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedPaymentMethod('iCash.One');
-                      setPaymentStep('scan_qr');
-                    }}
-                    className="flex items-center justify-between p-3 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/60 rounded-xl transition-all hover:border-emerald-500/30 text-left w-full"
-                  >
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-wider">iCash.One Settlement Node</span>
-                  </button>
-                </div>
-
-                {/* TRUST BADGES FOOTER */}
-                <div className="pt-4 border-t border-slate-800/50 flex flex-wrap items-center justify-between gap-3 text-[9px] font-mono font-bold text-slate-500">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="text-emerald-500 font-extrabold">🔒 SECURED</span>
-                    <span>PCI DSS COMPLIANT</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span>3D SECURE</span>
-                    <span>€ CERTIFIED</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-center pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPlanForInvestment(null)}
-                    className="text-[10px] text-slate-500 hover:text-slate-300 font-mono font-bold flex items-center space-x-1.5 transition-all uppercase tracking-tighter"
-                  >
-                    <ArrowLeft className="w-3 h-3" />
-                    <span>Change Allocation Slot</span>
-                  </button>
-                </div>
-              </div>
+              </section>
             )}
-
-            {/* STEP 2: Scan QR or Address View with Validity CountDown */}
-            {paymentStep === 'scan_qr' && selectedPaymentMethod && (() => {
-              // Helper to resolve specific dynamic fields for chosen method
-              const defaultQr = systemSettings.qrCodeImage || systemSettings.qrCodeUrl;
-              const defaultUpi = systemSettings.upiId;
-
-              const getDetails = (name: string) => {
-                switch (name) {
-                  case 'Upi':
-                    return {
-                      upiId: systemSettings.upiUpiId || defaultUpi,
-                      qrUrl: systemSettings.upiQrCode || defaultQr,
-                      isCrypto: false
-                    };
-                  case 'Upi QR':
-                    return {
-                      upiId: systemSettings.upiQrUpiId || defaultUpi,
-                      qrUrl: systemSettings.upiQrQrCode || defaultQr,
-                      isCrypto: false
-                    };
-                  case 'Paytm':
-                  case 'Paytm by UPI':
-                    return {
-                      upiId: systemSettings.paytmUpiId || defaultUpi,
-                      qrUrl: systemSettings.paytmQrCode || defaultQr,
-                      isCrypto: false
-                    };
-                  case 'Google Pay':
-                  case 'Google Pay by UPI':
-                    return {
-                      upiId: systemSettings.gpayUpiId || defaultUpi,
-                      qrUrl: systemSettings.gpayQrCode || defaultQr,
-                      isCrypto: false
-                    };
-                  case 'Phone Pay':
-                  case 'Phone Pay by UPI':
-                    return {
-                      upiId: systemSettings.phonepeUpiId || defaultUpi,
-                      qrUrl: systemSettings.phonepeQrCode || defaultQr,
-                      isCrypto: false
-                    };
-                  case 'iCash.One':
-                    return {
-                      upiId: systemSettings.icashUpiId || defaultUpi,
-                      qrUrl: systemSettings.icashQrCode || defaultQr,
-                      isCrypto: false
-                    };
-                  case 'Gate Pay':
-                    return {
-                      upiId: systemSettings.gatepayUpiId || defaultUpi,
-                      qrUrl: systemSettings.gatepayQrCode || defaultQr,
-                      isCrypto: false
-                    };
-                  case 'Binance Pay':
-                    return {
-                      address: systemSettings.binanceAddress || 'binance-pay-id-872910291',
-                      isCrypto: true
-                    };
-                  case 'Tonkeeper Pay (USDT)':
-                    return {
-                      address: systemSettings.tonkeeperAddress || 'UQCd3v0pP4H8A_UpxX5Wv8G9F_uS0qP9K3d2A1m7S8r5N6tY',
-                      isCrypto: true
-                    };
-                  case 'Other cryptocurrencies':
-                    return {
-                      address: systemSettings.otherCryptoAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-                      isCrypto: true
-                    };
-                  default:
-                    return {
-                      upiId: defaultUpi,
-                      qrUrl: defaultQr,
-                      isCrypto: false
-                    };
-                }
-              };
-
-              const details = getDetails(selectedPaymentMethod);
-
-              return (
-                <div className="space-y-4 animate-fadeIn text-left">
-                  <div className="flex items-center justify-between border-b border-slate-800/40 pb-2.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPaymentStep('select_method');
-                        setSelectedPaymentMethod(null);
-                      }}
-                      className="text-[10px] font-mono font-bold text-slate-400 hover:text-white flex items-center space-x-1 transition-all uppercase tracking-wider"
-                    >
-                      <ArrowLeft className="w-3 h-3" />
-                      <span>Choose Method</span>
-                    </button>
-                    <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider">
-                      Protocol: <b className="text-amber-500 font-black">{selectedPaymentMethod}</b>
-                    </span>
-                  </div>
-
-                  {details.isCrypto ? (
-                    // CRYPTOCURRENCY LAYOUT: NO QR CODE, ONLY WRITTEN ADDRESS & COPY OPTION
-                    <div className="space-y-3.5">
-                      <div className="bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/15 p-4 rounded-xl space-y-1.5">
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                          <h6 className="text-[11px] font-black text-amber-500 uppercase tracking-wider">Crypto Settlement Active</h6>
-                        </div>
-                        <p className="text-[10px] text-slate-400 leading-normal font-medium">
-                          Please deposit your allocation capital using the custom wallet address credentials below. Copy the address and submit the hash transaction id in the final step.
-                        </p>
-                      </div>
-
-                      {/* Large Address copy box */}
-                      <div className="bg-[#03060c] border border-slate-850 p-4 rounded-xl space-y-3 font-mono">
-                        <div className="space-y-1">
-                          <span className="text-[8px] text-slate-500 uppercase font-black block tracking-widest">Network Wallet Address</span>
-                          <div className="bg-[#060a14] border border-slate-800 p-3 rounded-lg flex items-center justify-between gap-2 overflow-hidden">
-                            <span className="text-slate-200 font-black text-[11px] select-all break-all pr-2 font-mono">
-                              {details.address}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleCopyText(details.address || '')}
-                              className="p-2 bg-[#0c1425] hover:bg-slate-800 border border-slate-750 hover:text-white rounded-lg transition-all text-amber-500 flex items-center space-x-1 flex-shrink-0"
-                            >
-                              {copiedText ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                              <span className="text-[9px] font-black uppercase">{copiedText ? 'Copied' : 'Copy'}</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        <p className="text-[9px] text-slate-500 font-mono leading-tight">
-                          💡 Ensure you send the exact transaction amount of <b className="text-slate-300">₹{depositAmount.toLocaleString()}</b> on the correct chain protocol.
-                        </p>
-                      </div>
-
-                      {/* Progress Session validity countdown */}
-                      <div className="bg-[#03060c] border border-slate-850 p-3.5 rounded-xl space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-bold text-slate-450 flex items-center space-x-1.5">
-                            <Clock className={`w-4 h-4 animate-spin ${timeLeft <= 30 ? 'text-amber-500' : 'text-emerald-400'}`} />
-                            <span>Address Validity Session</span>
-                          </span>
-                          <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${
-                            timeLeft <= 30 ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
-                          }`}>
-                            {timeLeft}s
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full transition-all duration-1000 ${
-                              timeLeft <= 30 ? 'bg-amber-500' : 'bg-emerald-400'
-                            }`}
-                            style={{ width: `${(timeLeft / 60) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    // UPI / QR SYSTEM LAYOUT: SCANNER SHOWN, DOWNLOAD BUTTON, UPI ID AND COPY BUTTONS
-                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#060a15]/60 border border-white/[0.03] p-4 rounded-xl">
-                      {/* Left: Dynamic QR with Validity Scanning effect */}
-                      <div className="flex-shrink-0 flex flex-col items-center space-y-2">
-                        <div className="w-32 h-32 bg-white p-1.5 rounded-xl flex flex-col items-center justify-center shadow-lg relative border border-amber-500/30">
-                          <div className="absolute inset-x-1.5 h-0.5 bg-amber-500 animate-scan"></div>
-                          <img 
-                            src={details.qrUrl}
-                            alt="Secure Payment QR Scanner"
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover rounded-md"
-                          />
-                        </div>
-
-                        <a
-                          href={details.qrUrl}
-                          download={`${selectedPaymentMethod}_qr.jpg`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center space-x-1 text-[9px] text-amber-500 hover:text-amber-400 font-mono font-black transition-all uppercase tracking-wider"
-                        >
-                          <Download className="w-3 h-3" />
-                          <span>Download QR</span>
-                        </a>
-                      </div>
-
-                      {/* Right: Timer details and Copy buttons */}
-                      <div className="flex-grow w-full space-y-3 text-left">
-                        {/* Countdown Tracker Box */}
-                        <div className="bg-[#03060c] border border-slate-850 p-3 rounded-lg space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-mono font-bold text-slate-400 flex items-center space-x-1">
-                              <Clock className={`w-3.5 h-3.5 animate-spin ${timeLeft <= 30 ? 'text-amber-500' : 'text-emerald-400'}`} />
-                              <span>QR Validity Session</span>
-                            </span>
-                            <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${
-                              timeLeft <= 30 ? 'bg-amber-500/10 text-amber-400' : 'bg-emerald-500/10 text-emerald-400'
-                            }`}>
-                              {timeLeft}s
-                            </span>
-                          </div>
-                          
-                          {/* Dynamic visual progress bar */}
-                          <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full transition-all duration-1000 ${
-                                timeLeft <= 30 ? 'bg-amber-500' : 'bg-emerald-400'
-                              }`}
-                              style={{ width: `${(timeLeft / 60) * 100}%` }}
-                            ></div>
-                          </div>
-
-                          <p className="text-[9px] text-slate-500 font-mono leading-tight">
-                            Terminates in <b className="text-slate-300">{timeLeft} seconds</b>. The system resets if unpaid after this window.
-                          </p>
-                        </div>
-
-                        {/* Copy UPI Address Details */}
-                        <div className="bg-[#03060c] border border-slate-850 p-2.5 rounded-lg flex justify-between items-center font-mono">
-                          <div className="min-w-0 pr-2">
-                            <span className="text-[8px] text-slate-500 uppercase block tracking-wider">Secure UPI Address</span>
-                            <span className="text-slate-300 font-black text-[10px] truncate block allow-copy font-mono select-all">{details.upiId}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyText(details.upiId || '')}
-                            className="p-1.5 bg-[#090e1c] border border-slate-800 hover:text-white rounded transition-all text-amber-500 flex items-center space-x-1 flex-shrink-0 ml-2"
-                          >
-                            {copiedText ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                            <span className="text-[8px] font-black uppercase">{copiedText ? 'Copied' : 'Copy'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Secure Flow submission Lock Constraint */}
-                  <div className="bg-[#040813]/40 border border-slate-800/60 p-3 rounded-xl space-y-3">
-                    <div className="flex items-start space-x-2">
-                      <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-[9px] text-slate-400 leading-normal font-mono">
-                        <b>DOUBLE-SPEND LOCK:</b> "Proceed" unlocks after 30 seconds for manual validation of transaction coordinates.
-                      </p>
-                    </div>
-
-                    {timeLeft > 30 ? (
-                      <button
-                        disabled
-                        className="w-full bg-slate-800/50 text-slate-500 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-wider cursor-not-allowed flex items-center justify-center space-x-1.5 font-mono"
-                      >
-                        <Lock className="w-3.5 h-3.5 text-slate-600" />
-                        <span>Unlocking Form in {timeLeft - 30}s...</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setPaymentStep('trading_form')}
-                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 flex items-center justify-center space-x-1.5"
-                      >
-                        <span>Proceed to Trading Form</span>
-                        <span>→</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* STEP 3: Basic trading details form */}
-            {paymentStep === 'trading_form' && (
-              <form onSubmit={handleTradingFormSubmit} className="space-y-3.5 animate-fadeIn">
-                <div className="flex items-center justify-between border-b border-slate-800/40 pb-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentStep('scan_qr')}
-                    className="text-[10px] font-mono font-bold text-slate-400 hover:text-white flex items-center space-x-1 transition-all"
-                  >
-                    <ArrowLeft className="w-3 h-3" />
-                    <span>Back to Scanner</span>
-                  </button>
-                  <span className="text-[9px] font-mono text-emerald-400 font-black uppercase flex items-center space-x-1">
-                    <Check className="w-3 h-3" />
-                    <span>Payment Verified</span>
-                  </span>
-                </div>
-
-                <div className="bg-[#040813]/40 border border-slate-800/60 px-3 py-2 rounded-lg text-left">
-                  <p className="text-[10px] text-slate-400 font-mono leading-relaxed">
-                    Complete verification with official registration details. Fields are validated for security.
-                  </p>
-                </div>
-
-                {/* Grid Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Enter legal full name"
-                      value={formFullName}
-                      onChange={(e) => setFormFullName(e.target.value)}
-                      className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10 placeholder-slate-600"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Email ID</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. contact@domain.com"
-                      value={formEmail}
-                      onChange={(e) => setFormEmail(e.target.value)}
-                      className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10 placeholder-slate-600"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Phone Number</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="e.g. 9876543210"
-                      value={formPhone}
-                      onChange={(e) => setFormPhone(e.target.value.replace(/[^0-9]/g, ''))}
-                      className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10 placeholder-slate-600"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Date of Birth</label>
-                    <input
-                      type="date"
-                      required
-                      value={formDob}
-                      onChange={(e) => setFormDob(e.target.value)}
-                      className="w-full bg-[#060a13]/80 border border-slate-800 text-slate-300 font-mono py-1.5 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Profession</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Business Analyst"
-                      value={formProfession}
-                      onChange={(e) => setFormProfession(e.target.value)}
-                      className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/10 placeholder-slate-600"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-mono tracking-wider text-amber-500/80 font-bold block">12-Digit UPI UTR No.</label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={12}
-                      placeholder="e.g. 417281923052"
-                      value={formUtr}
-                      onChange={(e) => setFormUtr(e.target.value.replace(/[^0-9]/g, ''))}
-                      className="w-full bg-[#060a13]/80 border border-amber-500/30 text-amber-400 font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 font-bold placeholder-amber-500/20"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1 text-left">
-                  <label className="text-[8px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Investment Amount (INR)</label>
-                  <input
-                    type="text"
-                    disabled
-                    value={`₹${depositAmount.toLocaleString()}`}
-                    className="w-full bg-[#03060c] border border-slate-900 text-slate-400 font-mono py-2 px-3 rounded-lg text-[11px] cursor-not-allowed font-bold"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] py-2.5 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-emerald-500/10 mt-2 flex items-center justify-center space-x-1.5"
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  <span>Submit Application via WhatsApp</span>
-                </button>
-              </form>
-            )}
-
-            {/* STEP 4: Success with WhatsApp action */}
-            {paymentStep === 'success' && (
-              <div className="bg-emerald-500/5 border border-emerald-500/20 p-6 rounded-2xl text-center space-y-5 max-w-xl mx-auto animate-fadeIn" id="investment-success-view">
-                <div className="w-12 h-12 bg-emerald-500/25 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-7 h-7" />
-                </div>
-                <div className="space-y-2">
-                  <h5 className="text-xl font-black text-white font-display uppercase tracking-tight">Deposit Successfully Submitted!</h5>
-                  <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto font-medium">
-                    Your investment of <b className="text-emerald-400 font-mono">₹{depositAmount.toLocaleString()}</b> is now under high-priority audit. Your trade will activate within 15-30 minutes.
-                  </p>
-                  <div className="bg-[#050914] p-3.5 rounded-xl border border-slate-800 text-[11px] text-amber-400 font-mono text-left space-y-1 mt-4">
-                    <p className="font-bold uppercase mb-1 flex items-center">
-                      <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
-                      Critical Next Step:
-                    </p>
-                    <p>If WhatsApp didn't open automatically, please click the button below. You must send the formatted message to our compliance desk to finalize your UTR verification.</p>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-                  <a
-                    href={lastSubmittedMsg}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-6 py-3.5 rounded-lg text-xs tracking-wider uppercase transition-all shadow-md shadow-emerald-500/20"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Open WhatsApp</span>
-                  </a>
-                  <button
-                    onClick={() => {
-                      setPaymentStep('select_method');
-                      setSelectedPaymentMethod(null);
-                      setSelectedPlanForInvestment(null);
-                      setIsManualMode(false);
-                      setInternalTab('deposit');
-                      // Scroll to tracker
-                      setTimeout(() => {
-                        const element = document.getElementById('active-trades-tracker');
-                        if (element) element.scrollIntoView({ behavior: 'smooth' });
-                      }, 100);
-                    }}
-                    className="inline-flex items-center justify-center space-x-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3.5 rounded-lg text-xs tracking-wider uppercase transition-all shadow-md shadow-amber-500/20"
-                  >
-                    <TrendingUp className="w-4 h-4" />
-                    <span>Go Dashboard</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPaymentStep('select_method');
-                      setSelectedPaymentMethod(null);
-                    }}
-                    className="bg-slate-900 border border-slate-850 hover:bg-slate-800 text-slate-300 font-bold px-6 py-3.5 rounded-lg text-xs"
-                  >
-                    New Slot
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
       {/* SUB TAB VIEW: WITHDRAW PROFIT */}
       {internalTab === 'withdraw' && (
