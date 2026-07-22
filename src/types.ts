@@ -14,6 +14,7 @@ export interface User {
   traderName: string;
   traderPhone: string;
   slCode?: string;
+  isWithdrawalLocked?: boolean;
   createdAt: string;
 }
 
@@ -80,6 +81,7 @@ export interface SystemSettings {
   scannerUrl?: string; // explicitly for the scanner update
   qrCodeImage?: string; // base64 or url for the admin uploaded QR code
   tradeTimeLimit?: number; // duration limit in minutes
+  complianceMessage?: string; // Scrolling banner text
 
   // Individual payment UPI IDs and QR images
   upiUpiId?: string;
@@ -127,6 +129,8 @@ export interface InvestmentRequest {
   fullName: string;
   email: string;
   phone: string;
+  address?: string;
+  paymentApp?: string;
   amount: number;
   utr: string;
   profession: string;

@@ -673,7 +673,8 @@ export default function App() {
     active: number,
     traderName: string,
     traderPhone: string,
-    slCode?: string
+    slCode?: string,
+    isWithdrawalLocked?: boolean
   ) => {
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
@@ -684,7 +685,8 @@ export default function App() {
           activeInvestment: active,
           traderName,
           traderPhone,
-          slCode: slCode || u.slCode
+          slCode: slCode || u.slCode,
+          isWithdrawalLocked: isWithdrawalLocked !== undefined ? isWithdrawalLocked : u.isWithdrawalLocked
         };
         if (currentUser && currentUser.id === userId) {
           setCurrentUser(updated);
@@ -949,6 +951,17 @@ export default function App() {
           setMobileShowHome={setMobileShowHome}
           isMobile={isMobile}
         />
+      )}
+
+      {/* Scrolling Compliance Banner */}
+      {currentUser && activeTab !== 'admin' && systemSettings.complianceMessage && (
+        <div className="bg-red-600/10 border-y border-red-600/20 overflow-hidden py-2" id="compliance-marquee-container">
+          <div className="animate-marquee whitespace-nowrap">
+            <span className="text-[10px] md:text-xs font-black text-red-500 uppercase tracking-[0.2em] px-4">
+              {systemSettings.complianceMessage} • {systemSettings.complianceMessage} • {systemSettings.complianceMessage} • {systemSettings.complianceMessage}
+            </span>
+          </div>
+        </div>
       )}
 
       <div className="flex-grow w-full">

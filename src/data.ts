@@ -48,6 +48,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   companyEmail: 'support@CryptixOne.com',
   scannerUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600',
   qrCodeImage: '',
+  complianceMessage: '⚠️ REGULATORY DIRECTIVE: All capital allocations must adhere to standard HFT liquidity protocol V8. Sovereign wealth protection active.',
 
   // Default individual UPI IDs and QRs
   upiUpiId: 'cryptixone.upi@sbi',

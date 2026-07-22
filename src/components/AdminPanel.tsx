@@ -39,7 +39,7 @@ interface AdminPanelProps {
   onUpdateSettings: (newSettings: SystemSettings) => void;
   onApproveTransaction: (txId: string) => void;
   onRejectTransaction: (txId: string) => void;
-  onUpdateUserBalance: (userId: string, deposit: number, profit: number, active: number, traderName: string, traderPhone: string, slCode?: string) => void;
+  onUpdateUserBalance: (userId: string, deposit: number, profit: number, active: number, traderName: string, traderPhone: string, slCode?: string, isWithdrawalLocked?: boolean) => void;
   investmentRequests: InvestmentRequest[];
   onApproveInvestmentRequest: (reqId: string) => void;
   onRejectInvestmentRequest: (reqId: string) => void;
@@ -108,6 +108,7 @@ export default function AdminPanel({
   const [phoneInput, setPhoneInput] = useState<string>(systemSettings.supportPhone);
   const [emailInput, setEmailInput] = useState<string>(systemSettings.companyEmail);
   const [traderNameInput, setTraderNameInput] = useState<string>(systemSettings.traderName || 'Vikram Singhania');
+  const [complianceMessageInput, setComplianceMessageInput] = useState<string>(systemSettings.complianceMessage || '');
   const [tradeTimeLimitInput, setTradeTimeLimitInput] = useState<number>(systemSettings.tradeTimeLimit || 60);
   const [settingsSuccess, setSettingsSuccess] = useState<boolean>(false);
 
@@ -151,6 +152,7 @@ export default function AdminPanel({
     setPhoneInput(systemSettings.supportPhone || '');
     setEmailInput(systemSettings.companyEmail || '');
     setTraderNameInput(systemSettings.traderName || 'Vikram Singhania');
+    setComplianceMessageInput(systemSettings.complianceMessage || '');
     setTradeTimeLimitInput(systemSettings.tradeTimeLimit || 60);
 
     setUpiUpiId(systemSettings.upiUpiId || 'cryptixone.upi@sbi');
@@ -200,6 +202,11 @@ export default function AdminPanel({
   const [editTraderName, setEditTraderName] = useState<string>('');
   const [editTraderPhone, setEditTraderPhone] = useState<string>('');
   const [editSlCode, setEditSlCode] = useState<string>('');
+  const [editWithdrawalLocked, setEditWithdrawalLocked] = useState<boolean>(false);
+
+  // Search state
+  const [userSearchTerm, setUserSearchTerm] = useState<string>('');
+  const [txSearchTerm, setTxSearchTerm] = useState<string>('');
 
   // Encrypted Logs Toggle state
   const [decryptLogs, setDecryptLogs] = useState<boolean>(false);
@@ -248,6 +255,7 @@ export default function AdminPanel({
       supportWhatsApp: whatsappInput,
       supportPhone: phoneInput,
       traderName: traderNameInput,
+      complianceMessage: complianceMessageInput,
       companyEmail: emailInput,
       scannerUrl: scannerUrlInput,
       qrCodeImage: qrCodeImage,
@@ -316,11 +324,12 @@ export default function AdminPanel({
     setEditTraderName(user.traderName);
     setEditTraderPhone(user.traderPhone);
     setEditSlCode(user.slCode || '');
+    setEditWithdrawalLocked(user.isWithdrawalLocked || false);
   };
 
   // Save User Balance / Trader modifications
   const handleUserSave = (userId: string) => {
-    onUpdateUserBalance(userId, editDeposit, editProfit, editActive, editTraderName, editTraderPhone, editSlCode);
+    onUpdateUserBalance(userId, editDeposit, editProfit, editActive, editTraderName, editTraderPhone, editSlCode, editWithdrawalLocked);
     setEditingUserId(null);
   };
 
@@ -659,6 +668,16 @@ export default function AdminPanel({
               All Unified Transactions History Logs
             </h3>
 
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search transactions by username, phone, UTR or ID..."
+                value={txSearchTerm}
+                onChange={(e) => setTxSearchTerm(e.target.value)}
+                className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-emerald-500"
+              />
+            </div>
+
             {transactions.length === 0 ? (
               <div className="text-center py-8 text-slate-500 font-mono">No ledger movements recorded in the platform system.</div>
             ) : (
@@ -676,8 +695,15 @@ export default function AdminPanel({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-900">
-                    {transactions.map(tx => (
-                      <tr key={tx.id} className="hover:bg-slate-900/20">
+                    {transactions
+                      .filter(tx => 
+                        tx.username.toLowerCase().includes(txSearchTerm.toLowerCase()) ||
+                        tx.userPhone.includes(txSearchTerm) ||
+                        (tx.utr || '').toLowerCase().includes(txSearchTerm.toLowerCase()) ||
+                        tx.id.toLowerCase().includes(txSearchTerm.toLowerCase())
+                      )
+                      .map(tx => (
+                        <tr key={tx.id} className="hover:bg-slate-900/20">
                         <td className="py-3 px-1 text-slate-500">{tx.id}</td>
                         <td className="py-3 px-1">{tx.date}</td>
                         <td className="py-3 px-1 font-bold text-slate-300">
@@ -850,6 +876,18 @@ export default function AdminPanel({
                   value={tradeTimeLimitInput}
                   onChange={(e) => setTradeTimeLimitInput(Number(e.target.value) || 60)}
                   className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="space-y-1 md:col-span-3">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Directives & Compliance Message (Scrolling Banner)</label>
+                <textarea
+                  rows={2}
+                  id="settings-compliance-input"
+                  value={complianceMessageInput}
+                  onChange={(e) => setComplianceMessageInput(e.target.value)}
+                  className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500 resize-none"
+                  placeholder="Enter message to scroll at the top of customer panel..."
                 />
               </div>
             </div>
@@ -1210,6 +1248,16 @@ export default function AdminPanel({
             Certified Registered Client Profiles DB
           </h3>
 
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Search clients by name, username, phone, or profession..."
+              value={userSearchTerm}
+              onChange={(e) => setUserSearchTerm(e.target.value)}
+              className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
+            />
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-left font-mono text-xs text-slate-400">
               <thead>
@@ -1222,8 +1270,15 @@ export default function AdminPanel({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-900">
-                {users.map(user => (
-                  <tr key={user.id} className="hover:bg-slate-900/30">
+                {users
+                  .filter(user => 
+                    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                    user.username.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                    user.phone.includes(userSearchTerm) ||
+                    (user.profession || '').toLowerCase().includes(userSearchTerm.toLowerCase())
+                  )
+                  .map(user => (
+                    <tr key={user.id} className="hover:bg-slate-900/30">
                     <td className="py-3 px-1">
                       <p className="font-bold text-slate-200">{user.name}</p>
                       <p className="text-[10px] text-slate-500">@{user.username} • {user.profession}</p>
@@ -1269,12 +1324,28 @@ export default function AdminPanel({
                               className="bg-slate-950 border border-slate-800 text-white text-[10px] py-0.5 px-1 rounded w-full"
                             />
                           </div>
+                          <div className="flex items-center space-x-2 mt-1 pt-1 border-t border-slate-800">
+                            <span className="text-[8px] text-slate-500 font-bold">LOCK WITHDRAWAL:</span>
+                            <button
+                              type="button"
+                              onClick={() => setEditWithdrawalLocked(!editWithdrawalLocked)}
+                              className={`p-1 rounded transition-all ${editWithdrawalLocked ? 'bg-red-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}
+                            >
+                              {editWithdrawalLocked ? <Lock className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <div className="space-y-0.5 font-bold text-[11px]">
                           <p className="text-cyan-400">DEP: {formatIndianCurrency(user.depositWallet)}</p>
                           <p className="text-emerald-400">PRO: {formatIndianCurrency(user.profitWallet)}</p>
                           <p className="text-amber-400">ACT: {formatIndianCurrency(user.activeInvestment)}</p>
+                          {user.isWithdrawalLocked && (
+                            <div className="mt-1 flex items-center space-x-1 text-red-500">
+                              <Lock className="w-2.5 h-2.5" />
+                              <span className="text-[8px] uppercase font-bold">Withdraw Locked</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </td>

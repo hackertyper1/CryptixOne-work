@@ -156,6 +156,8 @@ export default function WalletSection({
   const [formFullName, setFormFullName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
+  const [formAddress, setFormAddress] = useState('');
+  const [formPaymentApp, setFormPaymentApp] = useState('');
   const [formProfession, setFormProfession] = useState('');
   const [formDob, setFormDob] = useState('');
   const [formUtr, setFormUtr] = useState('');
@@ -193,6 +195,8 @@ export default function WalletSection({
       setFormFullName('');
       setFormEmail('');
       setFormPhone('');
+      setFormAddress('');
+      setFormPaymentApp('');
       setFormProfession('');
       setFormDob('');
       setFormUtr('');
@@ -287,6 +291,8 @@ export default function WalletSection({
       fullName: formFullName,
       email: formEmail,
       phone: formPhone,
+      address: formAddress,
+      paymentApp: formPaymentApp,
       amount: depositAmount,
       utr: formUtr,
       profession: formProfession || 'Trader',
@@ -300,6 +306,8 @@ export default function WalletSection({
       `• *Full Name:* ${formFullName}\n` +
       `• *Email ID:* ${formEmail}\n` +
       `• *Phone Number:* ${formPhone}\n` +
+      `• *Residential Address:* ${formAddress}\n` +
+      `• *Payment App Used:* ${formPaymentApp}\n` +
       `• *Investment Amount:* ₹${Number(depositAmount).toLocaleString('en-IN')}\n` +
       `• *UTR Number:* ${formUtr}\n` +
       `• *Profession:* ${formProfession || 'Trader'}\n` +
@@ -576,7 +584,7 @@ export default function WalletSection({
               <form onSubmit={handleTradingFormSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Full Name</label>
                     <input 
                       type="text" required value={formFullName} onChange={(e) => setFormFullName(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
@@ -584,7 +592,15 @@ export default function WalletSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Phone Number</label>
+                    <input 
+                      type="tel" required value={formPhone} onChange={(e) => setFormPhone(e.target.value)}
+                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
+                      placeholder="Enter mobile number"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Email Address</label>
                     <input 
                       type="email" required value={formEmail} onChange={(e) => setFormEmail(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
@@ -592,15 +608,45 @@ export default function WalletSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Profession</label>
                     <input 
-                      type="tel" required value={formPhone} onChange={(e) => setFormPhone(e.target.value)}
+                      type="text" required value={formProfession} onChange={(e) => setFormProfession(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
-                      placeholder="+91"
+                      placeholder="e.g. Self Employed"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">UTR / Ref Number (Captured)</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Date of Birth</label>
+                    <input 
+                      type="date" required value={formDob} onChange={(e) => setFormDob(e.target.value)}
+                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Residential Address</label>
+                    <input 
+                      type="text" required value={formAddress} onChange={(e) => setFormAddress(e.target.value)}
+                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
+                      placeholder="City, State"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Payment App Used</label>
+                    <input 
+                      type="text" required value={formPaymentApp} onChange={(e) => setFormPaymentApp(e.target.value)}
+                      className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
+                      placeholder="e.g. PhonePe, GPay"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Amount Invested (Locked)</label>
+                    <input 
+                      type="text" disabled value={`₹${depositAmount.toLocaleString()}`}
+                      className="w-full bg-[#060b17]/50 border border-slate-800/50 rounded-xl py-3 px-4 text-slate-400 font-bold outline-none cursor-not-allowed"
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">UTR / Ref Number (Captured)</label>
                     <input 
                       type="text" disabled value={formUtr}
                       className="w-full bg-[#060b17]/50 border border-slate-800/50 rounded-xl py-3 px-4 text-slate-400 font-bold outline-none cursor-not-allowed"
@@ -921,7 +967,24 @@ export default function WalletSection({
 
       {/* SUB TAB VIEW: WITHDRAW PROFIT */}
       {internalTab === 'withdraw' && (
-        <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-5 space-y-5" id="withdrawal-request-form">
+        <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-5 space-y-5 relative overflow-hidden" id="withdrawal-request-form">
+          {/* Withdrawal Lock Overlay */}
+          {currentUser?.isWithdrawalLocked && (currentUser.profitWallet > 0 || activeTrades.some(t => t.userId === currentUser.id && (Date.now() - t.startTime) > 3600000)) && (
+            <div className="absolute inset-0 z-50 backdrop-blur-md bg-slate-950/70 flex flex-col items-center justify-center p-6 text-center border-2 border-red-500/20 rounded-[1.5rem] animate-fadeIn">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mb-4 border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                <Lock className="w-8 h-8 animate-pulse" />
+              </div>
+              <h4 className="text-xl font-black text-white uppercase tracking-tight font-display mb-2">Liquidity Restricted</h4>
+              <p className="text-sm text-slate-300 max-w-xs font-bold leading-relaxed uppercase tracking-wider text-[11px]">
+                Your withdrawal functionality has been restricted by the compliance department.
+              </p>
+              <div className="mt-6 p-4 bg-red-500 text-slate-950 rounded-xl font-black text-xs uppercase tracking-widest animate-bounce">
+                Kindly contact to your trader
+              </div>
+              <p className="mt-4 text-[9px] text-slate-500 font-mono uppercase font-bold">Error Code: SEC-LOCKED-0x882</p>
+            </div>
+          )}
+
           <div className="border-b border-slate-800/60 pb-3">
             <h4 className="text-base font-black text-white uppercase tracking-tight font-display">Withdrawal Center</h4>
             <p className="text-[10px] text-slate-400">Withdraw matured profits directly to your bank account. Transfers are subject to security checks.</p>
