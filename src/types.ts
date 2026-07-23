@@ -114,6 +114,7 @@ export interface SystemSettings {
   binanceAddress?: string;
   tonkeeperAddress?: string;
   otherCryptoAddress?: string;
+  logoUrl?: string;
 }
 
 export interface AdminMessage {

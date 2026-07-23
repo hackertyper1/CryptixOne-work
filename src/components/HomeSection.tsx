@@ -116,7 +116,7 @@ export default function HomeSection({
 
         {/* 1. CryptixOne Website Name */}
         <div className="space-y-4 relative z-10 flex flex-col items-center">
-          <img src="/logo.png" alt="CryptixOne" className="w-24 h-24 mb-4 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]" />
+          <img src={systemSettings.logoUrl || "/logo.png"} alt="CryptixOne" className="w-24 h-24 mb-4 drop-shadow-[0_0_20px_rgba(245,158,11,0.45)]" />
           <div className="space-y-3">
             <h1 className="text-5xl md:text-8xl font-black tracking-tight text-white font-sans text-center">
               Cryptix<span className="text-amber-500">One</span>
@@ -136,7 +136,7 @@ export default function HomeSection({
           {/* Ministry of Finance India */}
           <div className="flex items-center space-x-4 bg-white/[0.02] backdrop-blur-sm p-4 rounded-2xl border border-white/5 shadow-2xl">
             <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-1.5 overflow-hidden bg-black/60">
-              <img src="/logo.png" alt="Company Logo" className="w-full h-full object-contain" />
+              <img src={systemSettings.logoUrl || "/logo.png"} alt="Company Logo" className="w-full h-full object-contain" />
             </div>
             <div className="text-left font-sans">
               <p className="text-[9px] font-semibold text-amber-500 leading-tight uppercase tracking-wider">वित्त मंत्रालय</p>
@@ -148,7 +148,7 @@ export default function HomeSection({
           {/* SBI Finance of India */}
           <div className="flex items-center space-x-4 bg-white/[0.02] backdrop-blur-sm p-4 rounded-2xl border border-white/5 shadow-2xl">
             <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-1.5 overflow-hidden bg-black/60 shadow-lg">
-              <img src="/logo.png" alt="Company Logo" className="w-full h-full object-contain" />
+              <img src={systemSettings.logoUrl || "/logo.png"} alt="Company Logo" className="w-full h-full object-contain" />
             </div>
             <div className="text-left font-sans">
               <p className="text-xs font-black text-[#00a5ec] leading-none tracking-tight">SBI Finance</p>

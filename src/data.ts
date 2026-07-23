@@ -77,7 +77,8 @@ export const DEFAULT_SETTINGS: SystemSettings = {
   // Default Crypto addresses
   binanceAddress: 'binance-pay-id-872910291',
   tonkeeperAddress: 'UQCd3v0pP4H8A_UpxX5Wv8G9F_uS0qP9K3d2A1m7S8r5N6tY',
-  otherCryptoAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
+  otherCryptoAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+  logoUrl: '/logo.png'
 };
 
 // Simulated encryption helper (just base64 encoding with salt + standard AES mock string for visual representation)

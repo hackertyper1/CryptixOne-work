@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface SplashScreenProps {
   onComplete: () => void;
+  logoUrl?: string;
 }
 
-export default function SplashScreen({ onComplete }: SplashScreenProps) {
+export default function SplashScreen({ onComplete, logoUrl }: SplashScreenProps) {
   const [phase, setPhase] = useState<'glow' | 'logo' | 'text' | 'tagline'>('glow');
 
   useEffect(() => {
@@ -85,8 +86,8 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
               className="mb-10 relative"
             >
-              <div className="relative p-6 rounded-full bg-slate-900/40 border border-white/5 backdrop-blur-sm shadow-2xl overflow-hidden flex items-center justify-center">
-                <img src="/logo.png" alt="CryptixOne Logo" className="w-48 h-48 md:w-56 md:h-56 object-contain relative z-10" />
+              <div className="relative overflow-hidden flex items-center justify-center">
+                <img src={logoUrl || "/logo.png"} alt="CryptixOne Logo" className="w-48 h-48 md:w-64 md:h-64 object-contain relative z-10" />
                 
                 {/* Dynamic Rotating Glow */}
                 <motion.div

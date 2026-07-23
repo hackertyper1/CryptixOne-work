@@ -17,12 +17,12 @@ interface HeaderProps {
 }
 
 // Highly detailed, premium logo component using the new official CryptixOne logo
-export function CryptixLogo({ className = "w-9 h-9" }: { className?: string }) {
+export function CryptixLogo({ className = "w-9 h-9", logoUrl }: { className?: string, logoUrl?: string }) {
   return (
     <img 
-      src="/logo.png" 
+      src={logoUrl || "/logo.png"} 
       alt="CryptixOne Logo" 
-      className={`${className} object-contain`}
+      className={`${className} object-contain drop-shadow-[0_0_8px_rgba(245,158,11,0.35)]`}
       referrerPolicy="no-referrer"
     />
   );
@@ -39,8 +39,9 @@ export default function Header({
   supportPhone,
   mobileShowHome = false,
   setMobileShowHome,
-  isMobile = false
-}: HeaderProps) {
+  isMobile = false,
+  logoUrl
+}: HeaderProps & { logoUrl?: string }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -56,7 +57,7 @@ export default function Header({
                 className="flex items-center space-x-3 cursor-pointer group"
                 onClick={() => setActiveTab('home')}
               >
-                <CryptixLogo className="w-10 h-10 group-hover:scale-105 transition-transform" />
+                <CryptixLogo className="w-10 h-10 group-hover:scale-105 transition-transform" logoUrl={logoUrl} />
                 <div className="flex flex-col text-left">
                   <span className="text-xl font-black tracking-tighter text-white font-sans leading-none group-hover:text-amber-500 transition-colors">
                     Cryptix<span className="text-amber-500 font-black">One</span>
@@ -181,7 +182,7 @@ export default function Header({
               onClick={() => setActiveTab('home')}
             >
               <div className="p-1 text-amber-500">
-                <CryptixLogo className="w-8 h-8" />
+                <CryptixLogo className="w-8 h-8" logoUrl={logoUrl} />
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-sm font-black tracking-tight text-white leading-none">
@@ -255,7 +256,7 @@ export default function Header({
               {/* Drawer Top Header */}
               <div className="p-4 border-b border-white/5 flex items-center justify-between bg-[#05070a]">
                 <div className="flex items-center space-x-2">
-                  <CryptixLogo className="w-8 h-8" />
+                  <CryptixLogo className="w-8 h-8" logoUrl={logoUrl} />
                   <span className="text-sm font-black tracking-tight text-white font-sans">
                     CRYPTIX<span className="text-amber-500">ONE</span>
                   </span>

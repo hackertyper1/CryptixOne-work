@@ -380,7 +380,7 @@ export default function WalletSection({
     return (
       <div className="max-w-md mx-auto bg-slate-950 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6" id="wallet-auth-required">
                 <div className="flex justify-center">
-                  <img src="/logo.png" alt="Wallet Protected" className="w-16 h-16 mb-4 grayscale opacity-50" />
+                  <img src={systemSettings.logoUrl || "/logo.png"} alt="Wallet Protected" className="w-16 h-16 mb-4 grayscale opacity-50" />
                 </div>
         <div className="space-y-2">
           <h3 className="text-xl md:text-2xl font-black text-white font-display">Wallet Protected</h3>
@@ -578,6 +578,7 @@ export default function WalletSection({
                 systemSettings.binanceAddress
               }
               onCancel={() => setPaymentStep('select_method')}
+              logoUrl={systemSettings.logoUrl}
               onVerify={(utr) => {
                 if (isManualMode) {
                   onSubmitDeposit({

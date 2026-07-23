@@ -53,6 +53,10 @@ const handleFirestoreError = (error: unknown, operationType: OperationType, path
     console.warn('Firestore write quota limit reached. System running in local state fallback mode.');
     return;
   }
+  if (errStr.includes('unavailable') || errStr.includes('Could not reach Cloud Firestore')) {
+    console.warn('Firestore connection temporarily unavailable. Retrying in background...');
+    return;
+  }
   const errInfo: FirestoreErrorInfo = {
     error: errStr,
     operationType,
@@ -220,7 +224,7 @@ export default function App() {
     }
 
     // Real-time Transactions
-    const unsubscribeTransactions = onSnapshot(query(collection(db, 'transactions'), orderBy('date', 'desc')), (snapshot) => {
+    const unsubscribeTransactions = onSnapshot(query(collection(db, 'transactions'), orderBy('date', 'desc'), limit(50)), (snapshot) => {
       const txs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Transaction));
       setTransactions(txs);
     }, (error) => {
@@ -228,7 +232,7 @@ export default function App() {
     });
 
     // Real-time Active Trades
-    const unsubscribeTrades = onSnapshot(collection(db, 'trades'), (snapshot) => {
+    const unsubscribeTrades = onSnapshot(query(collection(db, 'trades'), limit(200)), (snapshot) => {
       const trades = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as ActiveTrade));
       setActiveTrades(trades);
     }, (error) => {
@@ -244,7 +248,7 @@ export default function App() {
     });
 
     // Real-time Investment Requests
-    const unsubscribeRequests = onSnapshot(query(collection(db, 'requests'), orderBy('date', 'desc')), (snapshot) => {
+    const unsubscribeRequests = onSnapshot(query(collection(db, 'requests'), orderBy('date', 'desc'), limit(50)), (snapshot) => {
       const reqs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as InvestmentRequest));
       setInvestmentRequests(reqs);
     }, (error) => {
@@ -252,7 +256,7 @@ export default function App() {
     });
 
     // Real-time Admin Messages
-    const unsubscribeMessages = onSnapshot(query(collection(db, 'messages'), orderBy('timestamp', 'desc')), (snapshot) => {
+    const unsubscribeMessages = onSnapshot(query(collection(db, 'messages'), orderBy('timestamp', 'desc'), limit(20)), (snapshot) => {
       const msgs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AdminMessage));
       setAdminMessages(msgs);
     }, (error) => {
@@ -487,7 +491,7 @@ export default function App() {
       if (hasChange) {
         saveTradesToStorage(updatedTrades);
       }
-    }, 1000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [activeTrades, users, currentUser]);
@@ -1156,10 +1160,11 @@ export default function App() {
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col justify-between" id="app-root-container">
       <Toaster position="top-right" theme="dark" richColors closeButton />
 
-      {showSplash && isApk && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      {showSplash && isApk && <SplashScreen onComplete={() => setShowSplash(false)} logoUrl={systemSettings.logoUrl} />}
       
       {!showSplash && isApk && !currentUser && activeTab !== 'admin' && activeTab !== 'account' && (
         <AuthGate 
+          logoUrl={systemSettings.logoUrl}
           onSelectLogin={() => {
             setAuthMode('login');
             setActiveTab('account');
@@ -1189,6 +1194,7 @@ export default function App() {
           mobileShowHome={mobileShowHome}
           setMobileShowHome={setMobileShowHome}
           isMobile={isMobile}
+          logoUrl={systemSettings.logoUrl}
         />
       )}
 

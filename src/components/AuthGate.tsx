@@ -6,15 +6,16 @@ interface AuthGateProps {
   onSelectLogin: () => void;
   onSelectSignup: () => void;
   onSocialLogin?: (provider: 'google' | 'facebook') => void;
+  logoUrl?: string;
 }
 
-export default function AuthGate({ onSelectLogin, onSelectSignup, onSocialLogin }: AuthGateProps) {
+export default function AuthGate({ onSelectLogin, onSelectSignup, onSocialLogin, logoUrl }: AuthGateProps) {
   return (
     <div className="min-h-screen bg-[#0b101f] flex flex-col items-center p-6 pt-12 relative overflow-hidden">
       {/* Top Navigation for Guest */}
       <div className="absolute top-6 left-0 right-0 px-6 flex justify-between items-center z-20">
         <div className="flex items-center space-x-3">
-          <img src="/logo.png" alt="Logo" className="w-9 h-9 object-contain" />
+          <img src={logoUrl || "/logo.png"} alt="Logo" className="w-12 h-12 object-contain drop-shadow-[0_0_12px_rgba(245,158,11,0.4)]" />
           <span className="text-sm font-black text-white tracking-tight uppercase">CRYPTIX<span className="text-amber-500">ONE</span></span>
         </div>
         <div className="flex items-center space-x-4">

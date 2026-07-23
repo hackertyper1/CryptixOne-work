@@ -129,6 +129,7 @@ export default function AdminPanel({
   const [traderWhatsAppInput, setTraderWhatsAppInput] = useState<string>(systemSettings.traderWhatsApp || '800324109');
   const [complianceMessageInput, setComplianceMessageInput] = useState<string>(systemSettings.complianceMessage || '');
   const [tradeTimeLimitInput, setTradeTimeLimitInput] = useState<number>(systemSettings.tradeTimeLimit || 60);
+  const [logoUrlInput, setLogoUrlInput] = useState<string>(systemSettings.logoUrl || '/logo.png');
   const [settingsSuccess, setSettingsSuccess] = useState<boolean>(false);
 
   // Selector for which payment method to configure in Admin UI
@@ -175,6 +176,7 @@ export default function AdminPanel({
     setTraderWhatsAppInput(systemSettings.traderWhatsApp || '800324109');
     setComplianceMessageInput(systemSettings.complianceMessage || '');
     setTradeTimeLimitInput(systemSettings.tradeTimeLimit || 60);
+    setLogoUrlInput(systemSettings.logoUrl || '/logo.png');
 
     setUpiUpiId(systemSettings.upiUpiId || 'cryptixone.upi@sbi');
     setUpiQrCode(systemSettings.upiQrCode || '');
@@ -269,6 +271,17 @@ export default function AdminPanel({
     }
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoUrlInput(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Update Settings Submit
   const handleSettingsSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,6 +297,7 @@ export default function AdminPanel({
       companyEmail: emailInput,
       scannerUrl: scannerUrlInput,
       qrCodeImage: qrCodeImage,
+      logoUrl: logoUrlInput,
       tradeTimeLimit: Number(tradeTimeLimitInput) || 60,
 
       // Specific individual UPI payment methods
@@ -363,7 +377,7 @@ export default function AdminPanel({
     return (
       <div className="max-w-md mx-auto bg-slate-950 border border-red-500/20 rounded-3xl p-6 md:p-8 shadow-2xl text-left" id="admin-auth-card">
         <div className="flex justify-center mb-6">
-          <img src="/logo.png" alt="Admin" className="w-16 h-16" />
+          <img src={systemSettings.logoUrl || "/logo.png"} alt="Admin" className="w-16 h-16" />
         </div>
 
         <div className="text-center space-y-2 mb-6">
@@ -835,6 +849,45 @@ export default function AdminPanel({
                       src={qrCodeImage} 
                       alt="Uploaded QR" 
                       className="w-10 h-10 object-cover rounded border border-slate-700" 
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Application Logo URL</label>
+                <input
+                  type="text"
+                  required
+                  id="settings-logo-input"
+                  value={logoUrlInput}
+                  onChange={(e) => setLogoUrlInput(e.target.value)}
+                  className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Upload Application Logo</label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="settings-logo-file-upload"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                  <label 
+                    htmlFor="settings-logo-file-upload"
+                    className="flex items-center justify-center space-x-2 bg-[#0d1222] border border-slate-800 border-dashed hover:border-red-500 text-slate-400 hover:text-white py-2 px-4 rounded-lg cursor-pointer transition-all w-full text-xs"
+                  >
+                    <Send className="w-4 h-4 rotate-[-45deg]" />
+                    <span>Upload New Logo</span>
+                  </label>
+                  {logoUrlInput && (
+                    <img 
+                      src={logoUrlInput} 
+                      alt="Current Logo" 
+                      className="w-10 h-10 object-contain rounded border border-slate-700 bg-black/40" 
                     />
                   )}
                 </div>

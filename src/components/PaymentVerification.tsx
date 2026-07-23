@@ -10,9 +10,10 @@ interface PaymentVerificationProps {
   isCrypto?: boolean;
   onVerify: (utr: string) => void;
   onCancel: () => void;
+  logoUrl?: string;
 }
 
-export default function PaymentVerification({ method, amount, upiId, address, isCrypto, onVerify, onCancel }: PaymentVerificationProps) {
+export default function PaymentVerification({ method, amount, upiId, address, isCrypto, onVerify, onCancel, logoUrl }: PaymentVerificationProps) {
   const [utr, setUtr] = useState('');
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -54,7 +55,7 @@ export default function PaymentVerification({ method, amount, upiId, address, is
     if (method.includes('Binance')) return "https://upload.wikimedia.org/wikipedia/commons/e/e8/Binance_Logo.svg";
     if (method.includes('Ethereum') || method.includes('ETH')) return "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/ethereum-eth-icon.png";
     if (method.includes('GATE') || method.includes('Gate')) return "https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/payment-gateway-icon.png";
-    return "/logo.png";
+    return logoUrl || "/logo.png";
   };
 
   const methodIcon = getMethodIcon();

@@ -258,6 +258,22 @@ export default function TradeSection({
 
   const [alphaFilter, setAlphaFilter] = useState<'All' | 'Point+' | 'Tokenized Securities' | 'BSC' | 'Ethereum' | 'Solana'>('All');
 
+  // Gold Investment (SIP & One Time) states for Alpha Section
+  const [goldMode, setGoldMode] = useState<'SIP' | 'One Time'>('SIP');
+  const [goldFrequency, setGoldFrequency] = useState<'Daily' | 'Weekly' | 'Monthly'>('Weekly');
+  const [goldAmount, setGoldAmount] = useState<number>(1000);
+  const [goldSipDate, setGoldSipDate] = useState<number>(22);
+  const [payFirstToday, setPayFirstToday] = useState<boolean>(true);
+  const [liveGoldRate, setLiveGoldRate] = useState<number>(14853.01);
+  const [showAlphaTokens, setShowAlphaTokens] = useState<boolean>(false);
+
+  useEffect(() => {
+    const goldInterval = setInterval(() => {
+      setLiveGoldRate(prev => parseFloat((prev + (Math.random() - 0.49) * 0.25).toFixed(2)));
+    }, 2000);
+    return () => clearInterval(goldInterval);
+  }, []);
+
   // Copy Trade & staking interactive state
   const [selectedTrader, setSelectedTrader] = useState<any | null>(null);
   const [copyAmount, setCopyAmount] = useState('10000');
@@ -1226,91 +1242,428 @@ export default function TradeSection({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="bg-[#121212] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-5 text-left"
+            className="space-y-6 text-left max-w-2xl mx-auto"
           >
-            {/* Warning Indicator */}
-            <div className="bg-amber-500/5 rounded-2xl border border-amber-500/10 p-4 flex items-start space-x-3">
-              <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-slate-400 leading-normal">
-                <b>On-Chain Web3 Tokens:</b> These tokens are subject to greater fluctuations and capital liquidity risks. Please exercise absolute risk management.
-              </p>
+            {/* View Switcher Top Pill (Invest in Gold vs On-Chain Tokens) */}
+            <div className="flex bg-[#121212] p-1.5 rounded-2xl border border-slate-800 justify-between items-center shadow-xl">
+              <button
+                onClick={() => setShowAlphaTokens(false)}
+                className={`flex-1 py-2.5 px-4 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center justify-center space-x-2 ${
+                  !showAlphaTokens ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>🪙 Gold Investment (24K)</span>
+              </button>
+              <button
+                onClick={() => setShowAlphaTokens(true)}
+                className={`flex-1 py-2.5 px-4 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center justify-center space-x-2 ${
+                  showAlphaTokens ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span>🔥 VIP Alpha Tokens</span>
+              </button>
             </div>
 
-            {/* Alpha Search / Filter tags */}
-            <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-3.5 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Search VIP Alpha tokens..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#1e2026] text-white text-sm border border-slate-800 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#f0b90b] transition-all"
-                />
-              </div>
+            {!showAlphaTokens ? (
+              /* Exact Gold Investment UI matching user screenshots */
+              <div className="bg-white text-slate-900 rounded-3xl border border-slate-200/80 p-4 md:p-6 shadow-2xl space-y-5 font-sans">
+                {/* Header Row */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => setShowAlphaTokens(true)}
+                      className="p-1.5 rounded-full hover:bg-slate-100 transition-colors text-slate-700"
+                      title="View Tokens"
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 font-sans flex items-center space-x-2">
+                      <span>Invest in Gold</span>
+                      <span className="bg-[#f59e0b] text-white font-extrabold text-[11px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        24K
+                      </span>
+                    </h2>
+                  </div>
 
-              <div className="flex items-center space-x-1.5 overflow-x-auto scrollbar-hide">
-                {(['All', 'Point+', 'BSC', 'Ethereum', 'Solana'] as const).map(f => (
+                  <div className="flex items-center space-x-2">
+                    {/* LIVE Indicator Pill */}
+                    <div className="flex items-center space-x-1 px-2.5 py-1 rounded-full border border-rose-200 bg-rose-50 text-rose-600 text-xs font-bold font-mono">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                      <span>LIVE</span>
+                    </div>
+                    {/* Live Gold Price Badge */}
+                    <div className="bg-slate-100 px-3 py-1 rounded-lg text-xs md:text-sm font-bold text-slate-700 font-mono">
+                      ₹{liveGoldRate.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/gm
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tab Bar: SIP vs One Time */}
+                <div className="border-b border-slate-200 flex items-center justify-around text-center relative">
                   <button
-                    key={f}
-                    onClick={() => setAlphaFilter(f)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                      alphaFilter === f ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
+                    onClick={() => {
+                      setGoldMode('SIP');
+                      if (goldFrequency === 'Weekly') setGoldAmount(1000);
+                      else if (goldFrequency === 'Daily') setGoldAmount(100);
+                      else if (goldFrequency === 'Monthly') setGoldAmount(5000);
+                    }}
+                    className={`flex-1 py-3 text-base md:text-lg font-black transition-all relative ${
+                      goldMode === 'SIP' ? 'text-[#005b52]' : 'text-slate-400 hover:text-slate-600'
                     }`}
                   >
-                    {f}
+                    SIP
+                    {goldMode === 'SIP' && (
+                      <motion.div
+                        layoutId="goldTabUnderline"
+                        className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#005b52] rounded-full"
+                      />
+                    )}
                   </button>
-                ))}
-              </div>
-            </div>
 
-            {/* Alpha Grid Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-900 text-slate-500 text-[11px] font-mono uppercase tracking-wider">
-                    <th className="pb-3 font-semibold">Name / Vol</th>
-                    <th className="pb-3 text-right font-semibold">Last Price</th>
-                    <th className="pb-3 text-right font-semibold">24h Chg%</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-900">
-                  {getFilteredAlphaAssets().map((token) => {
-                    const isUp = token.change >= 0;
-                    return (
-                      <tr
-                        key={token.symbol}
-                        onClick={() => setSelectedAsset(token)}
-                        className="group hover:bg-[#1e2026]/50 cursor-pointer transition-all border-b border-slate-900/40"
-                      >
-                        <td className="py-4 flex items-center space-x-3">
-                          <div className="bg-amber-500/15 p-2.5 rounded-xl border border-amber-500/30">
-                            <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
-                          </div>
-                          <div>
-                            <span className="text-sm font-black text-white tracking-tight font-mono">${token.symbol}</span>
-                            <span className="text-[11px] text-slate-500 font-medium block">{token.label} | {token.extra}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 text-right">
-                          <div className="text-sm font-black text-white font-mono">{token.price.toFixed(5)}</div>
-                          <div className="text-[10px] text-slate-500 font-mono">${token.price.toFixed(5)}</div>
-                        </td>
-                        <td className="py-4 text-right">
-                          <span className={`inline-block px-3 py-1.5 rounded-lg text-xs font-black font-mono transition-all duration-300 ${
-                            isUp 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20' 
-                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 group-hover:bg-rose-500/20'
-                          }`}>
-                            {isUp ? '+' : ''}{token.change.toFixed(2)}%
-                          </span>
-                        </td>
-                      </tr>
+                  <button
+                    onClick={() => {
+                      setGoldMode('One Time');
+                      setGoldAmount(5000);
+                    }}
+                    className={`flex-1 py-3 text-base md:text-lg font-black transition-all relative ${
+                      goldMode === 'One Time' ? 'text-[#005b52]' : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    One Time
+                    {goldMode === 'One Time' && (
+                      <motion.div
+                        layoutId="goldTabUnderline"
+                        className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#005b52] rounded-full"
+                      />
+                    )}
+                  </button>
+                </div>
+
+                {/* Golden Yellow Container Box */}
+                <div className="bg-[#fefce8] border border-amber-200/80 rounded-3xl p-5 md:p-6 space-y-6 shadow-sm relative overflow-hidden">
+                  
+                  {/* Frequency Selector Pills (only for SIP) */}
+                  {goldMode === 'SIP' && (
+                    <div className="bg-slate-200/60 p-1 rounded-2xl flex items-center space-x-1 text-sm font-semibold max-w-md mx-auto">
+                      {(['Daily', 'Weekly', 'Monthly'] as const).map((freq) => (
+                        <button
+                          key={freq}
+                          onClick={() => {
+                            setGoldFrequency(freq);
+                            if (freq === 'Daily') setGoldAmount(100);
+                            else if (freq === 'Weekly') setGoldAmount(1000);
+                            else if (freq === 'Monthly') setGoldAmount(5000);
+                          }}
+                          className={`flex-1 py-2.5 rounded-xl transition-all font-bold text-center ${
+                            goldFrequency === freq
+                              ? 'bg-white text-slate-900 shadow-md'
+                              : 'text-slate-500 hover:text-slate-800'
+                          }`}
+                        >
+                          {freq}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Enter Amount Section */}
+                  <div className="text-center space-y-2">
+                    <p className="text-xs md:text-sm font-medium text-slate-500 uppercase tracking-wider">
+                      Enter amount
+                    </p>
+                    <div className="flex items-center justify-center space-x-1">
+                      <span className="text-3xl md:text-4xl font-extrabold text-slate-900">₹</span>
+                      <input
+                        type="number"
+                        value={goldAmount}
+                        onChange={(e) => setGoldAmount(Math.max(1, parseInt(e.target.value) || 0))}
+                        className="text-4xl md:text-5xl font-black text-slate-900 bg-transparent text-center outline-none w-48 font-sans tracking-tight"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick Amount Chips */}
+                  <div className="grid grid-cols-4 gap-2 md:gap-3 max-w-lg mx-auto">
+                    {(goldMode === 'SIP' 
+                      ? (goldFrequency === 'Daily' 
+                          ? [50, 200, 500, 1000] 
+                          : goldFrequency === 'Weekly' 
+                          ? [500, 1000, 2000, 3000] 
+                          : [1000, 5000, 10000, 15000])
+                      : [500, 1000, 5000, 10000]
+                    ).map((preset) => {
+                      const isPopular = (goldMode === 'SIP' && ((goldFrequency === 'Daily' && preset === 200) || (goldFrequency === 'Weekly' && preset === 1000) || (goldFrequency === 'Monthly' && preset === 5000))) || (goldMode === 'One Time' && preset === 5000);
+                      const isSelected = goldAmount === preset;
+
+                      return (
+                        <div key={preset} className="flex flex-col items-center">
+                          <button
+                            onClick={() => setGoldAmount(preset)}
+                            className={`w-full py-2.5 px-2 rounded-2xl border text-sm font-bold transition-all text-center ${
+                              isSelected
+                                ? 'border-[#005b52] bg-emerald-50/80 text-[#005b52] ring-2 ring-[#005b52]/20 font-black'
+                                : 'border-slate-300 bg-white/90 text-slate-800 hover:border-slate-400'
+                            }`}
+                          >
+                            ₹{preset.toLocaleString('en-IN')}
+                          </button>
+                          {isPopular && (
+                            <span className="bg-[#00796b] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full -mt-2.5 shadow-sm z-10">
+                              POPULAR
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Monthly specific options */}
+                  {goldMode === 'SIP' && goldFrequency === 'Monthly' && (
+                    <div className="border-t border-dashed border-slate-300/80 pt-4 space-y-3 text-center">
+                      <div className="flex items-center justify-center space-x-2 text-sm font-bold text-slate-800">
+                        <span>SIP Date: <strong className="text-[#005b52] font-extrabold">{goldSipDate}nd of every month</strong></span>
+                        <button 
+                          onClick={() => {
+                            const newD = prompt("Enter SIP day of the month (1-28):", goldSipDate.toString());
+                            if (newD && !isNaN(parseInt(newD))) {
+                              setGoldSipDate(Math.min(28, Math.max(1, parseInt(newD))));
+                            }
+                          }}
+                          className="text-emerald-600 hover:text-emerald-700"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+
+                      <label className="inline-flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={payFirstToday}
+                          onChange={(e) => setPayFirstToday(e.target.checked)}
+                          className="w-4 h-4 text-[#005b52] rounded border-slate-300 focus:ring-[#005b52]"
+                        />
+                        <span>Pay your first SIP today</span>
+                        <Info className="w-3.5 h-3.5 text-slate-400" />
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Projection Banner inside yellow card */}
+                  <div className="bg-amber-200/50 border border-amber-300/60 rounded-2xl p-3 md:p-3.5 flex items-center justify-center space-x-2 text-slate-900 font-bold text-xs md:text-sm">
+                    <span className="text-lg">🪙</span>
+                    <span>
+                      In 5 years, your gold can grow to <strong className="text-slate-950 font-black">
+                        {goldMode === 'SIP' 
+                          ? (goldFrequency === 'Daily' 
+                              ? `₹${((goldAmount * 365 * 5 * 1.53) / 100000).toFixed(2)} Lakh` 
+                              : goldFrequency === 'Weekly' 
+                              ? `₹${((goldAmount * 52 * 5 * 1.527) / 100000).toFixed(2)} Lakh` 
+                              : `₹${((goldAmount * 12 * 5 * 1.516) / 100000).toFixed(2)} Lakh`)
+                          : `₹${((goldAmount * 3.7) / 10000).toFixed(2)} Lakh`}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Order Details Summary Card */}
+                <div className="bg-white border border-slate-200 rounded-3xl p-4 md:p-5 space-y-3 shadow-sm font-sans">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500 font-medium">Frequency</span>
+                    <span className="font-bold text-slate-900">{goldMode === 'SIP' ? goldFrequency : 'One Time'}</span>
+                  </div>
+
+                  {goldMode === 'SIP' && (
+                    <>
+                      <div className="flex items-center justify-between text-sm border-t border-slate-100 pt-3">
+                        <span className="text-slate-500 font-medium">SIP Start date</span>
+                        <span className="font-bold text-slate-900">22nd Jul'26</span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm border-t border-slate-100 pt-3">
+                        <span className="text-slate-500 font-medium">Next SIP date</span>
+                        <span className="font-bold text-slate-900">
+                          {goldFrequency === 'Daily' ? '23rd Jul\'26' : goldFrequency === 'Weekly' ? '29th Jul\'26' : `${goldSipDate}nd Aug\'26`}
+                        </span>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex items-center justify-between text-sm border-t border-slate-100 pt-3">
+                    <div className="flex items-center space-x-1 text-slate-500 font-medium">
+                      <span>Investment amount</span>
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <span className="font-extrabold text-slate-900 text-base md:text-lg">
+                      ₹{goldAmount.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Real Gold, Real Benefits Section */}
+                <div className="space-y-3 text-center pt-2">
+                  <h3 className="text-sm font-bold text-slate-800 tracking-tight">Real Gold, Real Benefits</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-1.5 shadow-2xs">
+                      <div className="w-9 h-9 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-xs font-black text-amber-700">
+                        24k
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-700 leading-tight">24K Pure Gold (99.9%)</span>
+                    </div>
+
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-1.5 shadow-2xs">
+                      <div className="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700">
+                        <Lock className="w-4 h-4" />
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-700 leading-tight">100% Insured Bank Vault</span>
+                    </div>
+
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-1.5 shadow-2xs">
+                      <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 flex items-center justify-center text-blue-700">
+                        <Coins className="w-4 h-4" />
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-700 leading-tight">Doorstep Delivery Option</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* T&Cs Disclaimer */}
+                <p className="text-[11px] text-slate-400 leading-relaxed text-center px-2">
+                  By continuing, I agree to the <a href="#tnc" className="text-blue-600 underline font-semibold">T&Cs on Digital Gold Services</a>. I hereby declare that the funds used to invest...<button className="text-slate-600 font-bold ml-1">Read More</button>
+                </p>
+
+                {/* Invest Now CTA Button */}
+                <button
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      toast.error('Identity Verification Required', {
+                        description: 'Please authenticate your profile session under the Account section first.',
+                      });
+                      return;
+                    }
+
+                    const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
+                    if (goldAmount > availableBal) {
+                      toast.warning('Investment Exceeds Total Balance', {
+                        description: `Warning: You are attempting to invest ₹${goldAmount.toLocaleString()}, which exceeds your total wallet balance of ₹${availableBal.toLocaleString()}. Please deposit funds first.`,
+                      });
+                      return;
+                    }
+
+                    // Calculate estimated returns
+                    const estimatedProfit = Math.round(
+                      goldMode === 'SIP' 
+                        ? (goldFrequency === 'Daily' ? goldAmount * 0.85 : goldFrequency === 'Weekly' ? goldAmount * 1.5 : goldAmount * 2.2) 
+                        : goldAmount * 1.8
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
+
+                    const planTitle = goldMode === 'SIP' ? `24K Gold SIP (${goldFrequency})` : `24K Gold Investment (One Time)`;
+
+                    if (onExecuteTrade) {
+                      onExecuteTrade(goldAmount, estimatedProfit, planTitle, goldMode === 'SIP' ? goldFrequency : 'One Time');
+                      toast.success(`Invested in ${planTitle}!`, {
+                        description: `Successfully allocated ₹${goldAmount.toLocaleString()} into 24K pure digital gold.`,
+                        icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                      });
+
+                      setTimeout(() => {
+                        const trackerEl = document.getElementById('user-active-trades-section');
+                        if (trackerEl) trackerEl.scrollIntoView({ behavior: 'smooth' });
+                      }, 300);
+                    }
+                  }}
+                  className="w-full bg-[#005b52] hover:bg-[#004d40] text-white py-4 rounded-full font-extrabold text-lg shadow-lg hover:shadow-xl transition-all active:scale-[0.99] flex items-center justify-center space-x-2"
+                >
+                  <span>Invest Now</span>
+                </button>
+              </div>
+            ) : (
+              /* On-Chain Tokens Table */
+              <div className="bg-[#121212] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-5 text-left font-sans">
+                {/* Warning Indicator */}
+                <div className="bg-amber-500/5 rounded-2xl border border-amber-500/10 p-4 flex items-start space-x-3">
+                  <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-400 leading-normal">
+                    <b>On-Chain Web3 Tokens:</b> These tokens are subject to greater fluctuations and capital liquidity risks. Please exercise absolute risk management.
+                  </p>
+                </div>
+
+                {/* Alpha Search / Filter tags */}
+                <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-3.5 w-4 h-4 text-slate-500" />
+                    <input
+                      type="text"
+                      placeholder="Search VIP Alpha tokens..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-[#1e2026] text-white text-sm border border-slate-800 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#f0b90b] transition-all"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-1.5 overflow-x-auto scrollbar-hide">
+                    {(['All', 'Point+', 'BSC', 'Ethereum', 'Solana'] as const).map(f => (
+                      <button
+                        key={f}
+                        onClick={() => setAlphaFilter(f)}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                          alphaFilter === f ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
+                        }`}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Alpha Grid Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-900 text-slate-500 text-[11px] font-mono uppercase tracking-wider">
+                        <th className="pb-3 font-semibold">Name / Vol</th>
+                        <th className="pb-3 text-right font-semibold">Last Price</th>
+                        <th className="pb-3 text-right font-semibold">24h Chg%</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-900">
+                      {getFilteredAlphaAssets().map((token) => {
+                        const isUp = token.change >= 0;
+                        return (
+                          <tr
+                            key={token.symbol}
+                            onClick={() => setSelectedAsset(token)}
+                            className="group hover:bg-[#1e2026]/50 cursor-pointer transition-all border-b border-slate-900/40"
+                          >
+                            <td className="py-4 flex items-center space-x-3">
+                              <div className="bg-amber-500/15 p-2.5 rounded-xl border border-amber-500/30">
+                                <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
+                              </div>
+                              <div>
+                                <span className="text-sm font-black text-white tracking-tight font-mono">${token.symbol}</span>
+                                <span className="text-[11px] text-slate-500 font-medium block">{token.label} | {token.extra}</span>
+                              </div>
+                            </td>
+                            <td className="py-4 text-right">
+                              <div className="text-sm font-black text-white font-mono">{token.price.toFixed(5)}</div>
+                              <div className="text-[10px] text-slate-500 font-mono">${token.price.toFixed(5)}</div>
+                            </td>
+                            <td className="py-4 text-right">
+                              <span className={`inline-block px-3 py-1.5 rounded-lg text-xs font-black font-mono transition-all duration-300 ${
+                                isUp 
+                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20' 
+                                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 group-hover:bg-rose-500/20'
+                              }`}>
+                                {isUp ? '+' : ''}{token.change.toFixed(2)}%
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </motion.div>
         ) : activeHeaderTab === 'Options' ? (
           <motion.div
