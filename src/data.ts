@@ -40,38 +40,38 @@ export const INITIAL_TICKERS: StockTicker[] = [
 ];
 
 export const DEFAULT_SETTINGS: SystemSettings = {
-  qrCodeUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600', 
-  upiId: 'cryptixone.sbi@ybl',
-  supportWhatsApp: '800324109',
-  supportPhone: '800324109',
+  qrCodeUrl: 'upi://pay?pa=atifsidzs786-4@okhdfcbank&pn=Atif%20Aahmed%20Siddiqui&aid=uGICAgMDZr8GEdg', 
+  upiId: 'atifsidzs786-4@okhdfcbank',
+  supportWhatsApp: '8000324109',
+  supportPhone: '8000324109',
   traderName: 'Vikram Singhania',
-  traderPhone: '800324109',
-  traderWhatsApp: '800324109',
+  traderPhone: '8000324109',
+  traderWhatsApp: '8000324109',
   companyEmail: 'support@CryptixOne.com',
-  scannerUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600',
+  scannerUrl: 'upi://pay?pa=atifsidzs786-4@okhdfcbank&pn=Atif%20Aahmed%20Siddiqui&aid=uGICAgMDZr8GEdg',
   qrCodeImage: '',
   complianceMessage: '⚠️ REGULATORY DIRECTIVE: All capital allocations must adhere to standard HFT liquidity protocol V8. Sovereign wealth protection active.',
 
   // Default individual UPI IDs and QRs
-  upiUpiId: 'cryptixone.upi@sbi',
+  upiUpiId: 'atifsidzs786-4@okhdfcbank',
   upiQrCode: '',
   
-  upiQrUpiId: 'cryptixone.qr@sbi',
+  upiQrUpiId: 'atifsidzs786-4@okhdfcbank',
   upiQrQrCode: '',
   
-  paytmUpiId: 'cryptixone.paytm@sbi',
+  paytmUpiId: 'atifsidzs786-4@okhdfcbank',
   paytmQrCode: '',
   
-  gpayUpiId: 'cryptixone.gpay@sbi',
+  gpayUpiId: 'atifsidzs786-4@okhdfcbank',
   gpayQrCode: '',
   
-  phonepeUpiId: 'cryptixone.pe@sbi',
+  phonepeUpiId: 'atifsidzs786-4@okhdfcbank',
   phonepeQrCode: '',
   
-  icashUpiId: 'cryptixone.icash@sbi',
+  icashUpiId: 'atifsidzs786-4@okhdfcbank',
   icashQrCode: '',
   
-  gatepayUpiId: 'cryptixone.gate@sbi',
+  gatepayUpiId: 'atifsidzs786-4@okhdfcbank',
   gatepayQrCode: '',
 
   // Default Crypto addresses
