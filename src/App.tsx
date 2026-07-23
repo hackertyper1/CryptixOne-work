@@ -20,6 +20,7 @@ import {
   doc, 
   setDoc, 
   updateDoc, 
+  deleteDoc,
   addDoc, 
   query, 
   orderBy, 
@@ -199,7 +200,7 @@ export default function App() {
 
     // Real-time Users
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-      const usersData = snapshot.docs.map(doc => ({ ...doc.data() } as User));
+      const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
       setUsers(usersData);
       
       // Update current user if logged in
@@ -304,7 +305,7 @@ export default function App() {
   // Sync balances and users to Firestore on changes
   const syncUser = async (user: User) => {
     try {
-      await setDoc(doc(db, 'users', user.id), user);
+      await setDoc(doc(db, 'users', user.id), user, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `users/${user.id}`);
     }
@@ -312,7 +313,7 @@ export default function App() {
 
   const syncTransaction = async (tx: Transaction) => {
     try {
-      await setDoc(doc(db, 'transactions', tx.id), tx);
+      await setDoc(doc(db, 'transactions', tx.id), tx, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `transactions/${tx.id}`);
     }
@@ -320,7 +321,7 @@ export default function App() {
 
   const syncTrade = async (trade: ActiveTrade) => {
     try {
-      await setDoc(doc(db, 'trades', trade.id), trade);
+      await setDoc(doc(db, 'trades', trade.id), trade, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `trades/${trade.id}`);
     }
@@ -328,7 +329,7 @@ export default function App() {
 
   const syncInvestmentRequest = async (req: InvestmentRequest) => {
     try {
-      await setDoc(doc(db, 'requests', req.id), req);
+      await setDoc(doc(db, 'requests', req.id), req, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `requests/${req.id}`);
     }
@@ -336,7 +337,7 @@ export default function App() {
 
   const syncAdminMessage = async (msg: AdminMessage) => {
     try {
-      await setDoc(doc(db, 'messages', msg.id), msg);
+      await setDoc(doc(db, 'messages', msg.id), msg, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `messages/${msg.id}`);
     }
@@ -344,27 +345,92 @@ export default function App() {
 
   const saveUsersToStorage = async (updatedUsers: User[]) => {
     setUsers(updatedUsers);
-    // Removing the loop that writes ALL users to Firestore
+    for (const u of updatedUsers) {
+      if (u && u.id) {
+        syncUser(u);
+      }
+    }
   };
 
   const saveTransactionsToStorage = async (updatedTxs: Transaction[]) => {
     setTransactions(updatedTxs);
-    // Removing the loop that writes ALL transactions to Firestore
+    for (const t of updatedTxs) {
+      if (t && t.id) {
+        syncTransaction(t);
+      }
+    }
   };
 
   const saveTradesToStorage = async (updatedTrades: ActiveTrade[]) => {
     setActiveTrades(updatedTrades);
-    // Removing the loop that writes ALL trades to Firestore
+    for (const tr of updatedTrades) {
+      if (tr && tr.id) {
+        syncTrade(tr);
+      }
+    }
   };
 
   const saveInvestmentRequestsToStorage = async (updatedRequests: InvestmentRequest[]) => {
     setInvestmentRequests(updatedRequests);
-    // Removing the loop that writes ALL requests to Firestore
+    for (const r of updatedRequests) {
+      if (r && r.id) {
+        syncInvestmentRequest(r);
+      }
+    }
   };
 
   const saveAdminMessagesToStorage = async (updated: AdminMessage[]) => {
     setAdminMessages(updated);
-    // Removing the loop that writes ALL admin messages to Firestore
+    for (const m of updated) {
+      if (m && m.id) {
+        syncAdminMessage(m);
+      }
+    }
+  };
+
+  // Delete handlers for Admin Panel
+  const handleDeleteTransaction = async (txId: string) => {
+    try {
+      await deleteDoc(doc(db, 'transactions', txId));
+      setTransactions(prev => prev.filter(t => t.id !== txId));
+      addLog(`Permanently deleted transaction ${txId} from database`, 'admin');
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `transactions/${txId}`);
+    }
+  };
+
+  const handleDeleteInvestmentRequest = async (reqId: string) => {
+    try {
+      await deleteDoc(doc(db, 'requests', reqId));
+      setInvestmentRequests(prev => prev.filter(r => r.id !== reqId));
+      addLog(`Permanently deleted investment request ${reqId} from database`, 'admin');
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `requests/${reqId}`);
+    }
+  };
+
+  const handleClearAllRejectedTransactions = async () => {
+    const rejectedTxs = transactions.filter(t => t.status === 'rejected');
+    for (const tx of rejectedTxs) {
+      try {
+        await deleteDoc(doc(db, 'transactions', tx.id));
+      } catch (e) {
+        console.error('Failed to delete rejected tx:', tx.id);
+      }
+    }
+    setTransactions(prev => prev.filter(t => t.status !== 'rejected'));
+    
+    const rejectedReqs = investmentRequests.filter(r => r.status === 'rejected');
+    for (const req of rejectedReqs) {
+      try {
+        await deleteDoc(doc(db, 'requests', req.id));
+      } catch (e) {
+        console.error('Failed to delete rejected req:', req.id);
+      }
+    }
+    setInvestmentRequests(prev => prev.filter(r => r.status !== 'rejected'));
+
+    addLog(`Cleared all rejected transactions and requests from database`, 'admin');
   };
 
   const handleSendMessage = async (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => {
@@ -1324,12 +1390,15 @@ export default function App() {
                 onUpdateSettings={handleUpdateSettings}
                 onApproveTransaction={handleApproveTransaction}
                 onRejectTransaction={handleRejectTransaction}
+                onDeleteTransaction={handleDeleteTransaction}
                 onUpdateUserBalance={handleUpdateUserBalance}
                 onUpdateUsersBatch={saveUsersToStorage}
                 onPushComplianceMessage={handlePushComplianceMessage}
                 investmentRequests={investmentRequests}
                 onApproveInvestmentRequest={handleApproveInvestmentRequest}
                 onRejectInvestmentRequest={handleRejectInvestmentRequest}
+                onDeleteInvestmentRequest={handleDeleteInvestmentRequest}
+                onClearAllRejectedTransactions={handleClearAllRejectedTransactions}
                 adminMessages={adminMessages}
                 onSendMessage={handleSendMessage}
               />

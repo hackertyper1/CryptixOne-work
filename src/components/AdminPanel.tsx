@@ -28,7 +28,8 @@ import {
   TrendingUp,
   ArrowDownCircle,
   ArrowUpCircle,
-  LayoutDashboard
+  LayoutDashboard,
+  Trash2
 } from 'lucide-react';
 
 interface AdminPanelProps {
@@ -39,10 +40,13 @@ interface AdminPanelProps {
   onUpdateSettings: (newSettings: SystemSettings) => void;
   onApproveTransaction: (txId: string) => void;
   onRejectTransaction: (txId: string) => void;
+  onDeleteTransaction?: (txId: string) => void;
   onUpdateUserBalance: (userId: string, deposit: number, profit: number, active: number, traderName: string, traderPhone: string, slCode?: string, isWithdrawalLocked?: boolean, restrictionReason?: string) => void;
   investmentRequests: InvestmentRequest[];
   onApproveInvestmentRequest: (reqId: string) => void;
   onRejectInvestmentRequest: (reqId: string) => void;
+  onDeleteInvestmentRequest?: (reqId: string) => void;
+  onClearAllRejectedTransactions?: () => void;
   adminMessages: AdminMessage[];
   onSendMessage: (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => void;
   onPushComplianceMessage: (userId: string, message: string) => void;
@@ -57,11 +61,14 @@ export default function AdminPanel({
   onUpdateSettings,
   onApproveTransaction,
   onRejectTransaction,
+  onDeleteTransaction,
   onUpdateUserBalance,
   onUpdateUsersBatch,
   investmentRequests = [],
   onApproveInvestmentRequest,
   onRejectInvestmentRequest,
+  onDeleteInvestmentRequest,
+  onClearAllRejectedTransactions,
   adminMessages,
   onSendMessage,
   onPushComplianceMessage
@@ -691,6 +698,21 @@ export default function AdminPanel({
                           >
                             <XCircle className="w-3.5 h-3.5 mr-1" /> Reject
                           </button>
+                          {onDeleteTransaction && (
+                            <button
+                              id={`btn-delete-${tx.id}`}
+                              onClick={() => {
+                                if (confirm(`Permanently delete claim ${tx.id} from database?`)) {
+                                  onDeleteTransaction(tx.id);
+                                  toast.success("Transaction deleted permanently.");
+                                }
+                              }}
+                              className="bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white font-bold px-2 py-1.5 rounded text-[10px] transition-all inline-flex items-center ml-1"
+                              title="Delete permanently from database"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -702,9 +724,26 @@ export default function AdminPanel({
 
           {/* Master Transaction History Log Tab (all payments tracking) */}
           <div className="bg-[#0b101f] border border-slate-800 rounded-2xl p-5 shadow" id="all-payments-history-tab">
-            <h3 className="text-sm font-extrabold text-white uppercase tracking-wider font-mono mb-4">
-              All Unified Transactions History Logs
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <h3 className="text-sm font-extrabold text-white uppercase tracking-wider font-mono">
+                All Unified Transactions History Logs
+              </h3>
+              {onClearAllRejectedTransactions && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm("Clear and permanently remove ALL rejected transactions and requests from the database?")) {
+                      onClearAllRejectedTransactions();
+                      toast.success("Cleared all rejected transactions.");
+                    }
+                  }}
+                  className="bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-slate-950 border border-rose-500/20 font-bold px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider transition-all inline-flex items-center space-x-1.5 self-start sm:self-auto"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clear All Rejected</span>
+                </button>
+              )}
+            </div>
 
             <div className="mb-4">
               <input
@@ -730,6 +769,7 @@ export default function AdminPanel({
                       <th className="py-2 px-1">Amount</th>
                       <th className="py-2 px-1">UTR/Reference</th>
                       <th className="py-2 px-1 text-right">Verification Status</th>
+                      <th className="py-2 px-1 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-900">
@@ -766,6 +806,22 @@ export default function AdminPanel({
                           }`}>
                             {tx.status}
                           </span>
+                        </td>
+                        <td className="py-3 px-1 text-right">
+                          {onDeleteTransaction && (
+                            <button
+                              onClick={() => {
+                                if (confirm(`Permanently delete transaction ${tx.id} from database?`)) {
+                                  onDeleteTransaction(tx.id);
+                                  toast.success("Transaction deleted permanently.");
+                                }
+                              }}
+                              className="p-1 text-slate-500 hover:text-red-400 transition-colors"
+                              title="Delete Transaction"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -1689,15 +1745,47 @@ export default function AdminPanel({
                             </button>
                           </div>
                         ) : req.status === 'approved' ? (
-                          <span className="text-emerald-400 font-bold uppercase text-[9px] flex items-center justify-end space-x-1">
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            <span>Trade Active</span>
-                          </span>
+                          <div className="flex items-center justify-end space-x-2">
+                            <span className="text-emerald-400 font-bold uppercase text-[9px] flex items-center space-x-1">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              <span>Trade Active</span>
+                            </span>
+                            {onDeleteInvestmentRequest && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Permanently delete investment request ${req.id}?`)) {
+                                    onDeleteInvestmentRequest(req.id);
+                                    toast.success("Investment request deleted.");
+                                  }
+                                }}
+                                className="p-1 text-slate-500 hover:text-red-400 transition-colors"
+                                title="Delete Request"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         ) : (
-                          <span className="text-red-400 font-bold uppercase text-[9px] flex items-center justify-end space-x-1">
-                            <XCircle className="w-3.5 h-3.5" />
-                            <span>Rejected</span>
-                          </span>
+                          <div className="flex items-center justify-end space-x-2">
+                            <span className="text-red-400 font-bold uppercase text-[9px] flex items-center space-x-1">
+                              <XCircle className="w-3.5 h-3.5" />
+                              <span>Rejected</span>
+                            </span>
+                            {onDeleteInvestmentRequest && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Permanently delete investment request ${req.id}?`)) {
+                                    onDeleteInvestmentRequest(req.id);
+                                    toast.success("Investment request deleted.");
+                                  }
+                                }}
+                                className="p-1 text-slate-500 hover:text-red-400 transition-colors"
+                                title="Delete Request"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </td>
                     </tr>
