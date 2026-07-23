@@ -294,60 +294,69 @@ export default function App() {
   }, []);
 
   // Sync balances and users to Firestore on changes
+  const syncUser = async (user: User) => {
+    try {
+      await setDoc(doc(db, 'users', user.id), user);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, `users/${user.id}`);
+    }
+  };
+
+  const syncTransaction = async (tx: Transaction) => {
+    try {
+      await setDoc(doc(db, 'transactions', tx.id), tx);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, `transactions/${tx.id}`);
+    }
+  };
+
+  const syncTrade = async (trade: ActiveTrade) => {
+    try {
+      await setDoc(doc(db, 'trades', trade.id), trade);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, `trades/${trade.id}`);
+    }
+  };
+
+  const syncInvestmentRequest = async (req: InvestmentRequest) => {
+    try {
+      await setDoc(doc(db, 'requests', req.id), req);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, `requests/${req.id}`);
+    }
+  };
+
+  const syncAdminMessage = async (msg: AdminMessage) => {
+    try {
+      await setDoc(doc(db, 'messages', msg.id), msg);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, `messages/${msg.id}`);
+    }
+  };
+
   const saveUsersToStorage = async (updatedUsers: User[]) => {
     setUsers(updatedUsers);
-    // Sync each user to Firestore
-    for (const user of updatedUsers) {
-      try {
-        await setDoc(doc(db, 'users', user.id), user);
-      } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, `users/${user.id}`);
-      }
-    }
+    // Removing the loop that writes ALL users to Firestore
   };
 
   const saveTransactionsToStorage = async (updatedTxs: Transaction[]) => {
     setTransactions(updatedTxs);
-    for (const tx of updatedTxs) {
-      try {
-        await setDoc(doc(db, 'transactions', tx.id), tx);
-      } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, `transactions/${tx.id}`);
-      }
-    }
+    // Removing the loop that writes ALL transactions to Firestore
   };
 
   const saveTradesToStorage = async (updatedTrades: ActiveTrade[]) => {
     setActiveTrades(updatedTrades);
-    for (const trade of updatedTrades) {
-      try {
-        await setDoc(doc(db, 'trades', trade.id), trade);
-      } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, `trades/${trade.id}`);
-      }
-    }
+    // Removing the loop that writes ALL trades to Firestore
   };
 
   const saveInvestmentRequestsToStorage = async (updatedRequests: InvestmentRequest[]) => {
     setInvestmentRequests(updatedRequests);
-    for (const req of updatedRequests) {
-      try {
-        await setDoc(doc(db, 'requests', req.id), req);
-      } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, `requests/${req.id}`);
-      }
-    }
+    // Removing the loop that writes ALL requests to Firestore
   };
 
   const saveAdminMessagesToStorage = async (updated: AdminMessage[]) => {
     setAdminMessages(updated);
-    for (const msg of updated) {
-      try {
-        await setDoc(doc(db, 'messages', msg.id), msg);
-      } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, `messages/${msg.id}`);
-      }
-    }
+    // Removing the loop that writes ALL admin messages to Firestore
   };
 
   const handleSendMessage = async (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => {
@@ -359,7 +368,7 @@ export default function App() {
       timestamp: new Date().toLocaleString(),
       read: false
     };
-    await setDoc(doc(db, 'messages', id), newMsg);
+    syncAdminMessage(newMsg);
     addLog(`Sent ${msg.type} message to ${msg.recipientId}: ${msg.subject}`, 'admin');
   };
 
@@ -390,6 +399,7 @@ export default function App() {
           if (progress >= 0.5 && !trade.halfwayNotified) {
             trade.halfwayNotified = true;
             hasChange = true;
+            syncTrade(trade); // Persistence
             
             // Only notify if it's the current user's trade
             if (currentUser && currentUser.id === trade.userId) {
@@ -402,53 +412,49 @@ export default function App() {
           if (now >= trade.endTime) {
             trade.status = 'completed';
             hasChange = true;
-            
+            syncTrade(trade); // Persistence
+
             // Move funds from Active investment to Profit Wallet of client
-            const updatedUsers = users.map(user => {
-              if (user.username === trade.username) {
-                const profitEarned = trade.estimatedProfit;
-                const refundCapital = trade.amount;
-                const newProfit = user.profitWallet + profitEarned;
-                const newActive = Math.max(0, user.activeInvestment - refundCapital);
+            const targetUser = users.find(u => u.username === trade.username);
+            if (targetUser) {
+              const profitEarned = trade.estimatedProfit;
+              const refundCapital = trade.amount;
+              const updatedUser = {
+                ...targetUser,
+                profitWallet: targetUser.profitWallet + profitEarned,
+                activeInvestment: Math.max(0, targetUser.activeInvestment - refundCapital)
+              };
+
+              syncUser(updatedUser); // Persistence
+              
+              // Update local state for immediate feedback (onSnapshot will also trigger eventually)
+              const newUsersList = users.map(u => u.id === updatedUser.id ? updatedUser : u);
+              setUsers(newUsersList);
+
+              if (currentUser && currentUser.username === updatedUser.username) {
+                setCurrentUser(updatedUser);
+                localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
                 
-                const updatedUser = {
-                  ...user,
-                  profitWallet: newProfit,
-                  activeInvestment: newActive
-                };
+                toast.success(`Capital Settlement: +₹${profitEarned}`, {
+                  description: `Contract ${trade.id} has matured successfully. Payout added to your yield balance.`,
+                  duration: 6000,
+                });
 
-                // If currently logged in user is this user, sync current user state
-                if (currentUser && currentUser.username === user.username) {
-                  setCurrentUser(updatedUser);
-                  localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
-                  
-                  // Alert the user of the maturity payout
-                  toast.success(`Capital Settlement: +₹${profitEarned}`, {
-                    description: `Contract ${trade.id} has matured successfully. Payout added to your yield balance.`,
-                    duration: 6000,
-                  });
+                playMaturitySound(soundEffectsEnabled);
 
-                  // Play custom maturity sound
-                  playMaturitySound(soundEffectsEnabled);
-
-                  // Dispatch device Web Notification
-                  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                    try {
-                      new Notification('Contract Matured successfully! 🎉', {
-                        body: `Your trade ${trade.id} has matured. Yield +₹${profitEarned.toLocaleString()} added to your balance.`,
-                        icon: 'https://cdn-icons-png.flaticon.com/512/2953/2953423.png'
-                      });
-                    } catch (err) {
-                      console.log('Notification dispatch failed:', err);
-                    }
+                if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                  try {
+                    new Notification('Contract Matured successfully! 🎉', {
+                      body: `Your trade ${trade.id} has matured. Yield +₹${profitEarned.toLocaleString()} added to your balance.`,
+                      icon: 'https://cdn-icons-png.flaticon.com/512/2953/2953423.png'
+                    });
+                  } catch (err) {
+                    console.log('Notification dispatch failed:', err);
                   }
                 }
-                return updatedUser;
               }
-              return user;
-            });
+            }
             
-            saveUsersToStorage(updatedUsers);
             addLog(`Micro-Investment contract matured and payouts settled. Yield: +${trade.estimatedProfit}`, trade.username);
 
             // Record Profit Transaction in History
@@ -456,14 +462,15 @@ export default function App() {
               id: `TX-${Math.floor(2000 + Math.random() * 8000)}`,
               userId: trade.userId,
               username: trade.username,
-              userPhone: users.find(u => u.id === trade.userId)?.phone || '',
+              userPhone: targetUser?.phone || '',
               type: 'profit',
               amount: trade.estimatedProfit,
               status: 'completed',
               date: new Date().toLocaleString(),
               description: `Matured ${trade.planName} contract yield`
             };
-            saveTransactionsToStorage([profitTx, ...transactions]);
+            syncTransaction(profitTx); // Persistence
+            setTransactions(prev => [profitTx, ...prev]); // Local state update
           }
         }
         return trade;
@@ -558,6 +565,7 @@ export default function App() {
     localStorage.setItem(`cryptix_pass_${newUser.username}`, pass);
     const updatedUsers = [...users, newUser];
     saveUsersToStorage(updatedUsers);
+    syncUser(newUser); // Persist to Firestore
 
     // Automaticaly log in new signup
     setCurrentUser(newUser);
@@ -648,6 +656,7 @@ export default function App() {
 
     const updated = [newTx, ...transactions];
     saveTransactionsToStorage(updated);
+    syncTransaction(newTx);
     addLog(`Submitted deposit UTR claim for verification of ${tx.amount} INR`, currentUser.username);
   };
 
@@ -674,6 +683,8 @@ export default function App() {
       return user;
     });
     saveUsersToStorage(updatedUsers);
+    const updatedUser = updatedUsers.find(u => u.username === currentUser.username);
+    if (updatedUser) syncUser(updatedUser);
 
     const newTx: Transaction = {
       id: `TX-${Math.floor(2000 + Math.random() * 8000)}`,
@@ -689,6 +700,7 @@ export default function App() {
 
     const updatedTxs = [newTx, ...transactions];
     saveTransactionsToStorage(updatedTxs);
+    syncTransaction(newTx);
     addLog(`Submitted withdrawal request for ${amount} INR via ${details.method}`, currentUser.username);
     return true;
   };
@@ -706,6 +718,7 @@ export default function App() {
     });
 
     // Update Client Balances
+    let targetUser: User | undefined;
     const updatedUsers = users.map(u => {
       if (u.username === txMatch.username) {
         let updatedUser = { ...u };
@@ -715,12 +728,6 @@ export default function App() {
           updatedUser.depositWallet += txMatch.amount;
           
           // Automaticaly launch matched 1-hour Micro-Contract Trade!
-          // This ensures immediate real-time feedback and high satisfaction!
-          const simulated1HourDuration = 60 * 60 * 1000; // 1 Hour
-          // For easy demonstration/testing, if contract is less than ₹10k, let it countdown in 3 minutes (180 secs)
-          // or keep standard 1 hour. Let's make it 10 minutes so it has nice speed, or standard 1 hour.
-          // Let's do a fast-track 1-hour contract timer (simulated: 10 mins / 600s) so they see quick payouts!
-          // We can set actual 1-hour countdown.
           const contractTimeMs = 60 * 60 * 1000; 
 
           // Find approximate matched plan to fetch estimated profit
@@ -745,12 +752,11 @@ export default function App() {
           // Save active trades
           const freshTrades = [newActiveTrade, ...activeTrades];
           saveTradesToStorage(freshTrades);
+          syncTrade(newActiveTrade);
 
           // Update active investment indicator
           updatedUser.activeInvestment += matchedPlanAmount;
           updatedUser.depositWallet = Math.max(0, updatedUser.depositWallet - matchedPlanAmount);
-        } else {
-          // Withdrawal completes (payout already deducted on submission)
         }
 
         // Sync currently logged in client profile
@@ -758,13 +764,18 @@ export default function App() {
           setCurrentUser(updatedUser);
           localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
         }
+        targetUser = updatedUser;
         return updatedUser;
       }
       return u;
     });
 
     saveUsersToStorage(updatedUsers);
+    if (targetUser) syncUser(targetUser);
+
+    const updatedTxMatch = { ...txMatch, status: 'completed' as const };
     saveTransactionsToStorage(updatedTxs);
+    syncTransaction(updatedTxMatch);
     addLog(`Approved ${txMatch.type} for ₹${txMatch.amount}. Active contract activated automatically.`, 'admin');
   };
 
@@ -781,6 +792,7 @@ export default function App() {
     });
 
     // Refund withdrawal funds if rejected
+    let targetUser: User | undefined;
     const updatedUsers = users.map(u => {
       if (u.username === txMatch.username) {
         let updatedUser = { ...u };
@@ -791,13 +803,18 @@ export default function App() {
           setCurrentUser(updatedUser);
           localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
         }
+        targetUser = updatedUser;
         return updatedUser;
       }
       return u;
     });
 
     saveUsersToStorage(updatedUsers);
+    if (targetUser) syncUser(targetUser);
+
+    const updatedTxMatch = { ...txMatch, status: 'rejected' as const };
     saveTransactionsToStorage(updatedTxs);
+    syncTransaction(updatedTxMatch);
     addLog(`Rejected ${txMatch.type} claim of ₹${txMatch.amount} for compliance misalignment`, 'admin');
   };
 
@@ -813,6 +830,7 @@ export default function App() {
     isWithdrawalLocked?: boolean,
     restrictionReason?: string
   ) => {
+    let targetUser: User | undefined;
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
         const updated = {
@@ -830,15 +848,18 @@ export default function App() {
           setCurrentUser(updated);
           localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
         }
+        targetUser = updated;
         return updated;
       }
       return u;
     });
     saveUsersToStorage(updatedUsers);
+    if (targetUser) syncUser(targetUser);
     addLog(`Manually modified balances/details for client ID: ${userId}`, 'admin');
   };
 
   const handlePushComplianceMessage = (userId: string, message: string) => {
+    let targetUser: User | undefined;
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
         const updated = {
@@ -849,16 +870,19 @@ export default function App() {
           setCurrentUser(updated);
           localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
         }
+        targetUser = updated;
         return updated;
       }
       return u;
     });
     saveUsersToStorage(updatedUsers);
+    if (targetUser) syncUser(targetUser);
     addLog(`Sent compliance message to client ID: ${userId}`, 'admin');
   };
 
   // 9.1 User Action: Edit SL Code manually
   const handleUpdateSlCode = (userId: string, slCode: string) => {
+    let targetUser: User | undefined;
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
         const updated = {
@@ -869,17 +893,20 @@ export default function App() {
           setCurrentUser(updated);
           localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
         }
+        targetUser = updated;
         return updated;
       }
       return u;
     });
     saveUsersToStorage(updatedUsers);
+    if (targetUser) syncUser(targetUser);
     addLog(`Manually modified SL Code to: ${slCode}`, currentUser?.username || 'user');
   };
 
   // 9.5. Market Trade Action: Update current user wallets
   const handleUpdateWallet = (depositChange: number, profitChange: number) => {
     if (!currentUser) return;
+    let targetUser: User | undefined;
     const updatedUsers = users.map(u => {
       if (u.id === currentUser.id) {
         const updated = {
@@ -889,11 +916,13 @@ export default function App() {
         };
         setCurrentUser(updated);
         localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
+        targetUser = updated;
         return updated;
       }
       return u;
     });
     saveUsersToStorage(updatedUsers);
+    if (targetUser) syncUser(targetUser);
   };
 
   // 9.6. Real Asset Live Trade Action
@@ -914,6 +943,7 @@ export default function App() {
       profitDeduction = amount - depositDeduction;
     }
 
+    let targetUser: User | undefined;
     const updatedUsers = users.map(u => {
       if (u.id === currentUser.id) {
         const updated = {
@@ -924,12 +954,14 @@ export default function App() {
         };
         setCurrentUser(updated);
         localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
+        targetUser = updated;
         return updated;
       }
       return u;
     });
 
     saveUsersToStorage(updatedUsers);
+    if (targetUser) syncUser(targetUser);
 
     // Set simulated countdown durations:
     let durationMs = 60 * 60 * 1000; // default 1 hour
@@ -956,6 +988,7 @@ export default function App() {
 
     const freshTrades = [newActiveTrade, ...activeTrades];
     saveTradesToStorage(freshTrades);
+    syncTrade(newActiveTrade);
     
     // Record Trade Transaction in History
     const tradeTx: Transaction = {
@@ -970,6 +1003,7 @@ export default function App() {
       description: `Opened ${assetName} trade contract (${durationLabel})`
     };
     saveTransactionsToStorage([tradeTx, ...transactions]);
+    syncTransaction(tradeTx);
 
     addLog(`Deducted ₹${amount} and launched active ${assetName} trade contract for ${durationLabel}.`, currentUser.username);
   };
@@ -1000,6 +1034,7 @@ export default function App() {
     };
     const updated = [newReq, ...investmentRequests];
     saveInvestmentRequestsToStorage(updated);
+    syncInvestmentRequest(newReq);
     addLog(`Submitted custom investment form for ₹${req.amount} via WhatsApp`, currentUser.username);
   };
 
@@ -1016,6 +1051,7 @@ export default function App() {
     });
 
     // Update Client Balances
+    let targetUser: User | undefined;
     const updatedUsers = users.map(u => {
       if (u.username === reqMatch.username) {
         let updatedUser = { ...u };
@@ -1042,6 +1078,7 @@ export default function App() {
         // Save active trades
         const freshTrades = [newActiveTrade, ...activeTrades];
         saveTradesToStorage(freshTrades);
+        syncTrade(newActiveTrade);
 
         // Record Investment Transaction in History
         const investTx: Transaction = {
@@ -1056,6 +1093,7 @@ export default function App() {
           description: `Started ${matchedPlan ? matchedPlan.category : 'Custom'} Investment Contract`
         };
         saveTransactionsToStorage([investTx, ...transactions]);
+        syncTransaction(investTx);
 
         // Update active investment indicator
         updatedUser.activeInvestment += reqMatch.amount;
@@ -1065,13 +1103,18 @@ export default function App() {
           setCurrentUser(updatedUser);
           localStorage.setItem('cryptix_current_user', JSON.stringify(updatedUser));
         }
+        targetUser = updatedUser;
         return updatedUser;
       }
       return u;
     });
 
     saveUsersToStorage(updatedUsers);
+    if (targetUser) syncUser(targetUser);
+
+    const updatedReqMatch = { ...reqMatch, status: 'approved' as const };
     saveInvestmentRequestsToStorage(updatedRequests);
+    syncInvestmentRequest(updatedReqMatch);
     addLog(`Approved investment request of ₹${reqMatch.amount} for @${reqMatch.username}`, 'admin');
   };
 
@@ -1087,7 +1130,9 @@ export default function App() {
       return r;
     });
 
+    const updatedReqMatch = { ...reqMatch, status: 'rejected' as const };
     saveInvestmentRequestsToStorage(updatedRequests);
+    syncInvestmentRequest(updatedReqMatch);
     addLog(`Rejected investment request of ₹${reqMatch.amount} for @${reqMatch.username}`, 'admin');
   };
 

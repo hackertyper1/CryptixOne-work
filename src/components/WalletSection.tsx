@@ -430,30 +430,30 @@ export default function WalletSection({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* 1. Google Pay */}
+                {/* 1. GATE PAY */}
                 <button
-                  onClick={() => { setSelectedPaymentMethod('Google Pay'); setPaymentStep('scan_qr'); }}
+                  onClick={() => { setSelectedPaymentMethod('GATE PAY'); setPaymentStep('scan_qr'); }}
                   className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
-                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-pay-icon.png" alt="GPay" className="w-full h-full object-contain" />
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/payment-gateway-icon.png" alt="GATE" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">Google Pay</span>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">GATE PAY</span>
                   </div>
                   <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Secure</span>
                 </button>
 
-                {/* 2. PhonePe */}
+                {/* 2. Phone Pay */}
                 <button
                   onClick={() => { setSelectedPaymentMethod('Phone Pay'); setPaymentStep('scan_qr'); }}
                   className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
-                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-logo-icon.png" alt="PhonePe" className="w-full h-full object-contain" />
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-icon.png" alt="Phone Pay" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">PhonePe</span>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">Phone Pay</span>
                   </div>
                   <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Instant</span>
                 </button>
@@ -479,9 +479,9 @@ export default function WalletSection({
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
-                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/upi-payment-icon.png" alt="UPI" className="w-full h-full object-contain" />
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/credit-card-color-icon.png" alt="Icash" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">Any UPI App</span>
+                    <span className="text-xs font-black text-white uppercase tracking-widest">Icash.one</span>
                   </div>
                   <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Flexible</span>
                 </button>

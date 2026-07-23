@@ -47,9 +47,10 @@ export default function PaymentVerification({ method, amount, upiId, address, is
   const qrUrl = upiId ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=${upiId}&pn=Cryptixo%20Trade&am=${amount}&cu=INR` : null;
 
   const getMethodIcon = () => {
-    if (method.includes('Google')) return "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-pay-icon.png";
-    if (method.includes('Phone')) return "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-logo-icon.png";
+    if (method.includes('GATE')) return "https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/payment-gateway-icon.png";
+    if (method.includes('Phone')) return "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-icon.png";
     if (method.includes('Paytm')) return "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/paytm-icon.png";
+    if (method.includes('Icash')) return "https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/credit-card-color-icon.png";
     if (method.includes('Binance')) return "https://upload.wikimedia.org/wikipedia/commons/e/e8/Binance_Logo.svg";
     return null;
   };
