@@ -135,8 +135,8 @@ export default function HomeSection({
         <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16 pt-4 relative z-10">
           {/* Ministry of Finance India */}
           <div className="flex items-center space-x-4 bg-white/[0.02] backdrop-blur-sm p-4 rounded-2xl border border-white/5 shadow-2xl">
-            <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-2">
-              <Award className="w-full h-full text-amber-500" />
+            <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-1.5 overflow-hidden bg-black/60">
+              <img src="/logo.png" alt="Company Logo" className="w-full h-full object-contain" />
             </div>
             <div className="text-left font-sans">
               <p className="text-[9px] font-semibold text-amber-500 leading-tight uppercase tracking-wider">वित्त मंत्रालय</p>
@@ -147,8 +147,8 @@ export default function HomeSection({
 
           {/* SBI Finance of India */}
           <div className="flex items-center space-x-4 bg-white/[0.02] backdrop-blur-sm p-4 rounded-2xl border border-white/5 shadow-2xl">
-            <div className="w-12 h-12 bg-[#0083ca] rounded-full flex items-center justify-center shadow-lg p-2.5">
-              <ShieldCheck className="w-full h-full text-white" />
+            <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-1.5 overflow-hidden bg-black/60 shadow-lg">
+              <img src="/logo.png" alt="Company Logo" className="w-full h-full object-contain" />
             </div>
             <div className="text-left font-sans">
               <p className="text-xs font-black text-[#00a5ec] leading-none tracking-tight">SBI Finance</p>

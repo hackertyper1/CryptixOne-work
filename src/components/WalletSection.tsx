@@ -429,89 +429,124 @@ export default function WalletSection({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* 1. GATE PAY */}
+              <div className="flex flex-col gap-3">
+                {/* 1. Google Pay */}
                 <button
-                  onClick={() => { setSelectedPaymentMethod('GATE PAY'); setPaymentStep('scan_qr'); }}
-                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                  onClick={() => { setSelectedPaymentMethod('Google Pay'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group w-full"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
-                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/payment-gateway-icon.png" alt="GATE" className="w-full h-full object-contain" />
+                    <div className="w-10 h-10 bg-white border border-slate-200/80 rounded-xl flex items-center justify-center p-2 shadow-sm overflow-hidden shrink-0">
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-pay-icon.png" alt="Google Pay" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">GATE PAY</span>
+                    <div className="text-left">
+                      <span className="text-xs font-black text-white uppercase tracking-widest block">Google Pay</span>
+                      <span className="text-[9px] text-slate-500 font-medium">Instant UPI Transfer</span>
+                    </div>
                   </div>
-                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Secure</span>
+                  <span className="text-[8px] text-slate-400 font-mono font-black uppercase group-hover:text-emerald-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">Fast UPI</span>
                 </button>
 
                 {/* 2. Phone Pay */}
                 <button
                   onClick={() => { setSelectedPaymentMethod('Phone Pay'); setPaymentStep('scan_qr'); }}
-                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group w-full"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
+                    <div className="w-10 h-10 bg-white border border-slate-200/80 rounded-xl flex items-center justify-center p-2 shadow-sm overflow-hidden shrink-0">
                       <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-icon.png" alt="Phone Pay" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">Phone Pay</span>
+                    <div className="text-left">
+                      <span className="text-xs font-black text-white uppercase tracking-widest block">Phone Pay</span>
+                      <span className="text-[9px] text-slate-500 font-medium">PhonePe Direct UPI</span>
+                    </div>
                   </div>
-                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Instant</span>
+                  <span className="text-[8px] text-slate-400 font-mono font-black uppercase group-hover:text-emerald-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">Auto Scan</span>
                 </button>
 
                 {/* 3. Paytm */}
                 <button
                   onClick={() => { setSelectedPaymentMethod('Paytm'); setPaymentStep('scan_qr'); }}
-                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group w-full"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
+                    <div className="w-10 h-10 bg-white border border-slate-200/80 rounded-xl flex items-center justify-center p-2 shadow-sm overflow-hidden shrink-0">
                       <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/paytm-icon.png" alt="Paytm" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">Paytm</span>
+                    <div className="text-left">
+                      <span className="text-xs font-black text-white uppercase tracking-widest block">Paytm</span>
+                      <span className="text-[9px] text-slate-500 font-medium">Paytm Wallet & UPI</span>
+                    </div>
                   </div>
-                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Business</span>
+                  <span className="text-[8px] text-slate-400 font-mono font-black uppercase group-hover:text-emerald-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">Business</span>
                 </button>
 
-                {/* 4. UPI */}
+                {/* 4. Icash */}
                 <button
-                  onClick={() => { setSelectedPaymentMethod('UPI'); setPaymentStep('scan_qr'); }}
-                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                  onClick={() => { setSelectedPaymentMethod('Icash'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group w-full"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
+                    <div className="w-10 h-10 bg-white border border-slate-200/80 rounded-xl flex items-center justify-center p-2 shadow-sm overflow-hidden shrink-0">
                       <img src="https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/credit-card-color-icon.png" alt="Icash" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">Icash.one</span>
+                    <div className="text-left">
+                      <span className="text-xs font-black text-white uppercase tracking-widest block">Icash</span>
+                      <span className="text-[9px] text-slate-500 font-medium">iCash Instant Node</span>
+                    </div>
                   </div>
-                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Flexible</span>
+                  <span className="text-[8px] text-slate-400 font-mono font-black uppercase group-hover:text-emerald-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">Flexible</span>
                 </button>
 
                 {/* 5. Binance Pay */}
                 <button
                   onClick={() => { setSelectedPaymentMethod('Binance Pay'); setPaymentStep('scan_qr'); }}
-                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group w-full"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-[#f3ba2f]/10 border border-[#f3ba2f]/20 rounded-xl flex items-center justify-center p-2">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Binance_Logo.svg" alt="Binance" className="w-full h-full object-contain" />
+                    <div className="w-10 h-10 bg-[#f3ba2f]/10 border border-[#f3ba2f]/30 rounded-xl flex items-center justify-center p-2 shadow-sm overflow-hidden shrink-0">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Binance_Logo.svg" alt="Binance Pay" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">Binance Pay</span>
+                    <div className="text-left">
+                      <span className="text-xs font-black text-white uppercase tracking-widest block">Binance Pay</span>
+                      <span className="text-[9px] text-slate-500 font-medium">USDT / BUSD Crypto</span>
+                    </div>
                   </div>
-                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Crypto</span>
+                  <span className="text-[8px] text-slate-400 font-mono font-black uppercase group-hover:text-emerald-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">Crypto Web3</span>
                 </button>
 
-                {/* 6. iCash.One */}
+                {/* 6. Ethereum (ETH) */}
                 <button
-                  onClick={() => { setSelectedPaymentMethod('iCash.One'); setPaymentStep('scan_qr'); }}
-                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
+                  onClick={() => { setSelectedPaymentMethod('Ethereum (ETH)'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group w-full"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-emerald-600/10 border border-emerald-500/20 rounded-xl flex items-center justify-center">
-                       <div className="text-[12px] font-black text-emerald-500 font-mono">iC</div>
+                    <div className="w-10 h-10 bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-center p-2 shadow-sm overflow-hidden shrink-0">
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/ethereum-eth-icon.png" alt="Ethereum (ETH)" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-xs font-black text-white uppercase tracking-widest">iCash.One</span>
+                    <div className="text-left">
+                      <span className="text-xs font-black text-white uppercase tracking-widest block">Ethereum (ETH)</span>
+                      <span className="text-[9px] text-slate-500 font-medium">ERC-20 Native Token</span>
+                    </div>
                   </div>
-                  <span className="text-[8px] text-slate-500 font-mono font-black uppercase group-hover:text-emerald-400">Node Pay</span>
+                  <span className="text-[8px] text-slate-400 font-mono font-black uppercase group-hover:text-emerald-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">ETH Node</span>
+                </button>
+
+                {/* 7. Gate Pay */}
+                <button
+                  onClick={() => { setSelectedPaymentMethod('Gate Pay'); setPaymentStep('scan_qr'); }}
+                  className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group w-full"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-center p-2 shadow-sm overflow-hidden shrink-0">
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/payment-gateway-icon.png" alt="Gate Pay" className="w-full h-full object-contain" />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-xs font-black text-white uppercase tracking-widest block">Gate Pay</span>
+                      <span className="text-[9px] text-slate-500 font-medium">Payment Gateway Protocol</span>
+                    </div>
+                  </div>
+                  <span className="text-[8px] text-slate-400 font-mono font-black uppercase group-hover:text-emerald-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800">Gateway</span>
                 </button>
               </div>
               
@@ -529,9 +564,19 @@ export default function WalletSection({
             <PaymentVerification 
               method={selectedPaymentMethod}
               amount={depositAmount}
-              upiId={systemSettings.upiId}
-              isCrypto={selectedPaymentMethod === 'Binance Pay'}
-              address={systemSettings.binanceAddress}
+              upiId={
+                selectedPaymentMethod.includes('Google') ? (systemSettings.gpayUpiId || systemSettings.upiId) :
+                selectedPaymentMethod.includes('Phone') ? (systemSettings.phonepeUpiId || systemSettings.upiId) :
+                selectedPaymentMethod.includes('Paytm') ? (systemSettings.paytmUpiId || systemSettings.upiId) :
+                selectedPaymentMethod.includes('Icash') ? (systemSettings.icashUpiId || systemSettings.upiId) :
+                selectedPaymentMethod.includes('Gate') ? (systemSettings.gatepayUpiId || systemSettings.upiId) :
+                systemSettings.upiId
+              }
+              isCrypto={selectedPaymentMethod === 'Binance Pay' || selectedPaymentMethod === 'Ethereum (ETH)'}
+              address={
+                selectedPaymentMethod === 'Ethereum (ETH)' ? (systemSettings.otherCryptoAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F') :
+                systemSettings.binanceAddress
+              }
               onCancel={() => setPaymentStep('select_method')}
               onVerify={(utr) => {
                 if (isManualMode) {

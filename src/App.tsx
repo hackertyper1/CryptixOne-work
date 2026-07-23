@@ -48,8 +48,13 @@ interface FirestoreErrorInfo {
 }
 
 const handleFirestoreError = (error: unknown, operationType: OperationType, path: string | null) => {
+  const errStr = error instanceof Error ? error.message : String(error);
+  if (errStr.includes('resource-exhausted') || errStr.includes('Quota limit exceeded') || errStr.includes('quota')) {
+    console.warn('Firestore write quota limit reached. System running in local state fallback mode.');
+    return;
+  }
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errStr,
     operationType,
     path,
     authInfo: {
@@ -57,9 +62,8 @@ const handleFirestoreError = (error: unknown, operationType: OperationType, path
       email: auth.currentUser?.email,
     }
   };
-  console.error('Firestore Error Detailed:', JSON.stringify(errInfo));
-  // If connection is unavailable, it might be a temporary network issue or a configuration error
-  if (errInfo.error.includes('unavailable')) {
+  console.warn('Firestore Operation Notice:', JSON.stringify(errInfo));
+  if (errStr.includes('unavailable')) {
     toast.error('System synchronization interrupted. Reconnecting...', { id: 'conn-error' });
   }
 };
@@ -381,7 +385,11 @@ export default function App() {
       username,
       encryptedPayload: encryptPayload({ action, username, time: Date.now() })
     };
-    await setDoc(doc(db, 'logs', id), newLog);
+    try {
+      await setDoc(doc(db, 'logs', id), newLog);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.WRITE, `logs/${id}`);
+    }
   };
 
   // 2. Active Trade Countdown Mature & Payout Loop

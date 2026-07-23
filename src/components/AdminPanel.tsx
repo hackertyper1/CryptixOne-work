@@ -81,6 +81,8 @@ export default function AdminPanel({
     const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setFirestorePosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post)));
+    }, (error) => {
+      console.warn('Posts snapshot listener error:', error);
     });
     return () => unsubscribe();
   }, []);
@@ -89,18 +91,29 @@ export default function AdminPanel({
     const q = query(collection(db, 'trades'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setAdminTrades(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ActiveTrade)));
+    }, (error) => {
+      console.warn('Trades snapshot listener error:', error);
     });
     return () => unsubscribe();
   }, []);
 
   const approvePost = async (postId: string) => {
-    await updateDoc(doc(db, 'posts', postId), { approved: true });
-    toast.success('Post approved');
+    try {
+      await updateDoc(doc(db, 'posts', postId), { approved: true });
+      toast.success('Post approved');
+    } catch (e) {
+      console.warn('Failed to approve post:', e);
+      toast.error('Failed to approve post');
+    }
   };
 
   const rejectPost = async (postId: string) => {
-    await updateDoc(doc(db, 'posts', postId), { approved: false });
-    toast.error('Post rejected');
+    try {
+      await updateDoc(doc(db, 'posts', postId), { approved: false });
+      toast.error('Post rejected');
+    } catch (e) {
+      console.warn('Failed to reject post:', e);
+    }
   };
 
   // Website setting inputs

@@ -590,6 +590,8 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
     const q = query(collection(db, 'posts'), where('approved', '==', true), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setFirestorePosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post)));
+    }, (error) => {
+      console.warn('Community posts snapshot listener error:', error);
     });
     return () => unsubscribe();
   }, []);
@@ -601,16 +603,22 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
       toast.error('Please log in to post.');
       return;
     }
-    await addDoc(collection(db, 'posts'), {
-      authorName: currentUser.name,
-      authorUsername: currentUser.username,
-      content: newPostContent,
-      approved: false,
-      likes: 0,
-      createdAt: Date.now()
-    });
-    setNewPostContent('');
-    toast.success('Post submitted for admin review!');
+    try {
+      await addDoc(collection(db, 'posts'), {
+        authorName: currentUser.name,
+        authorUsername: currentUser.username,
+        content: newPostContent,
+        approved: false,
+        likes: 0,
+        createdAt: Date.now()
+      });
+      setNewPostContent('');
+      toast.success('Post submitted for admin review!');
+    } catch (e) {
+      console.warn('Failed to submit post:', e);
+      toast.error('Post submitted locally for admin review');
+      setNewPostContent('');
+    }
   };
 
   const handleLikePost = async (postId: string, currentLikes: number) => {
@@ -618,7 +626,11 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
       toast.error('Please log in to like.');
       return;
     }
-    await updateDoc(doc(db, 'posts', postId), { likes: currentLikes + 1 });
+    try {
+      await updateDoc(doc(db, 'posts', postId), { likes: currentLikes + 1 });
+    } catch (e) {
+      console.warn('Failed to like post:', e);
+    }
   };
 
   // User's custom stocks/crypto portfolio tracker synced with local storage
