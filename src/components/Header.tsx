@@ -16,14 +16,25 @@ interface HeaderProps {
   isMobile?: boolean;
 }
 
-// Highly detailed, premium logo component using the new official CryptixOne logo
+// Highly detailed, premium logo component using the new official CryptixOne logo with fallback vector emblem
 export function CryptixLogo({ className = "w-9 h-9", logoUrl }: { className?: string, logoUrl?: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <div className={`${className} bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.5)] border border-amber-300/40 text-slate-950 font-black font-display text-xs tracking-tighter`}>
+        C1
+      </div>
+    );
+  }
+
   return (
     <img 
       src={logoUrl || "/logo.png"} 
       alt="CryptixOne Logo" 
       className={`${className} object-contain drop-shadow-[0_0_8px_rgba(245,158,11,0.35)]`}
       referrerPolicy="no-referrer"
+      onError={() => setHasError(true)}
     />
   );
 }

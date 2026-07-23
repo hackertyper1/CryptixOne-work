@@ -87,7 +87,14 @@ export default function SplashScreen({ onComplete, logoUrl }: SplashScreenProps)
               className="mb-10 relative"
             >
               <div className="relative overflow-hidden flex items-center justify-center">
-                <img src={logoUrl || "/logo.png"} alt="CryptixOne Logo" className="w-48 h-48 md:w-64 md:h-64 object-contain relative z-10" />
+                <img 
+                  src={logoUrl || "/logo.png"} 
+                  alt="CryptixOne Logo" 
+                  className="w-48 h-48 md:w-64 md:h-64 object-contain relative z-10" 
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = 'none';
+                  }}
+                />
                 
                 {/* Dynamic Rotating Glow */}
                 <motion.div
