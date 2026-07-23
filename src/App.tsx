@@ -345,47 +345,22 @@ export default function App() {
 
   const saveUsersToStorage = async (updatedUsers: User[]) => {
     setUsers(updatedUsers);
-    for (const u of updatedUsers) {
-      if (u && u.id) {
-        syncUser(u);
-      }
-    }
   };
 
   const saveTransactionsToStorage = async (updatedTxs: Transaction[]) => {
     setTransactions(updatedTxs);
-    for (const t of updatedTxs) {
-      if (t && t.id) {
-        syncTransaction(t);
-      }
-    }
   };
 
   const saveTradesToStorage = async (updatedTrades: ActiveTrade[]) => {
     setActiveTrades(updatedTrades);
-    for (const tr of updatedTrades) {
-      if (tr && tr.id) {
-        syncTrade(tr);
-      }
-    }
   };
 
   const saveInvestmentRequestsToStorage = async (updatedRequests: InvestmentRequest[]) => {
     setInvestmentRequests(updatedRequests);
-    for (const r of updatedRequests) {
-      if (r && r.id) {
-        syncInvestmentRequest(r);
-      }
-    }
   };
 
   const saveAdminMessagesToStorage = async (updated: AdminMessage[]) => {
     setAdminMessages(updated);
-    for (const m of updated) {
-      if (m && m.id) {
-        syncAdminMessage(m);
-      }
-    }
   };
 
   // Delete handlers for Admin Panel
@@ -431,6 +406,34 @@ export default function App() {
     setInvestmentRequests(prev => prev.filter(r => r.status !== 'rejected'));
 
     addLog(`Cleared all rejected transactions and requests from database`, 'admin');
+  };
+
+  const handlePurgeDatabase = async () => {
+    if (!window.confirm("CRITICAL WARNING: Are you sure you want to purge and delete all transactions, investment requests, and active trade contracts from the database? This will clear all ghost claims and reset active contracts.")) {
+      return;
+    }
+    try {
+      const txSnap = await getDocs(collection(db, 'transactions'));
+      for (const d of txSnap.docs) {
+        await deleteDoc(doc(db, 'transactions', d.id));
+      }
+      const reqSnap = await getDocs(collection(db, 'requests'));
+      for (const d of reqSnap.docs) {
+        await deleteDoc(doc(db, 'requests', d.id));
+      }
+      const tradeSnap = await getDocs(collection(db, 'trades'));
+      for (const d of tradeSnap.docs) {
+        await deleteDoc(doc(db, 'trades', d.id));
+      }
+      setTransactions([]);
+      setInvestmentRequests([]);
+      setActiveTrades([]);
+      addLog('Admin purged all transactions, requests, and trades from database', 'admin');
+      toast.success('Database Purged Successfully', { description: 'All pending/rejected claims, withdrawal requests, and active contracts have been deleted.' });
+    } catch (e: any) {
+      handleFirestoreError(e, OperationType.DELETE, 'database/purge');
+      toast.error('Database Purge Failed', { description: e.message });
+    }
   };
 
   const handleSendMessage = async (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => {
@@ -1399,6 +1402,7 @@ export default function App() {
                 onRejectInvestmentRequest={handleRejectInvestmentRequest}
                 onDeleteInvestmentRequest={handleDeleteInvestmentRequest}
                 onClearAllRejectedTransactions={handleClearAllRejectedTransactions}
+                onPurgeDatabase={handlePurgeDatabase}
                 adminMessages={adminMessages}
                 onSendMessage={handleSendMessage}
               />

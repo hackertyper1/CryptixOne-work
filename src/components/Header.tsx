@@ -20,17 +20,21 @@ interface HeaderProps {
 export function CryptixLogo({ className = "w-9 h-9", logoUrl }: { className?: string, logoUrl?: string }) {
   const [hasError, setHasError] = useState(false);
 
-  if (hasError) {
+  if (hasError || !logoUrl || logoUrl === '/logo.png') {
     return (
-      <div className={`${className} bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.5)] border border-amber-300/40 text-slate-950 font-black font-display text-xs tracking-tighter`}>
-        C1
+      <div className={`${className} bg-gradient-to-tr from-amber-600 via-amber-500 to-emerald-400 rounded-xl flex items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.5)] border border-amber-300/50 text-slate-950 font-black font-display relative overflow-hidden group`}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.4),transparent)]"></div>
+        <span className="relative z-10 text-xs tracking-tighter drop-shadow-sm flex items-center font-mono">
+          <span className="text-slate-950 font-extrabold">CX</span>
+          <span className="text-white font-black">1</span>
+        </span>
       </div>
     );
   }
 
   return (
     <img 
-      src={logoUrl || "/logo.png"} 
+      src={logoUrl} 
       alt="CryptixOne Logo" 
       className={`${className} object-contain drop-shadow-[0_0_8px_rgba(245,158,11,0.35)]`}
       referrerPolicy="no-referrer"

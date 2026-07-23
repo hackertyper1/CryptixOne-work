@@ -47,6 +47,7 @@ interface AdminPanelProps {
   onRejectInvestmentRequest: (reqId: string) => void;
   onDeleteInvestmentRequest?: (reqId: string) => void;
   onClearAllRejectedTransactions?: () => void;
+  onPurgeDatabase?: () => void;
   adminMessages: AdminMessage[];
   onSendMessage: (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => void;
   onPushComplianceMessage: (userId: string, message: string) => void;
@@ -69,6 +70,7 @@ export default function AdminPanel({
   onRejectInvestmentRequest,
   onDeleteInvestmentRequest,
   onClearAllRejectedTransactions,
+  onPurgeDatabase,
   adminMessages,
   onSendMessage,
   onPushComplianceMessage
@@ -1416,6 +1418,22 @@ export default function AdminPanel({
               </button>
             </div>
           </form>
+
+          {onPurgeDatabase && (
+            <div className="mt-8 bg-red-500/10 border border-red-500/30 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h4 className="text-xs font-black text-red-400 uppercase tracking-widest font-mono">Database Maintenance & Purge Controls</h4>
+                <p className="text-[11px] text-slate-400 mt-0.5">Instantly delete all transactions, pending/rejected withdrawal claims, and active trade contracts from the database to clear ghost records.</p>
+              </div>
+              <button
+                type="button"
+                onClick={onPurgeDatabase}
+                className="bg-red-600 hover:bg-red-500 text-white font-black text-xs px-5 py-2.5 rounded-xl uppercase tracking-wider transition-all shadow shrink-0"
+              >
+                Purge All Database Records
+              </button>
+            </div>
+          )}
         </section>
       )}
 

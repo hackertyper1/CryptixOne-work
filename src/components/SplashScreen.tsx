@@ -87,14 +87,22 @@ export default function SplashScreen({ onComplete, logoUrl }: SplashScreenProps)
               className="mb-10 relative"
             >
               <div className="relative overflow-hidden flex items-center justify-center">
-                <img 
-                  src={logoUrl || "/logo.png"} 
-                  alt="CryptixOne Logo" 
-                  className="w-48 h-48 md:w-64 md:h-64 object-contain relative z-10" 
-                  onError={(e) => {
-                    (e.currentTarget as HTMLElement).style.display = 'none';
-                  }}
-                />
+                {(!logoUrl || logoUrl === '/logo.png') ? (
+                  <div className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-gradient-to-tr from-amber-600 via-amber-500 to-emerald-400 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(245,158,11,0.4)] border-2 border-amber-300/60 relative group">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_40%,rgba(255,255,255,0.45),transparent)]"></div>
+                    <span className="text-6xl md:text-8xl font-black font-display text-slate-950 tracking-tighter drop-shadow-md">CX</span>
+                    <span className="text-xs md:text-sm font-mono tracking-widest text-slate-900 font-extrabold uppercase mt-1">CryptixOne OS</span>
+                  </div>
+                ) : (
+                  <img 
+                    src={logoUrl} 
+                    alt="CryptixOne Logo" 
+                    className="w-48 h-48 md:w-64 md:h-64 object-contain relative z-10" 
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                )}
                 
                 {/* Dynamic Rotating Glow */}
                 <motion.div
