@@ -13,7 +13,7 @@ import SplashScreen from './components/SplashScreen';
 import AuthGate from './components/AuthGate';
 import { User, ActiveTrade, Transaction, SystemSettings, ActivityLog, InvestmentPlan, InvestmentRequest, AdminMessage } from './types';
 import { DEFAULT_SETTINGS, encryptPayload, INVESTMENT_PLANS } from './data';
-import { db } from './lib/firebase';
+import { db, auth } from './lib/firebase';
 import { 
   collection, 
   onSnapshot, 
@@ -27,6 +27,42 @@ import {
   getDocs,
   getDoc
 } from 'firebase/firestore';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+  };
+}
+
+const handleFirestoreError = (error: unknown, operationType: OperationType, path: string | null) => {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    operationType,
+    path,
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+    }
+  };
+  console.error('Firestore Error Detailed:', JSON.stringify(errInfo));
+  // If connection is unavailable, it might be a temporary network issue or a configuration error
+  if (errInfo.error.includes('unavailable')) {
+    toast.error('System synchronization interrupted. Reconnecting...', { id: 'conn-error' });
+  }
+};
 
 const synthesizeNotificationSound = () => {
   try {
@@ -146,11 +182,11 @@ export default function App() {
         setSystemSettings(settingsSnap.data() as SystemSettings);
       } else {
         // Seed if missing
-        setDoc(settingsRef, DEFAULT_SETTINGS);
+        setDoc(settingsRef, DEFAULT_SETTINGS).catch(e => handleFirestoreError(e, OperationType.WRITE, 'settings/config'));
         setSystemSettings(DEFAULT_SETTINGS);
       }
     }, (error) => {
-      console.error("Settings snapshot error:", error);
+      handleFirestoreError(error, OperationType.GET, 'settings/config');
     });
 
     // Real-time Users
@@ -169,7 +205,7 @@ export default function App() {
         }
       }
     }, (error) => {
-      console.error("Users snapshot error:", error);
+      handleFirestoreError(error, OperationType.LIST, 'users');
     });
 
     // Request Notification permission
@@ -184,7 +220,7 @@ export default function App() {
       const txs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Transaction));
       setTransactions(txs);
     }, (error) => {
-      console.error("Transactions snapshot error:", error);
+      handleFirestoreError(error, OperationType.LIST, 'transactions');
     });
 
     // Real-time Active Trades
@@ -192,7 +228,7 @@ export default function App() {
       const trades = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as ActiveTrade));
       setActiveTrades(trades);
     }, (error) => {
-      console.error("Trades snapshot error:", error);
+      handleFirestoreError(error, OperationType.LIST, 'trades');
     });
 
     // Real-time Logs
@@ -200,7 +236,7 @@ export default function App() {
       const logs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as ActivityLog));
       setActivityLogs(logs);
     }, (error) => {
-      console.error("Logs snapshot error:", error);
+      handleFirestoreError(error, OperationType.LIST, 'logs');
     });
 
     // Real-time Investment Requests
@@ -208,7 +244,7 @@ export default function App() {
       const reqs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as InvestmentRequest));
       setInvestmentRequests(reqs);
     }, (error) => {
-      console.error("Requests snapshot error:", error);
+      handleFirestoreError(error, OperationType.LIST, 'requests');
     });
 
     // Real-time Admin Messages
@@ -216,7 +252,7 @@ export default function App() {
       const msgs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AdminMessage));
       setAdminMessages(msgs);
     }, (error) => {
-      console.error("Messages snapshot error:", error);
+      handleFirestoreError(error, OperationType.LIST, 'messages');
     });
 
     return () => {
@@ -262,35 +298,55 @@ export default function App() {
     setUsers(updatedUsers);
     // Sync each user to Firestore
     for (const user of updatedUsers) {
-      await setDoc(doc(db, 'users', user.id), user);
+      try {
+        await setDoc(doc(db, 'users', user.id), user);
+      } catch (e) {
+        handleFirestoreError(e, OperationType.WRITE, `users/${user.id}`);
+      }
     }
   };
 
   const saveTransactionsToStorage = async (updatedTxs: Transaction[]) => {
     setTransactions(updatedTxs);
     for (const tx of updatedTxs) {
-      await setDoc(doc(db, 'transactions', tx.id), tx);
+      try {
+        await setDoc(doc(db, 'transactions', tx.id), tx);
+      } catch (e) {
+        handleFirestoreError(e, OperationType.WRITE, `transactions/${tx.id}`);
+      }
     }
   };
 
   const saveTradesToStorage = async (updatedTrades: ActiveTrade[]) => {
     setActiveTrades(updatedTrades);
     for (const trade of updatedTrades) {
-      await setDoc(doc(db, 'trades', trade.id), trade);
+      try {
+        await setDoc(doc(db, 'trades', trade.id), trade);
+      } catch (e) {
+        handleFirestoreError(e, OperationType.WRITE, `trades/${trade.id}`);
+      }
     }
   };
 
   const saveInvestmentRequestsToStorage = async (updatedRequests: InvestmentRequest[]) => {
     setInvestmentRequests(updatedRequests);
     for (const req of updatedRequests) {
-      await setDoc(doc(db, 'requests', req.id), req);
+      try {
+        await setDoc(doc(db, 'requests', req.id), req);
+      } catch (e) {
+        handleFirestoreError(e, OperationType.WRITE, `requests/${req.id}`);
+      }
     }
   };
 
   const saveAdminMessagesToStorage = async (updated: AdminMessage[]) => {
     setAdminMessages(updated);
     for (const msg of updated) {
-      await setDoc(doc(db, 'messages', msg.id), msg);
+      try {
+        await setDoc(doc(db, 'messages', msg.id), msg);
+      } catch (e) {
+        handleFirestoreError(e, OperationType.WRITE, `messages/${msg.id}`);
+      }
     }
   };
 
@@ -394,6 +450,20 @@ export default function App() {
             
             saveUsersToStorage(updatedUsers);
             addLog(`Micro-Investment contract matured and payouts settled. Yield: +${trade.estimatedProfit}`, trade.username);
+
+            // Record Profit Transaction in History
+            const profitTx: Transaction = {
+              id: `TX-${Math.floor(2000 + Math.random() * 8000)}`,
+              userId: trade.userId,
+              username: trade.username,
+              userPhone: users.find(u => u.id === trade.userId)?.phone || '',
+              type: 'profit',
+              amount: trade.estimatedProfit,
+              status: 'completed',
+              date: new Date().toLocaleString(),
+              description: `Matured ${trade.planName} contract yield`
+            };
+            saveTransactionsToStorage([profitTx, ...transactions]);
           }
         }
         return trade;
@@ -700,6 +770,25 @@ export default function App() {
     addLog(`Manually modified balances/details for client ID: ${userId}`, 'admin');
   };
 
+  const handlePushComplianceMessage = (userId: string, message: string) => {
+    const updatedUsers = users.map(u => {
+      if (u.id === userId) {
+        const updated = {
+          ...u,
+          complianceMessages: [...(u.complianceMessages || []), message]
+        };
+        if (currentUser && currentUser.id === userId) {
+          setCurrentUser(updated);
+          localStorage.setItem('cryptix_current_user', JSON.stringify(updated));
+        }
+        return updated;
+      }
+      return u;
+    });
+    saveUsersToStorage(updatedUsers);
+    addLog(`Sent compliance message to client ID: ${userId}`, 'admin');
+  };
+
   // 9.1 User Action: Edit SL Code manually
   const handleUpdateSlCode = (userId: string, slCode: string) => {
     const updatedUsers = users.map(u => {
@@ -799,6 +888,20 @@ export default function App() {
 
     const freshTrades = [newActiveTrade, ...activeTrades];
     saveTradesToStorage(freshTrades);
+    
+    // Record Trade Transaction in History
+    const tradeTx: Transaction = {
+      id: `TX-${Math.floor(2000 + Math.random() * 8000)}`,
+      userId: currentUser.id,
+      username: currentUser.username,
+      userPhone: currentUser.phone,
+      type: 'trade',
+      amount: amount,
+      status: 'completed',
+      date: new Date().toLocaleString(),
+      description: `Opened ${assetName} trade contract (${durationLabel})`
+    };
+    saveTransactionsToStorage([tradeTx, ...transactions]);
 
     addLog(`Deducted ₹${amount} and launched active ${assetName} trade contract for ${durationLabel}.`, currentUser.username);
   };
@@ -871,6 +974,20 @@ export default function App() {
         // Save active trades
         const freshTrades = [newActiveTrade, ...activeTrades];
         saveTradesToStorage(freshTrades);
+
+        // Record Investment Transaction in History
+        const investTx: Transaction = {
+          id: `TX-${Math.floor(2000 + Math.random() * 8000)}`,
+          userId: u.id,
+          username: u.username,
+          userPhone: u.phone,
+          type: 'investment',
+          amount: reqMatch.amount,
+          status: 'completed',
+          date: new Date().toLocaleString(),
+          description: `Started ${matchedPlan ? matchedPlan.category : 'Custom'} Investment Contract`
+        };
+        saveTransactionsToStorage([investTx, ...transactions]);
 
         // Update active investment indicator
         updatedUser.activeInvestment += reqMatch.amount;
@@ -1079,6 +1196,8 @@ export default function App() {
                 onApproveTransaction={handleApproveTransaction}
                 onRejectTransaction={handleRejectTransaction}
                 onUpdateUserBalance={handleUpdateUserBalance}
+                onUpdateUsersBatch={saveUsersToStorage}
+                onPushComplianceMessage={handlePushComplianceMessage}
                 investmentRequests={investmentRequests}
                 onApproveInvestmentRequest={handleApproveInvestmentRequest}
                 onRejectInvestmentRequest={handleRejectInvestmentRequest}

@@ -567,16 +567,16 @@ export default function WalletSection({
             />
           )}
 
-          {/* STEP 3: Trading Form (Blank) */}
+          {/* STEP 3: Crypto Trading Form */}
           {paymentStep === 'trading_form' && (
             <div className="space-y-6 animate-fadeIn text-left">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <h3 className="text-2xl font-black text-white uppercase tracking-tight font-display">
-                    Trading <span className="text-emerald-500">Application</span>
+                    Crypto <span className="text-emerald-500">Trading Form</span>
                   </h3>
                   <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em] font-black">
-                    Finalize your {selectedPlanForInvestment?.category} investment
+                    Finalize your {selectedPlanForInvestment?.category} investment profile
                   </p>
                 </div>
               </div>
@@ -584,7 +584,7 @@ export default function WalletSection({
               <form onSubmit={handleTradingFormSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Full Name</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Name</label>
                     <input 
                       type="text" required value={formFullName} onChange={(e) => setFormFullName(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
@@ -592,7 +592,7 @@ export default function WalletSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Phone Number</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Number</label>
                     <input 
                       type="tel" required value={formPhone} onChange={(e) => setFormPhone(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
@@ -600,7 +600,7 @@ export default function WalletSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Email Address</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Email</label>
                     <input 
                       type="email" required value={formEmail} onChange={(e) => setFormEmail(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
@@ -616,14 +616,14 @@ export default function WalletSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Date of Birth</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">DOB</label>
                     <input 
                       type="date" required value={formDob} onChange={(e) => setFormDob(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Residential Address</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Addresss</label>
                     <input 
                       type="text" required value={formAddress} onChange={(e) => setFormAddress(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
@@ -631,7 +631,7 @@ export default function WalletSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Payment App Used</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Payment App</label>
                     <input 
                       type="text" required value={formPaymentApp} onChange={(e) => setFormPaymentApp(e.target.value)}
                       className="w-full bg-[#060b17] border border-slate-800 rounded-xl py-3 px-4 text-white font-bold outline-none focus:border-emerald-500"
@@ -639,20 +639,19 @@ export default function WalletSection({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Amount Invested (Locked)</label>
+                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">Amount Invested (Auto Fill)</label>
                     <input 
                       type="text" disabled value={`₹${depositAmount.toLocaleString()}`}
                       className="w-full bg-[#060b17]/50 border border-slate-800/50 rounded-xl py-3 px-4 text-slate-400 font-bold outline-none cursor-not-allowed"
                     />
                   </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 text-left block">UTR / Ref Number (Captured)</label>
-                    <input 
-                      type="text" disabled value={formUtr}
-                      className="w-full bg-[#060b17]/50 border border-slate-800/50 rounded-xl py-3 px-4 text-slate-400 font-bold outline-none cursor-not-allowed"
-                    />
-                  </div>
                 </div>
+                
+                <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-xl flex items-center justify-between">
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">UTR Reference (Auto Fill)</span>
+                  <span className="text-[10px] font-mono text-emerald-500 font-black">{formUtr}</span>
+                </div>
+
                 <button
                   type="submit"
                   className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-2xl uppercase tracking-[0.3em] transition-all shadow-xl shadow-emerald-500/20"
@@ -969,19 +968,31 @@ export default function WalletSection({
       {internalTab === 'withdraw' && (
         <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-5 space-y-5 relative overflow-hidden" id="withdrawal-request-form">
           {/* Withdrawal Lock Overlay */}
-          {currentUser?.isWithdrawalLocked && (currentUser.profitWallet > 0 || activeTrades.some(t => t.userId === currentUser.id && (Date.now() - t.startTime) > 3600000)) && (
-            <div className="absolute inset-0 z-50 backdrop-blur-md bg-slate-950/70 flex flex-col items-center justify-center p-6 text-center border-2 border-red-500/20 rounded-[1.5rem] animate-fadeIn">
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mb-4 border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
-                <Lock className="w-8 h-8 animate-pulse" />
+          {currentUser?.isWithdrawalLocked && (
+            <div className="absolute inset-0 z-50 backdrop-blur-xl bg-slate-950/80 flex flex-col items-center justify-center p-6 text-center border-4 border-red-500/30 rounded-[1.5rem] animate-fadeIn transition-all duration-700">
+              <div className="absolute inset-0 bg-red-950/20 mix-blend-overlay" />
+              <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center text-red-500 mb-6 border-2 border-red-500/40 shadow-[0_0_40px_rgba(239,68,68,0.4)] relative z-10">
+                <Lock className="w-10 h-10 animate-pulse" />
               </div>
-              <h4 className="text-xl font-black text-white uppercase tracking-tight font-display mb-2">Liquidity Restricted</h4>
-              <p className="text-sm text-slate-300 max-w-xs font-bold leading-relaxed uppercase tracking-wider text-[11px]">
-                Your withdrawal functionality has been restricted by the compliance department.
+              <h4 className="text-2xl font-black text-white uppercase tracking-tighter font-display mb-3 relative z-10">Account Restricted</h4>
+              <p className="text-xs text-slate-300 max-w-sm font-bold leading-relaxed uppercase tracking-[0.15em] mb-8 relative z-10">
+                Your withdrawal channel has been secured by the regulatory desk.
               </p>
-              <div className="mt-6 p-4 bg-red-500 text-slate-950 rounded-xl font-black text-xs uppercase tracking-widest animate-bounce">
-                Kindly contact to your trader
+              
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl space-y-4 relative z-10 w-full max-w-xs">
+                <div className="bg-red-500 text-slate-950 py-3 rounded-xl font-black text-xs uppercase tracking-widest animate-pulse shadow-lg shadow-red-500/20">
+                  Kindly contact to your trader
+                </div>
+                
+                <div className="space-y-2 pt-2">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{currentUser?.traderName || systemSettings.traderName || 'Vikram Singhania'}</p>
+                  <p className="text-xs font-black text-emerald-400 font-mono tracking-tighter">
+                    WhatsApp: +91 {currentUser?.traderPhone || systemSettings.traderWhatsApp || '800324109'}
+                  </p>
+                </div>
               </div>
-              <p className="mt-4 text-[9px] text-slate-500 font-mono uppercase font-bold">Error Code: SEC-LOCKED-0x882</p>
+              
+              <p className="mt-8 text-[10px] text-red-500/60 font-mono uppercase font-black tracking-widest relative z-10">Error Code: COMPLIANCE-LOCK-729</p>
             </div>
           )}
 
@@ -1276,11 +1287,13 @@ export default function WalletSection({
                 >
                   <div className="flex items-center space-x-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
-                      tx.type === 'deposit' 
+                      tx.type === 'deposit' || tx.type === 'profit'
                         ? 'bg-emerald-500/5 text-emerald-400 border-emerald-500/10' 
-                        : 'bg-amber-500/5 text-amber-400 border-amber-500/10'
+                        : tx.type === 'withdrawal' || tx.type === 'investment' || tx.type === 'trade' || tx.type === 'loss'
+                        ? 'bg-amber-500/5 text-amber-400 border-amber-500/10'
+                        : 'bg-slate-500/5 text-slate-400 border-slate-500/10'
                     }`}>
-                      {tx.type === 'deposit' ? (
+                      {tx.type === 'deposit' || tx.type === 'profit' ? (
                         <ArrowUpRight className="w-4 h-4" />
                       ) : (
                         <ArrowDownRight className="w-4 h-4" />
@@ -1290,27 +1303,34 @@ export default function WalletSection({
                     <div className="min-w-0 text-left">
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-black text-slate-200">
-                          {tx.type === 'deposit' ? 'Ledger Credit' : 'Withdrawal Payout'}
+                          {tx.type === 'deposit' ? 'Ledger Credit' : 
+                           tx.type === 'withdrawal' ? 'Withdrawal Payout' :
+                           tx.type === 'investment' ? 'Capital Allocation' :
+                           tx.type === 'trade' ? 'Trade Execution' :
+                           tx.type === 'profit' ? 'Yield Settlement' :
+                           tx.type === 'loss' ? 'Trade Deficit' : 'Transaction'}
                         </span>
                         <span className="text-[9px] font-mono font-bold text-slate-500">
                           #{tx.id}
                         </span>
                       </div>
                       <span className="text-[10px] font-mono text-slate-400 truncate block">
-                        {tx.type === 'deposit' 
+                        {tx.description || (tx.type === 'deposit' 
                           ? `Ref: ${tx.utr || 'Direct Transfer'}` 
-                          : `Channel: ${(tx.bankDetails?.method || 'UPI/BANK').toUpperCase()}`}
+                          : `Channel: ${(tx.bankDetails?.method || 'UPI/BANK').toUpperCase()}`)}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end space-x-4 border-t sm:border-t-0 border-slate-800/40 pt-2 sm:pt-0">
                     <div className="text-left sm:text-right">
-                      <span className="text-xs font-mono font-black text-white block">
-                        {tx.type === 'deposit' ? '+' : '-'} {formatIndianCurrency(tx.amount)}
+                      <span className={`text-xs font-mono font-black block ${
+                        tx.type === 'deposit' || tx.type === 'profit' ? 'text-emerald-400' : 'text-amber-400'
+                      }`}>
+                        {tx.type === 'deposit' || tx.type === 'profit' ? '+' : '-'} {formatIndianCurrency(tx.amount)}
                       </span>
                       <span className="text-[8px] font-mono text-slate-500 block uppercase">
-                        INR Value Settlement
+                        {tx.type === 'profit' ? 'Yield Profit' : tx.type === 'loss' ? 'Trade Loss' : 'INR Value Settlement'}
                       </span>
                     </div>
 

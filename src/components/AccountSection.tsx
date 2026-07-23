@@ -395,6 +395,17 @@ export default function AccountSection({
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 text-left" id="account-section-container">
+      {/* Individual Compliance Marquee */}
+      {isLoggedIn && currentUser?.complianceMessages && currentUser.complianceMessages.length > 0 && (
+        <div className="bg-red-500/10 border-y border-red-500/20 py-2 overflow-hidden mb-2" id="user-compliance-marquee">
+          <div className="animate-marquee whitespace-nowrap">
+            <span className="text-[10px] md:text-xs font-black text-red-500 uppercase tracking-[0.2em] px-4">
+              {currentUser.complianceMessages.map(msg => `*** ${msg} ***`).join(' ')}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Luxury Mobile Account Profile Design - Midnight Premium Theme */}
       <section className="md:hidden bg-[#05070a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8" id="mobile-profile-modern">
         {/* Deep Slate Banner with Ambient Glow */}
@@ -693,26 +704,35 @@ export default function AccountSection({
           <div className="space-y-4">
             <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/5">
               <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest block mb-1">Assigned Officer</span>
-              <p className="text-sm font-black text-white">{systemSettings.traderName || currentUser?.traderName || 'Vikram Singhania (Senior Trader)'}</p>
+              <p className="text-sm font-black text-white">{currentUser?.traderName || systemSettings.traderName || 'Vikram Singhania (Senior Trader)'}</p>
               <div className="mt-2 flex items-center space-x-1.5">
                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                 <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Active & Monitoring</span>
               </div>
             </div>
 
-            <a
-              href={`https://wa.me/91${systemSettings.supportWhatsApp || currentUser?.traderPhone || '800324109'}?text=Hello%20Sir,%20I%20am%20registered%20as%20${currentUser?.username}%20on%20CryptixOne.%20Please%20guide%20my%20investment%20portfolio.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center justify-center space-x-2 py-4 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-[10px] rounded-2xl uppercase tracking-[0.15em] transition-all shadow-xl active:scale-95"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>Connect on WhatsApp</span>
-            </a>
+            <div className="grid grid-cols-2 gap-3">
+              <a
+                href={`tel:+91${currentUser?.traderPhone || systemSettings.traderPhone || '800324109'}`}
+                className="flex items-center justify-center space-x-2 py-3 bg-white/5 hover:bg-white/10 text-white font-black text-[9px] rounded-xl uppercase tracking-widest transition-all border border-white/10"
+              >
+                <Phone className="w-3 h-3" />
+                <span>Call Now</span>
+              </a>
+              <a
+                href={`https://wa.me/91${currentUser?.traderPhone || systemSettings.traderWhatsApp || '800324109'}?text=Hello%20Sir,%20I%20am%20registered%20as%20${currentUser?.username}%20on%20CryptixOne.%20Please%20guide%20my%20investment%20portfolio.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center space-x-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-[9px] rounded-xl uppercase tracking-widest transition-all shadow-lg"
+              >
+                <MessageSquare className="w-3 h-3" />
+                <span>WhatsApp</span>
+              </a>
+            </div>
           </div>
         </section>
 
-        {/* Compliance Card */}
+        {/* Compliance Card with Scroll History */}
         <section className="bg-[#05070a] border border-white/10 rounded-[2rem] p-8 shadow-xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-blue-500/10 transition-all" />
           
@@ -726,34 +746,36 @@ export default function AccountSection({
             </div>
           </div>
           
-          <div className="space-y-4 relative z-10">
-            {adminMessages.filter(m => m.recipientId === 'all' || m.recipientId === currentUser?.id).length === 0 ? (
+          <div className="relative z-10 h-[220px] overflow-y-auto pr-2 custom-scrollbar space-y-3" id="compliance-message-scroll-history">
+            {(!currentUser?.complianceMessages || currentUser.complianceMessages.length === 0) && adminMessages.filter(m => m.recipientId === 'all').length === 0 ? (
               <div className="bg-white/[0.02] p-6 rounded-2xl border border-white/5 text-center">
-                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">System is currently clear of any priority compliance alerts.</p>
+                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed italic">No active compliance directives found in the current audit cycle.</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {adminMessages
-                  .filter(m => m.recipientId === 'all' || m.recipientId === currentUser?.id)
-                  .slice(0, 2)
-                  .map((msg) => (
-                    <div key={msg.id} className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-1">
-                      <div className="flex justify-between items-center">
-                        <h5 className="text-[10px] font-black text-white uppercase tracking-tight">{msg.subject}</h5>
-                        <span className="text-[8px] text-slate-600 font-mono">{msg.timestamp}</span>
-                      </div>
-                      <p className="text-[9px] text-slate-400 line-clamp-1">{msg.content}</p>
+              <>
+                {/* Individual Messages */}
+                {currentUser?.complianceMessages?.map((msg, idx) => (
+                  <div key={`ind-${idx}`} className="bg-red-500/5 border border-red-500/10 p-4 rounded-2xl space-y-2 group/msg hover:bg-red-500/10 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <span className="text-[8px] font-black text-red-400 uppercase tracking-[0.2em] px-2 py-0.5 bg-red-400/10 rounded-full">Priority Directive</span>
                     </div>
-                  ))}
-              </div>
+                    <p className="text-[11px] text-slate-300 font-bold leading-relaxed">{msg}</p>
+                  </div>
+                ))}
+                
+                {/* Broadcast Messages */}
+                {adminMessages.filter(m => m.recipientId === 'all').map((msg) => (
+                  <div key={msg.id} className="bg-blue-500/5 border border-blue-500/10 p-4 rounded-2xl space-y-2 group/msg hover:bg-blue-500/10 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <span className="text-[8px] font-black text-blue-400 uppercase tracking-[0.2em] px-2 py-0.5 bg-blue-400/10 rounded-full">System Broadcast</span>
+                      <span className="text-[8px] text-slate-500 font-mono">{new Date(msg.timestamp).toLocaleDateString()}</span>
+                    </div>
+                    <h5 className="text-[10px] font-black text-white uppercase tracking-tight">{msg.subject}</h5>
+                    <p className="text-[11px] text-slate-400 font-medium leading-relaxed">{msg.content}</p>
+                  </div>
+                ))}
+              </>
             )}
-            
-            <div className="pt-2 flex flex-col space-y-2">
-              <div className="flex items-center space-x-2 px-3 py-2 bg-blue-500/5 rounded-xl border border-blue-500/10">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Global AML Protocol v2.4 Active</span>
-              </div>
-            </div>
           </div>
         </section>
 

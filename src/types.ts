@@ -15,6 +15,7 @@ export interface User {
   traderPhone: string;
   slCode?: string;
   isWithdrawalLocked?: boolean;
+  complianceMessages?: string[]; // Array of manual messages from admin
   createdAt: string;
 }
 
@@ -48,10 +49,11 @@ export interface Transaction {
   userId: string;
   username: string;
   userPhone: string;
-  type: 'deposit' | 'withdrawal';
+  type: 'deposit' | 'withdrawal' | 'investment' | 'trade' | 'profit' | 'loss';
   amount: number;
   status: 'pending' | 'completed' | 'rejected' | 'approved';
   date: string;
+  description?: string; // For trade/investment details
   utr?: string;
   bankDetails?: {
     accountNo: string;
@@ -77,6 +79,8 @@ export interface SystemSettings {
   supportWhatsApp: string;
   supportPhone: string;
   traderName?: string;
+  traderPhone?: string;
+  traderWhatsApp?: string;
   companyEmail: string;
   scannerUrl?: string; // explicitly for the scanner update
   qrCodeImage?: string; // base64 or url for the admin uploaded QR code

@@ -40,11 +40,13 @@ export const INITIAL_TICKERS: StockTicker[] = [
 ];
 
 export const DEFAULT_SETTINGS: SystemSettings = {
-  qrCodeUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600', // high quality placeholder or generated visual
+  qrCodeUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600', 
   upiId: 'cryptixone.sbi@ybl',
   supportWhatsApp: '800324109',
   supportPhone: '800324109',
   traderName: 'Vikram Singhania',
+  traderPhone: '800324109',
+  traderWhatsApp: '800324109',
   companyEmail: 'support@CryptixOne.com',
   scannerUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600',
   qrCodeImage: '',

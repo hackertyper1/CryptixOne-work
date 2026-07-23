@@ -45,6 +45,8 @@ interface AdminPanelProps {
   onRejectInvestmentRequest: (reqId: string) => void;
   adminMessages: AdminMessage[];
   onSendMessage: (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => void;
+  onPushComplianceMessage: (userId: string, message: string) => void;
+  onUpdateUsersBatch: (updatedUsers: User[]) => void;
 }
 
 export default function AdminPanel({
@@ -56,11 +58,13 @@ export default function AdminPanel({
   onApproveTransaction,
   onRejectTransaction,
   onUpdateUserBalance,
+  onUpdateUsersBatch,
   investmentRequests = [],
   onApproveInvestmentRequest,
   onRejectInvestmentRequest,
   adminMessages,
-  onSendMessage
+  onSendMessage,
+  onPushComplianceMessage
 }: AdminPanelProps) {
   // Authentication states
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
@@ -108,6 +112,8 @@ export default function AdminPanel({
   const [phoneInput, setPhoneInput] = useState<string>(systemSettings.supportPhone);
   const [emailInput, setEmailInput] = useState<string>(systemSettings.companyEmail);
   const [traderNameInput, setTraderNameInput] = useState<string>(systemSettings.traderName || 'Vikram Singhania');
+  const [traderPhoneInput, setTraderPhoneInput] = useState<string>(systemSettings.traderPhone || '800324109');
+  const [traderWhatsAppInput, setTraderWhatsAppInput] = useState<string>(systemSettings.traderWhatsApp || '800324109');
   const [complianceMessageInput, setComplianceMessageInput] = useState<string>(systemSettings.complianceMessage || '');
   const [tradeTimeLimitInput, setTradeTimeLimitInput] = useState<number>(systemSettings.tradeTimeLimit || 60);
   const [settingsSuccess, setSettingsSuccess] = useState<boolean>(false);
@@ -152,6 +158,8 @@ export default function AdminPanel({
     setPhoneInput(systemSettings.supportPhone || '');
     setEmailInput(systemSettings.companyEmail || '');
     setTraderNameInput(systemSettings.traderName || 'Vikram Singhania');
+    setTraderPhoneInput(systemSettings.traderPhone || '800324109');
+    setTraderWhatsAppInput(systemSettings.traderWhatsApp || '800324109');
     setComplianceMessageInput(systemSettings.complianceMessage || '');
     setTradeTimeLimitInput(systemSettings.tradeTimeLimit || 60);
 
@@ -207,6 +215,7 @@ export default function AdminPanel({
   // Search state
   const [userSearchTerm, setUserSearchTerm] = useState<string>('');
   const [txSearchTerm, setTxSearchTerm] = useState<string>('');
+  const [individualComplianceMessage, setIndividualComplianceMessage] = useState<string>('');
 
   // Encrypted Logs Toggle state
   const [decryptLogs, setDecryptLogs] = useState<boolean>(false);
@@ -255,6 +264,8 @@ export default function AdminPanel({
       supportWhatsApp: whatsappInput,
       supportPhone: phoneInput,
       traderName: traderNameInput,
+      traderPhone: traderPhoneInput,
+      traderWhatsApp: traderWhatsAppInput,
       complianceMessage: complianceMessageInput,
       companyEmail: emailInput,
       scannerUrl: scannerUrlInput,
@@ -855,6 +866,30 @@ export default function AdminPanel({
               </div>
 
               <div className="space-y-1">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Trader Phone (Global)</label>
+                <input
+                  type="text"
+                  required
+                  id="settings-traderphone-input"
+                  value={traderPhoneInput}
+                  onChange={(e) => setTraderPhoneInput(e.target.value)}
+                  className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Trader WhatsApp (Global)</label>
+                <input
+                  type="text"
+                  required
+                  id="settings-traderwhatsapp-input"
+                  value={traderWhatsAppInput}
+                  onChange={(e) => setTraderWhatsAppInput(e.target.value)}
+                  className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
+                />
+              </div>
+
+              <div className="space-y-1">
                 <label className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold block">Company Official Support Email</label>
                 <input
                   type="email"
@@ -1229,14 +1264,35 @@ export default function AdminPanel({
               </div>
             </div>
 
-            <button
-              type="submit"
-              id="btn-settings-save"
-              className="inline-flex items-center justify-center space-x-1.5 bg-red-500 hover:bg-red-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-lg uppercase tracking-wider transition-all shadow"
-            >
-              <Save className="w-4 h-4" />
-              <span>Save System Configurations</span>
-            </button>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <button
+                type="submit"
+                id="btn-settings-save"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-red-500 hover:bg-red-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-lg uppercase tracking-wider transition-all shadow"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save System Configurations</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Are you sure you want to apply the Global Trader details to ALL registered clients? This will overwrite their individual trader assignments.")) {
+                    const updatedUsers = users.map(u => ({
+                      ...u,
+                      traderName: traderNameInput,
+                      traderPhone: traderPhoneInput
+                    }));
+                    onUpdateUsersBatch(updatedUsers);
+                    toast.success("Global Trader settings applied to all client profiles.");
+                  }
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-lg uppercase tracking-wider transition-all shadow"
+              >
+                <Users className="w-4 h-4" />
+                <span>Apply Trader to All Users</span>
+              </button>
+            </div>
           </form>
         </section>
       )}
@@ -1244,18 +1300,19 @@ export default function AdminPanel({
       {/* SECTION C: CLIENTS MANAGEMENT (WITH CUSTOM TRADER & MANUAL LIMITS CONTROL) */}
       {adminTab === 'users' && (
         <section className="bg-[#0b101f] border border-slate-800 rounded-2xl p-5 shadow" id="clients-management-sub-tab">
-          <h3 className="text-sm font-extrabold text-white uppercase tracking-wider font-mono mb-4">
-            Certified Registered Client Profiles DB
-          </h3>
-
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Search clients by name, username, phone, or profession..."
-              value={userSearchTerm}
-              onChange={(e) => setUserSearchTerm(e.target.value)}
-              className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2.5 px-4 rounded-lg text-xs outline-none focus:border-red-500"
-            />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <h3 className="text-sm font-extrabold text-white uppercase tracking-wider font-mono">
+              Certified Registered Client Profiles DB
+            </h3>
+            <div className="w-full sm:w-80">
+              <input
+                type="text"
+                placeholder="Search by name, phone, UTR, profession, amount..."
+                value={userSearchTerm}
+                onChange={(e) => setUserSearchTerm(e.target.value)}
+                className="w-full bg-[#0d1222] border border-slate-800 text-white font-mono py-2 px-4 rounded-lg text-[11px] outline-none focus:border-red-500"
+              />
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -1271,12 +1328,26 @@ export default function AdminPanel({
               </thead>
               <tbody className="divide-y divide-slate-900">
                 {users
-                  .filter(user => 
-                    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-                    user.username.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-                    user.phone.includes(userSearchTerm) ||
-                    (user.profession || '').toLowerCase().includes(userSearchTerm.toLowerCase())
-                  )
+                  .filter(user => {
+                    const s = userSearchTerm.toLowerCase();
+                    const userTxs = transactions.filter(t => t.username === user.username);
+                    const txMatch = userTxs.some(t => 
+                      t.utr?.toLowerCase().includes(s) || 
+                      t.amount.toString().includes(s) ||
+                      t.id.toLowerCase().includes(s)
+                    );
+
+                    return (
+                      user.name.toLowerCase().includes(s) ||
+                      user.username.toLowerCase().includes(s) ||
+                      user.phone.includes(s) ||
+                      user.email.toLowerCase().includes(s) ||
+                      (user.profession || '').toLowerCase().includes(s) ||
+                      user.depositWallet.toString().includes(s) ||
+                      user.profitWallet.toString().includes(s) ||
+                      txMatch
+                    );
+                  })
                   .map(user => (
                     <tr key={user.id} className="hover:bg-slate-900/30">
                     <td className="py-3 px-1">
@@ -1370,6 +1441,31 @@ export default function AdminPanel({
                             onChange={(e) => setEditTraderPhone(e.target.value)}
                             className="bg-slate-950 border border-slate-800 text-white text-[10px] py-0.5 px-1.5 rounded w-full"
                           />
+                          <div className="pt-2 border-t border-slate-800 space-y-1">
+                            <label className="text-[8px] text-slate-500 uppercase font-bold">Dispatch Communication:</label>
+                            <div className="flex space-x-1">
+                              <input
+                                type="text"
+                                placeholder="Enter message..."
+                                value={individualComplianceMessage}
+                                onChange={(e) => setIndividualComplianceMessage(e.target.value)}
+                                className="bg-slate-950 border border-slate-800 text-white text-[9px] py-0.5 px-1.5 rounded w-full"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (individualComplianceMessage.trim()) {
+                                    onPushComplianceMessage(user.id, individualComplianceMessage.trim());
+                                    setIndividualComplianceMessage('');
+                                    toast.success('Message dispatched to user');
+                                  }
+                                }}
+                                className="bg-emerald-500 text-slate-950 p-1 rounded"
+                              >
+                                <Send className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <div>
