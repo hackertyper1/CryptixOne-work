@@ -379,11 +379,9 @@ export default function WalletSection({
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto bg-slate-950 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-6" id="wallet-auth-required">
-        <div className="flex justify-center">
-          <div className="p-3.5 bg-amber-500/10 rounded-full border border-amber-500/20 text-amber-500">
-            <Lock className="w-6 h-6" />
-          </div>
-        </div>
+                <div className="flex justify-center">
+                  <img src="/logo.png" alt="Wallet Protected" className="w-16 h-16 mb-4 grayscale opacity-50" />
+                </div>
         <div className="space-y-2">
           <h3 className="text-xl md:text-2xl font-black text-white font-display">Wallet Protected</h3>
           <p className="text-xs text-slate-400">Please sign in or create an account to access, deposit, or withdraw funds.</p>
@@ -438,8 +436,8 @@ export default function WalletSection({
                   className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-2 shadow-sm">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Google_Pay_%28GPay%29_Logo_%282020%29.svg" alt="GPay" className="w-full h-full object-contain" />
+                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-pay-icon.png" alt="GPay" className="w-full h-full object-contain" />
                     </div>
                     <span className="text-xs font-black text-white uppercase tracking-widest">Google Pay</span>
                   </div>
@@ -452,8 +450,8 @@ export default function WalletSection({
                   className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-[#5f259f] rounded-xl flex items-center justify-center p-2">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" className="w-full h-full object-contain brightness-0 invert" />
+                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-logo-icon.png" alt="PhonePe" className="w-full h-full object-contain" />
                     </div>
                     <span className="text-xs font-black text-white uppercase tracking-widest">PhonePe</span>
                   </div>
@@ -467,7 +465,7 @@ export default function WalletSection({
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
-                      <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo.svg" alt="Paytm" className="w-full h-full object-contain" />
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/paytm-icon.png" alt="Paytm" className="w-full h-full object-contain" />
                     </div>
                     <span className="text-xs font-black text-white uppercase tracking-widest">Paytm</span>
                   </div>
@@ -480,8 +478,8 @@ export default function WalletSection({
                   className="flex items-center justify-between p-4 bg-[#070b14] hover:bg-[#0c1425] border border-slate-800/80 hover:border-emerald-500/40 rounded-2xl transition-all group"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-purple-600/10 border border-purple-500/20 rounded-xl flex items-center justify-center font-black text-[10px] text-purple-400">
-                      UPI
+                    <div className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center p-1.5 shadow-sm">
+                      <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/upi-payment-icon.png" alt="UPI" className="w-full h-full object-contain" />
                     </div>
                     <span className="text-xs font-black text-white uppercase tracking-widest">Any UPI App</span>
                   </div>
@@ -1080,164 +1078,188 @@ export default function WalletSection({
               {/* Form details */}
               <div className="lg:col-span-7 bg-[#070c18]/80 border border-slate-850 rounded-xl p-4">
                 <form onSubmit={handleWithdrawalSubmit} className="space-y-3.5 text-left" id="withdrawal-submission-form">
-                  {withdrawError && (
-                    <div className="bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg flex items-center space-x-2 text-[10px] text-rose-400 font-sans">
-                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                      <span>{withdrawError}</span>
-                    </div>
-                  )}
-
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Method Selected</label>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setWithdrawMethod('upi')}
-                          className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
-                            withdrawMethod === 'upi' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
-                          }`}
-                        >
-                          UPI ID
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setWithdrawMethod('scanner')}
-                          className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
-                            withdrawMethod === 'scanner' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
-                          }`}
-                        >
-                          Scanner
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setWithdrawMethod('bank')}
-                          className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
-                            withdrawMethod === 'bank' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
-                          }`}
-                        >
-                          Bank
-                        </button>
+                  {currentUser?.isWithdrawalLocked ? (
+                    <div className="bg-red-500/10 border border-red-500/20 p-5 rounded-2xl space-y-3 text-center animate-pulse">
+                      <div className="flex justify-center">
+                        <div className="p-3 bg-red-500/20 rounded-full border border-red-500/30 text-red-500">
+                          <Lock className="w-6 h-6" />
+                        </div>
                       </div>
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-black text-red-500 uppercase tracking-widest">Withdrawal Restricted</h4>
+                        <p className="text-[10px] text-slate-400 leading-relaxed font-medium">
+                          Your withdrawal capability has been temporarily restricted by the audit department.
+                        </p>
+                      </div>
+                      {currentUser?.restrictionReason && (
+                        <div className="bg-red-500/10 p-3 rounded-xl border border-red-500/10">
+                          <p className="text-[11px] text-white font-bold italic">" {currentUser.restrictionReason} "</p>
+                        </div>
+                      )}
+                      <p className="text-[9px] text-slate-500 uppercase font-black tracking-tighter">Please contact your senior trader for resolution</p>
                     </div>
+                  ) : (
+                    <>
+                      {withdrawError && (
+                        <div className="bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg flex items-center space-x-2 text-[10px] text-rose-400 font-sans">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                          <span>{withdrawError}</span>
+                        </div>
+                      )}
 
-                    <div className="space-y-1">
-                      <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Withdrawal Amount (INR)</label>
-                      <input
-                        type="number"
-                        required
-                        min="500"
-                        id="withdraw-amount-input"
-                        placeholder="e.g. 15000"
-                        value={withdrawAmount || ''}
-                        onChange={(e) => setWithdrawAmount(Number(e.target.value))}
-                        className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono font-bold py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
-                      />
-                    </div>
-
-                    {withdrawMethod === 'bank' && (
-                      <div className="space-y-3 animate-fadeIn">
+                      <div className="space-y-3">
                         <div className="space-y-1">
-                          <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Bank Name</label>
-                          <input
-                            type="text"
-                            placeholder="State Bank of India"
-                            id="withdraw-bank-input"
-                            value={bankName}
-                            onChange={(e) => setBankName(e.target.value)}
-                            className="w-full bg-[#060a13]/80 border border-slate-800 text-white py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Account Number</label>
-                            <input
-                              type="text"
-                              placeholder="31024567210"
-                              id="withdraw-account-input"
-                              value={accountNo}
-                              onChange={(e) => setAccountNo(e.target.value)}
-                              className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">IFSC Code</label>
-                            <input
-                              type="text"
-                              placeholder="SBIN0004921"
-                              id="withdraw-ifsc-input"
-                              value={ifsc}
-                              onChange={(e) => setIfsc(e.target.value.toUpperCase())}
-                              className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
-                            />
+                          <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Method Selected</label>
+                          <div className="grid grid-cols-3 gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setWithdrawMethod('upi')}
+                              className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
+                                withdrawMethod === 'upi' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
+                              }`}
+                            >
+                              UPI ID
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setWithdrawMethod('scanner')}
+                              className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
+                                withdrawMethod === 'scanner' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
+                              }`}
+                            >
+                              Scanner
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setWithdrawMethod('bank')}
+                              className={`py-1.5 px-1 border rounded-lg text-[9px] font-bold uppercase font-mono transition-all ${
+                                withdrawMethod === 'bank' ? 'bg-amber-500 border-amber-500 text-slate-950' : 'bg-[#0d1222] border-slate-800 text-slate-400 hover:border-slate-700'
+                              }`}
+                            >
+                              Bank
+                            </button>
                           </div>
                         </div>
-                      </div>
-                    )}
 
-                    {withdrawMethod === 'upi' && (
-                      <div className="space-y-1 animate-fadeIn">
-                        <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">User UPI ID</label>
-                        <input
-                          type="text"
-                          placeholder="username@okaxis"
-                          value={userUpiId}
-                          onChange={(e) => setUserUpiId(e.target.value)}
-                          className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
-                        />
-                      </div>
-                    )}
-
-                    {withdrawMethod === 'scanner' && (
-                      <div className="space-y-1 animate-fadeIn">
-                        <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Upload Payment QR</label>
-                        <div className="relative group">
+                        <div className="space-y-1">
+                          <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Withdrawal Amount (INR)</label>
                           <input
-                            type="file"
-                            accept="image/*"
-                            id="withdraw-qr-upload"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  setUserScannerUrl(reader.result as string);
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                            className="hidden"
+                            type="number"
+                            required
+                            min="500"
+                            id="withdraw-amount-input"
+                            placeholder="e.g. 15000"
+                            value={withdrawAmount || ''}
+                            onChange={(e) => setWithdrawAmount(Number(e.target.value))}
+                            className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono font-bold py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
                           />
-                          <label 
-                            htmlFor="withdraw-qr-upload"
-                            className="w-full bg-[#060a13]/80 border border-dashed border-slate-800 hover:border-amber-500/40 text-slate-400 font-mono py-5 px-3 rounded-xl text-[10px] flex flex-col items-center justify-center cursor-pointer transition-all"
-                          >
-                            {userScannerUrl ? (
-                              <div className="flex flex-col items-center space-y-1">
-                                <img src={userScannerUrl} alt="Preview" className="w-14 h-14 object-contain rounded border border-slate-700" />
-                                <span className="text-emerald-400 font-bold">QR Selected</span>
-                                <span className="text-[9px] text-slate-500">Click to replace</span>
+                        </div>
+
+                        {withdrawMethod === 'bank' && (
+                          <div className="space-y-3 animate-fadeIn">
+                            <div className="space-y-1">
+                              <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Bank Name</label>
+                              <input
+                                type="text"
+                                placeholder="State Bank of India"
+                                id="withdraw-bank-input"
+                                value={bankName}
+                                onChange={(e) => setBankName(e.target.value)}
+                                className="w-full bg-[#060a13]/80 border border-slate-800 text-white py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Account Number</label>
+                                <input
+                                  type="text"
+                                  placeholder="31024567210"
+                                  id="withdraw-account-input"
+                                  value={accountNo}
+                                  onChange={(e) => setAccountNo(e.target.value)}
+                                  className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
+                                />
                               </div>
-                            ) : (
-                              <>
-                                <QrCode className="w-6 h-6 mb-1 opacity-30 text-slate-400" />
-                                <span>Click to upload QR code image</span>
-                                <span className="text-[8px] text-slate-600 tracking-wider">JPG, PNG, WEBP</span>
-                              </>
-                            )}
-                          </label>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                              <div className="space-y-1">
+                                <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">IFSC Code</label>
+                                <input
+                                  type="text"
+                                  placeholder="SBIN0004921"
+                                  id="withdraw-ifsc-input"
+                                  value={ifsc}
+                                  onChange={(e) => setIfsc(e.target.value.toUpperCase())}
+                                  className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
-                  <button
-                    type="submit"
-                    id="btn-withdraw-submit"
-                    className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2 px-3 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 mt-2 flex items-center justify-center space-x-1"
-                  >
-                    <span>Request Settlement</span>
-                  </button>
+                        {withdrawMethod === 'upi' && (
+                          <div className="space-y-1 animate-fadeIn">
+                            <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">User UPI ID</label>
+                            <input
+                              type="text"
+                              placeholder="username@okaxis"
+                              value={userUpiId}
+                              onChange={(e) => setUserUpiId(e.target.value)}
+                              className="w-full bg-[#060a13]/80 border border-slate-800 text-white font-mono py-2 px-3 rounded-lg text-[11px] outline-none focus:border-amber-500 placeholder-slate-650"
+                            />
+                          </div>
+                        )}
+
+                        {withdrawMethod === 'scanner' && (
+                          <div className="space-y-1 animate-fadeIn">
+                            <label className="text-[9px] uppercase font-mono tracking-wider text-slate-500 font-bold block">Upload Payment QR</label>
+                            <div className="relative group">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                id="withdraw-qr-upload"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      setUserScannerUrl(reader.result as string);
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                              <label 
+                                htmlFor="withdraw-qr-upload"
+                                className="w-full bg-[#060a13]/80 border border-dashed border-slate-800 hover:border-amber-500/40 text-slate-400 font-mono py-5 px-3 rounded-xl text-[10px] flex flex-col items-center justify-center cursor-pointer transition-all"
+                              >
+                                {userScannerUrl ? (
+                                  <div className="flex flex-col items-center space-y-1">
+                                    <img src={userScannerUrl} alt="Preview" className="w-14 h-14 object-contain rounded border border-slate-700" />
+                                    <span className="text-emerald-400 font-bold">QR Selected</span>
+                                    <span className="text-[9px] text-slate-500">Click to replace</span>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <QrCode className="w-6 h-6 mb-1 opacity-30 text-slate-400" />
+                                    <span>Click to upload QR code image</span>
+                                    <span className="text-[8px] text-slate-600 tracking-wider">JPG, PNG, WEBP</span>
+                                  </>
+                                )}
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        type="submit"
+                        id="btn-withdraw-submit"
+                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2 px-3 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 mt-2 flex items-center justify-center space-x-1"
+                      >
+                        <span>Request Settlement</span>
+                      </button>
+                    </>
+                  )}
                 </form>
               </div>
             </div>

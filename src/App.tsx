@@ -566,6 +566,72 @@ export default function App() {
     setActiveTab('plan');
   };
 
+  // 4.1 Social Login Handler
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    const { signInWithPopup } = await import('firebase/auth');
+    const { googleProvider, facebookProvider } = await import('./lib/firebase');
+    
+    const authProvider = provider === 'google' ? googleProvider : facebookProvider;
+    
+    try {
+      const result = await signInWithPopup(auth, authProvider);
+      const user = result.user;
+      
+      if (user) {
+        // Check if user exists in our Firestore 'users' collection
+        const userDocRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userDocRef);
+        
+        let profile: User;
+        
+        if (userSnap.exists()) {
+          profile = userSnap.data() as User;
+        } else {
+          // Create new profile for first-time social login
+          const defaultSlCodes = [
+            'SL-568-725', 'SL-194-836', 'SL-807-451', 'SL-632-918', 'SL-275-604',
+            'SL-981-357', 'SL-416-829', 'SL-753-102', 'SL-248-690', 'SL-875-431'
+          ];
+          const randomSl = defaultSlCodes[Math.floor(Math.random() * defaultSlCodes.length)];
+          
+          profile = {
+            id: user.uid,
+            name: user.displayName || 'New Investor',
+            username: user.email?.split('@')[0] || `user_${Math.floor(Math.random() * 10000)}`,
+            email: user.email || '',
+            phone: user.phoneNumber || '',
+            whatsapp: user.phoneNumber || '',
+            profession: 'Trader',
+            dob: '2000-01-01',
+            depositWallet: 0,
+            profitWallet: 0,
+            activeInvestment: 0,
+            traderName: 'Rohit Singhania (Senior Trader)',
+            traderPhone: '8696860548',
+            slCode: randomSl,
+            createdAt: new Date().toISOString()
+          };
+          
+          await setDoc(userDocRef, profile);
+          addLog('New social profile registered via ' + provider, profile.username);
+        }
+        
+        setCurrentUser(profile);
+        localStorage.setItem('cryptix_current_user', JSON.stringify(profile));
+        addLog('Client social session authenticated', profile.username);
+        setActiveTab('plan');
+        toast.success(`Welcome, ${profile.name}!`);
+      }
+    } catch (error: any) {
+      console.error('Social login failed:', error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast.error('Login cancelled.');
+      } else {
+        toast.error('Authentication failed. Please try again.');
+      }
+    }
+  };
+
   // 5. Submit Deposit Claim UTR Form
   const handleDepositSubmit = (tx: Omit<Transaction, 'id' | 'userId' | 'username' | 'userPhone' | 'status' | 'date'>) => {
     if (!currentUser) return;
@@ -744,7 +810,8 @@ export default function App() {
     traderName: string,
     traderPhone: string,
     slCode?: string,
-    isWithdrawalLocked?: boolean
+    isWithdrawalLocked?: boolean,
+    restrictionReason?: string
   ) => {
     const updatedUsers = users.map(u => {
       if (u.id === userId) {
@@ -756,7 +823,8 @@ export default function App() {
           traderName,
           traderPhone,
           slCode: slCode || u.slCode,
-          isWithdrawalLocked: isWithdrawalLocked !== undefined ? isWithdrawalLocked : u.isWithdrawalLocked
+          isWithdrawalLocked: isWithdrawalLocked !== undefined ? isWithdrawalLocked : u.isWithdrawalLocked,
+          restrictionReason: restrictionReason !== undefined ? restrictionReason : u.restrictionReason
         };
         if (currentUser && currentUser.id === userId) {
           setCurrentUser(updated);
@@ -1047,6 +1115,7 @@ export default function App() {
             setAuthMode('signup');
             setActiveTab('account');
           }}
+          onSocialLogin={handleSocialLogin}
         />
       )}
 
@@ -1172,6 +1241,7 @@ export default function App() {
                 currentUser={currentUser}
                 onLogin={handleUserLogin}
                 onSignup={handleUserSignup}
+                onSocialLogin={handleSocialLogin}
                 systemSettings={systemSettings}
                 onLogout={handleLogout}
                 users={users}

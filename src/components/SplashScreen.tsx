@@ -85,8 +85,8 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
               className="mb-10 relative"
             >
-              <div className="relative p-4 rounded-full bg-slate-900/40 border border-white/5 backdrop-blur-sm shadow-2xl">
-                <CryptixLogo className="w-48 h-48 md:w-56 md:h-56" />
+              <div className="relative p-6 rounded-full bg-slate-900/40 border border-white/5 backdrop-blur-sm shadow-2xl overflow-hidden flex items-center justify-center">
+                <img src="/logo.png" alt="CryptixOne Logo" className="w-48 h-48 md:w-56 md:h-56 object-contain relative z-10" />
                 
                 {/* Dynamic Rotating Glow */}
                 <motion.div

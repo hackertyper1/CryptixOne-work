@@ -11,6 +11,7 @@ import {
   MessageSquare, 
   LogOut,
   ShieldCheck,
+  ShieldAlert,
   Smartphone,
   Fingerprint,
   TrendingUp
@@ -24,6 +25,7 @@ interface AccountSectionProps {
   currentUser: User | null;
   onLogin: (userOrEmail: string, pass: string) => boolean;
   onSignup: (userData: Omit<User, 'id' | 'depositWallet' | 'profitWallet' | 'activeInvestment' | 'traderName' | 'traderPhone' | 'createdAt'>, pass: string) => void;
+  onSocialLogin?: (provider: 'google' | 'facebook') => void;
   systemSettings: SystemSettings;
   onLogout: () => void;
   users: User[];
@@ -39,6 +41,7 @@ export default function AccountSection({
   currentUser,
   onLogin,
   onSignup,
+  onSocialLogin,
   systemSettings,
   onLogout,
   users,
@@ -279,6 +282,36 @@ export default function AccountSection({
             >
               Login Now
             </button>
+
+            {/* Social Login Dividers */}
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-800"></div>
+              </div>
+              <div className="relative flex justify-center text-[8px] uppercase font-black tracking-widest">
+                <span className="px-2 bg-[#0b101f] text-slate-500">Or Continue With</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => onSocialLogin?.('google')}
+                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all group"
+              >
+                <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-color-icon.png" alt="Google" className="w-4 h-4" />
+                <span className="text-[10px] font-black text-white uppercase tracking-widest">Google</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onSocialLogin?.('facebook')}
+                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all group"
+              >
+                <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/facebook-app-round-white-icon.png" alt="Facebook" className="w-4 h-4" />
+                <span className="text-[10px] font-black text-white uppercase tracking-widest">Facebook</span>
+              </button>
+            </div>
+
             <div className="flex items-center justify-center space-x-2 text-[10px] text-slate-500 font-bold uppercase tracking-wider pt-1">
               <ShieldCheck className="w-4 h-4" />
               <span>Secure Encrypted Session</span>
@@ -387,6 +420,34 @@ export default function AccountSection({
             >
               Sign Up Now
             </button>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-800"></div>
+              </div>
+              <div className="relative flex justify-center text-[8px] uppercase font-black tracking-widest">
+                <span className="px-2 bg-[#0b101f] text-slate-500">Fast Registration</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => onSocialLogin?.('google')}
+                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all group"
+              >
+                <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-color-icon.png" alt="Google" className="w-4 h-4" />
+                <span className="text-[10px] font-black text-white uppercase tracking-widest">Google</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onSocialLogin?.('facebook')}
+                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all group"
+              >
+                <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/facebook-app-round-white-icon.png" alt="Facebook" className="w-4 h-4" />
+                <span className="text-[10px] font-black text-white uppercase tracking-widest">Facebook</span>
+              </button>
+            </div>
           </form>
         )}
       </div>
@@ -403,6 +464,30 @@ export default function AccountSection({
               {currentUser.complianceMessages.map(msg => `*** ${msg} ***`).join(' ')}
             </span>
           </div>
+        </div>
+      )}
+
+      {/* Account Restriction Alert */}
+      {isLoggedIn && currentUser?.isWithdrawalLocked && (
+        <div className="bg-rose-600/10 border border-rose-500/20 rounded-[1.5rem] p-5 mb-6 flex flex-col items-center text-center space-y-3 shadow-lg shadow-rose-500/5">
+          <div className="p-3 bg-rose-500/20 rounded-full border border-rose-500/30 text-rose-500">
+            <ShieldAlert className="w-6 h-6 animate-pulse" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-black text-rose-500 uppercase tracking-widest">Withdrawal Restricted</h4>
+            <p className="text-[10px] text-slate-400 leading-relaxed font-medium">
+              Your account withdrawal status has been restricted due to an institutional audit flag.
+            </p>
+          </div>
+          {currentUser.restrictionReason && (
+            <div className="bg-slate-950/80 p-4 rounded-xl border border-rose-500/20 w-full">
+              <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block mb-2">Audit Reason:</span>
+              <p className="text-xs text-white font-bold italic font-display leading-tight italic">
+                "{currentUser.restrictionReason}"
+              </p>
+            </div>
+          )}
+          <p className="text-[9px] text-slate-500 uppercase font-black tracking-tighter">Please reach out to your assigned trader or support for audit resolution.</p>
         </div>
       )}
 

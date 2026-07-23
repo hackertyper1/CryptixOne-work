@@ -15,6 +15,7 @@ export interface User {
   traderPhone: string;
   slCode?: string;
   isWithdrawalLocked?: boolean;
+  restrictionReason?: string; // Reason why account/withdrawal is restricted
   complianceMessages?: string[]; // Array of manual messages from admin
   createdAt: string;
 }

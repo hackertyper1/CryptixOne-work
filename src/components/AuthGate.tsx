@@ -5,18 +5,17 @@ import { MousePointer2, Briefcase, Zap, Diamond } from 'lucide-react';
 interface AuthGateProps {
   onSelectLogin: () => void;
   onSelectSignup: () => void;
+  onSocialLogin?: (provider: 'google' | 'facebook') => void;
 }
 
-export default function AuthGate({ onSelectLogin, onSelectSignup }: AuthGateProps) {
+export default function AuthGate({ onSelectLogin, onSelectSignup, onSocialLogin }: AuthGateProps) {
   return (
     <div className="min-h-screen bg-[#0b101f] flex flex-col items-center p-6 pt-12 relative overflow-hidden">
       {/* Top Navigation for Guest */}
       <div className="absolute top-6 left-0 right-0 px-6 flex justify-between items-center z-20">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-amber-500 rounded-lg rotate-45 flex items-center justify-center shadow-lg shadow-amber-500/20">
-            <div className="w-3 h-3 bg-slate-950 rounded-sm" />
-          </div>
-          <span className="text-sm font-black text-white tracking-tight">CRYPTIX<span className="text-amber-500">ONE</span></span>
+        <div className="flex items-center space-x-3">
+          <img src="/logo.png" alt="Logo" className="w-9 h-9 object-contain" />
+          <span className="text-sm font-black text-white tracking-tight uppercase">CRYPTIX<span className="text-amber-500">ONE</span></span>
         </div>
         <div className="flex items-center space-x-4">
           <button onClick={onSelectLogin} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Login</button>
@@ -73,6 +72,35 @@ export default function AuthGate({ onSelectLogin, onSelectSignup }: AuthGateProp
               </p>
             </div>
           </button>
+        </div>
+
+        {/* Social Authentication */}
+        <div className="pt-4 space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-800/50"></div>
+            </div>
+            <div className="relative flex justify-center text-[8px] uppercase font-black tracking-widest">
+              <span className="px-3 bg-[#0b101f] text-slate-500">Quick Access</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => onSocialLogin?.('google')}
+              className="flex items-center justify-center space-x-3 bg-[#1e2330] hover:bg-[#252b3d] border border-slate-800/50 p-4 rounded-2xl transition-all"
+            >
+              <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-color-icon.png" alt="Google" className="w-4 h-4" />
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">Google</span>
+            </button>
+            <button
+              onClick={() => onSocialLogin?.('facebook')}
+              className="flex items-center justify-center space-x-3 bg-[#1e2330] hover:bg-[#252b3d] border border-slate-800/50 p-4 rounded-2xl transition-all"
+            >
+              <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/facebook-app-round-white-icon.png" alt="Facebook" className="w-4 h-4" />
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">Facebook</span>
+            </button>
+          </div>
         </div>
       </motion.div>
 

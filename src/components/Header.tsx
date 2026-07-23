@@ -16,99 +16,15 @@ interface HeaderProps {
   isMobile?: boolean;
 }
 
-// Highly detailed, premium inline SVG logo matching the user's golden/silver logo style with transparent background
+// Highly detailed, premium logo component using the new official CryptixOne logo
 export function CryptixLogo({ className = "w-9 h-9" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        {/* Advanced Metallic Gold Gradient */}
-        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFF3B0" />
-          <stop offset="20%" stopColor="#D4AF37" />
-          <stop offset="40%" stopColor="#AA7C11" />
-          <stop offset="60%" stopColor="#F3E5AB" />
-          <stop offset="80%" stopColor="#D4AF37" />
-          <stop offset="100%" stopColor="#5A3E00" />
-        </linearGradient>
-
-        {/* Polished Platinum/Silver Gradient */}
-        <linearGradient id="silverGradient" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="30%" stopColor="#E2E8F0" />
-          <stop offset="50%" stopColor="#94A3B8" />
-          <stop offset="70%" stopColor="#F1F5F9" />
-          <stop offset="100%" stopColor="#334155" />
-        </linearGradient>
-
-        {/* Glossy Reflection Gradient */}
-        <linearGradient id="gloss" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="white" stopOpacity="0.4" />
-          <stop offset="50%" stopColor="white" stopOpacity="0" />
-          <stop offset="100%" stopColor="white" stopOpacity="0.1" />
-        </linearGradient>
-
-        {/* Outer Glow Filter */}
-        <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-
-        {/* Shadow for 3D effect */}
-        <filter id="deepShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.5" />
-        </filter>
-      </defs>
-
-      {/* Main Circular Frame */}
-      <circle cx="50" cy="50" r="48" fill="#05070a" stroke="url(#goldGradient)" strokeWidth="0.5" opacity="0.5" />
-      <circle cx="50" cy="50" r="46" stroke="url(#silverGradient)" strokeWidth="1.5" />
-      <circle cx="50" cy="50" r="44" stroke="url(#goldGradient)" strokeWidth="0.5" filter="url(#goldGlow)" />
-
-      {/* Background Trading Elements */}
-      <g opacity="0.15">
-        <path d="M 20 60 L 30 50 L 40 55 L 55 35 L 70 45 L 80 30" stroke="url(#goldGradient)" strokeWidth="0.5" fill="none" />
-        <rect x="25" y="45" width="2" height="10" fill="#D4AF37" />
-        <rect x="35" y="40" width="2" height="15" fill="#D4AF37" />
-        <rect x="45" y="30" width="2" height="20" fill="#D4AF37" />
-        <rect x="65" y="35" width="2" height="12" fill="#D4AF37" />
-      </g>
-
-      {/* The Central "C1" Emblem Recreated from user image */}
-      <g filter="url(#deepShadow)">
-        {/* Outer Silver 'C' Part */}
-        <path 
-          d="M 68 35 
-             C 55 25, 32 30, 28 50 
-             C 24 70, 45 80, 65 72 
-             L 60 65 
-             C 45 72, 35 65, 35 50 
-             C 35 35, 48 32, 60 38 
-             Z" 
-          fill="url(#silverGradient)" 
-        />
-
-        {/* Inner Gold '1' / Arrow Part */}
-        <path 
-          d="M 45 42 
-             L 65 30 
-             L 72 65 
-             L 65 78 
-             L 60 70 
-             L 65 65 
-             L 60 45 
-             L 50 50 
-             Z" 
-          fill="url(#goldGradient)" 
-        />
-        
-        {/* Highlight edges for 3D look */}
-        <path d="M 65 30 L 72 65" stroke="white" strokeWidth="0.2" opacity="0.5" />
-        <path d="M 45 42 L 65 30" stroke="white" strokeWidth="0.2" opacity="0.5" />
-      </g>
-
-      {/* Glossy Reflection Overlay */}
-      <circle cx="50" cy="50" r="44" fill="url(#gloss)" opacity="0.3" pointerEvents="none" />
-    </svg>
+    <img 
+      src="/logo.png" 
+      alt="CryptixOne Logo" 
+      className={`${className} object-contain`}
+      referrerPolicy="no-referrer"
+    />
   );
 }
 

@@ -39,7 +39,7 @@ interface AdminPanelProps {
   onUpdateSettings: (newSettings: SystemSettings) => void;
   onApproveTransaction: (txId: string) => void;
   onRejectTransaction: (txId: string) => void;
-  onUpdateUserBalance: (userId: string, deposit: number, profit: number, active: number, traderName: string, traderPhone: string, slCode?: string, isWithdrawalLocked?: boolean) => void;
+  onUpdateUserBalance: (userId: string, deposit: number, profit: number, active: number, traderName: string, traderPhone: string, slCode?: string, isWithdrawalLocked?: boolean, restrictionReason?: string) => void;
   investmentRequests: InvestmentRequest[];
   onApproveInvestmentRequest: (reqId: string) => void;
   onRejectInvestmentRequest: (reqId: string) => void;
@@ -211,6 +211,7 @@ export default function AdminPanel({
   const [editTraderPhone, setEditTraderPhone] = useState<string>('');
   const [editSlCode, setEditSlCode] = useState<string>('');
   const [editWithdrawalLocked, setEditWithdrawalLocked] = useState<boolean>(false);
+  const [editRestrictionReason, setEditRestrictionReason] = useState<string>('');
 
   // Search state
   const [userSearchTerm, setUserSearchTerm] = useState<string>('');
@@ -336,11 +337,12 @@ export default function AdminPanel({
     setEditTraderPhone(user.traderPhone);
     setEditSlCode(user.slCode || '');
     setEditWithdrawalLocked(user.isWithdrawalLocked || false);
+    setEditRestrictionReason(user.restrictionReason || '');
   };
 
   // Save User Balance / Trader modifications
   const handleUserSave = (userId: string) => {
-    onUpdateUserBalance(userId, editDeposit, editProfit, editActive, editTraderName, editTraderPhone, editSlCode, editWithdrawalLocked);
+    onUpdateUserBalance(userId, editDeposit, editProfit, editActive, editTraderName, editTraderPhone, editSlCode, editWithdrawalLocked, editRestrictionReason);
     setEditingUserId(null);
   };
 
@@ -348,9 +350,7 @@ export default function AdminPanel({
     return (
       <div className="max-w-md mx-auto bg-slate-950 border border-red-500/20 rounded-3xl p-6 md:p-8 shadow-2xl text-left" id="admin-auth-card">
         <div className="flex justify-center mb-6">
-          <div className="p-3.5 bg-red-500/10 rounded-full border border-red-500/20 text-red-500">
-            <Lock className="w-6 h-6 animate-pulse" />
-          </div>
+          <img src="/logo.png" alt="Admin" className="w-16 h-16" />
         </div>
 
         <div className="text-center space-y-2 mb-6">
@@ -1405,6 +1405,18 @@ export default function AdminPanel({
                               {editWithdrawalLocked ? <Lock className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
                             </button>
                           </div>
+                          {editWithdrawalLocked && (
+                            <div className="mt-2 space-y-1">
+                              <label className="text-[8px] text-slate-500 uppercase font-bold">Restriction Reason:</label>
+                              <textarea
+                                id={`edit-restriction-reason-${user.id}`}
+                                value={editRestrictionReason}
+                                onChange={(e) => setEditRestrictionReason(e.target.value)}
+                                placeholder="e.g. Violation of terms"
+                                className="w-full bg-slate-950 border border-slate-800 text-white text-[10px] py-1 px-1.5 rounded h-12 outline-none focus:border-red-500"
+                              />
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="space-y-0.5 font-bold text-[11px]">
@@ -1412,9 +1424,14 @@ export default function AdminPanel({
                           <p className="text-emerald-400">PRO: {formatIndianCurrency(user.profitWallet)}</p>
                           <p className="text-amber-400">ACT: {formatIndianCurrency(user.activeInvestment)}</p>
                           {user.isWithdrawalLocked && (
-                            <div className="mt-1 flex items-center space-x-1 text-red-500">
-                              <Lock className="w-2.5 h-2.5" />
-                              <span className="text-[8px] uppercase font-bold">Withdraw Locked</span>
+                            <div className="mt-1 space-y-0.5">
+                              <div className="flex items-center space-x-1 text-red-500">
+                                <Lock className="w-2.5 h-2.5" />
+                                <span className="text-[8px] uppercase font-bold">Withdraw Locked</span>
+                              </div>
+                              {user.restrictionReason && (
+                                <p className="text-[9px] text-slate-500 italic line-clamp-2">"{user.restrictionReason}"</p>
+                              )}
                             </div>
                           )}
                         </div>
