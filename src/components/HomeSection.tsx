@@ -116,7 +116,6 @@ export default function HomeSection({
 
         {/* 1. CryptixOne Website Name */}
         <div className="space-y-4 relative z-10 flex flex-col items-center">
-          <img src={systemSettings.logoUrl || "/logo.png"} alt="CryptixOne" className="w-24 h-24 mb-4 drop-shadow-[0_0_20px_rgba(245,158,11,0.45)]" />
           <div className="space-y-3">
             <h1 className="text-5xl md:text-8xl font-black tracking-tight text-white font-sans text-center">
               Cryptix<span className="text-amber-500">One</span>
