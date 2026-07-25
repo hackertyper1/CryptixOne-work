@@ -19,8 +19,18 @@ export default function AuthGate({ onSelectLogin, onSelectSignup, onSocialLogin,
           <span className="text-sm font-black text-white tracking-tight uppercase">CRYPTIX<span className="text-amber-500">ONE</span></span>
         </div>
         <div className="flex items-center space-x-4">
-          <button onClick={onSelectLogin} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors">Login</button>
-          <button onClick={onSelectSignup} className="text-[10px] font-black text-amber-500 uppercase tracking-widest border border-amber-500/20 px-3 py-1.5 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 transition-all">Sign Up</button>
+          <button 
+            onClick={onSelectLogin} 
+            className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors"
+          >
+            Login
+          </button>
+          <button 
+            onClick={onSelectSignup} 
+            className="text-[10px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/5 hover:bg-amber-500/10 transition-all px-3 py-1.5 rounded-lg border border-amber-500/20"
+          >
+            Sign Up
+          </button>
         </div>
       </div>
 
@@ -36,7 +46,7 @@ export default function AuthGate({ onSelectLogin, onSelectSignup, onSocialLogin,
         <div className="space-y-4">
           <button
             onClick={onSelectSignup}
-            className="w-full group bg-[#1e2330] hover:bg-[#252b3d] border border-slate-800/50 p-6 rounded-3xl transition-all text-left flex items-start space-x-5"
+            className="bg-[#1e2330] hover:bg-[#252b3d] p-6 rounded-3xl transition-all text-left flex items-start space-x-5 group w-full"
           >
             <div className="relative mt-1">
               <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
@@ -56,7 +66,7 @@ export default function AuthGate({ onSelectLogin, onSelectSignup, onSocialLogin,
 
           <button
             onClick={onSelectLogin}
-            className="w-full group bg-[#1e2330] hover:bg-[#252b3d] border border-slate-800/50 p-6 rounded-3xl transition-all text-left flex items-start space-x-5"
+            className="bg-[#1e2330] hover:bg-[#252b3d] p-6 rounded-3xl transition-all text-left flex items-start space-x-5 group w-full"
           >
             <div className="relative mt-1">
               <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
@@ -89,14 +99,14 @@ export default function AuthGate({ onSelectLogin, onSelectSignup, onSocialLogin,
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => onSocialLogin?.('google')}
-              className="flex items-center justify-center space-x-3 bg-[#1e2330] hover:bg-[#252b3d] border border-slate-800/50 p-4 rounded-2xl transition-all"
+              className="flex items-center justify-center space-x-3 bg-[#1e2330] hover:bg-[#252b3d] p-4 rounded-2xl transition-all w-full"
             >
               <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-color-icon.png" alt="Google" className="w-4 h-4" />
               <span className="text-[10px] font-black text-white uppercase tracking-widest">Google</span>
             </button>
             <button
               onClick={() => onSocialLogin?.('facebook')}
-              className="flex items-center justify-center space-x-3 bg-[#1e2330] hover:bg-[#252b3d] border border-slate-800/50 p-4 rounded-2xl transition-all"
+              className="flex items-center justify-center space-x-3 bg-[#1e2330] hover:bg-[#252b3d] p-4 rounded-2xl transition-all w-full"
             >
               <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/facebook-app-round-white-icon.png" alt="Facebook" className="w-4 h-4" />
               <span className="text-[10px] font-black text-white uppercase tracking-widest">Facebook</span>

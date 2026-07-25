@@ -698,7 +698,7 @@ export default function WalletSection({
 
                 <button
                   type="submit"
-                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-2xl uppercase tracking-[0.3em] transition-all shadow-xl shadow-emerald-500/20"
+                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-2xl uppercase tracking-[0.3em] transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center"
                 >
                   Activate Trading Plan
                 </button>
@@ -767,7 +767,7 @@ export default function WalletSection({
           <div className="flex flex-col items-center text-center space-y-0.5 sm:space-y-1">
             <span className="text-[7px] xs:text-[9px] sm:text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5 sm:mb-1">Trading Wallet</span>
             <p className="text-xs xs:text-sm sm:text-2xl md:text-3xl font-black text-white tabular-nums">{formatIndianCurrency(currentUser?.depositWallet || 0)}</p>
-            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-emerald-500 mt-0.5 sm:mt-1">
+            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-emerald-500 mt-0.5 sm:mt-1 bg-[#0b101f] px-2 py-0.5 rounded-full border border-emerald-500/20">
               <Wallet className="w-2 sm:w-3.5 h-2 sm:h-3.5" />
               <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">Main Principal</span>
             </div>
@@ -783,7 +783,7 @@ export default function WalletSection({
             </div>
             <span className="text-[8px] xs:text-[10px] sm:text-[11px] text-emerald-400 uppercase font-black tracking-widest">Profit Wallet</span>
             <p className="text-sm xs:text-base sm:text-3xl md:text-4xl font-black text-emerald-400 tabular-nums leading-none">{formatIndianCurrency(currentUser?.profitWallet || 0)}</p>
-            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-emerald-400 mt-0.5 sm:mt-1">
+            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-emerald-400 mt-0.5 sm:mt-1 bg-[#0b101f] px-2 py-0.5 rounded-full border border-emerald-500/20">
               <TrendingUp className="w-2.5 sm:w-4 h-2.5 sm:h-4 animate-bounce" />
               <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-black uppercase tracking-widest">Withdrawal Active</span>
             </div>
@@ -797,7 +797,7 @@ export default function WalletSection({
             <p className="text-xs xs:text-sm sm:text-2xl md:text-3xl font-black text-white tabular-nums">
               {activeTrades.filter(t => t.userId === currentUser?.id && t.status === 'active').length}
             </p>
-            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-cyan-400 mt-0.5 sm:mt-1">
+            <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-cyan-400 mt-0.5 sm:mt-1 bg-[#0b101f] px-2 py-0.5 rounded-full border border-slate-800/50">
               <FileText className="w-2 sm:w-3.5 h-2 sm:h-3.5" />
               <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">Running Trades</span>
             </div>
@@ -811,7 +811,7 @@ export default function WalletSection({
           id="btn-sub-deposit"
           onClick={() => { setInternalTab('deposit'); setDepositSuccess(false); }}
           className={`flex-1 py-2.5 sm:py-3 rounded-xl transition-all ${
-            internalTab === 'deposit' ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'
+            internalTab === 'deposit' ? 'bg-emerald-500 text-slate-950 shadow-lg font-black' : 'text-slate-500 hover:text-white bg-[#050914]'
           }`}
         >
           Add Money
@@ -831,7 +831,7 @@ export default function WalletSection({
             }, 100);
           }}
           className={`flex-1 py-2.5 sm:py-3 rounded-xl transition-all ${
-            internalTab === 'withdraw' ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'
+            internalTab === 'withdraw' ? 'bg-emerald-500 text-slate-950 shadow-lg font-black' : 'text-slate-500 hover:text-white bg-[#050914]'
           }`}
         >
           Withdraw Profit
@@ -839,7 +839,7 @@ export default function WalletSection({
         <button
           onClick={() => setInternalTab('history')}
           className={`flex-1 py-2.5 sm:py-3 rounded-xl transition-all ${
-            internalTab === 'history' ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'text-slate-500 hover:text-white'
+            internalTab === 'history' ? 'bg-emerald-500 text-slate-950 shadow-lg font-black' : 'text-slate-500 hover:text-white bg-[#050914]'
           }`}
         >
           History
@@ -1300,7 +1300,7 @@ export default function WalletSection({
                       <button
                         type="submit"
                         id="btn-withdraw-submit"
-                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2 px-3 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 mt-2 flex items-center justify-center space-x-1"
+                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] py-2 px-3 rounded-lg uppercase tracking-widest transition-all shadow-md shadow-amber-500/10 flex items-center justify-center space-x-1 mt-2"
                       >
                         <span>Request Settlement</span>
                       </button>

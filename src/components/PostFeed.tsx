@@ -23,11 +23,14 @@ export default function PostFeed({ posts, onLike }: PostFeedProps) {
           </div>
           <p className="text-slate-300 text-xs mb-3">{post.content}</p>
           <div className="flex items-center space-x-4">
-            <button onClick={() => onLike(post.id, post.likes)} className="flex items-center space-x-1 text-slate-500 text-[10px] hover:text-red-500">
+            <button
+              onClick={() => onLike(post.id, post.likes)}
+              className="flex items-center space-x-1 text-slate-500 text-[10px] hover:text-red-500 transition-colors"
+            >
               <ThumbsUp className="w-3 h-3" />
               <span>{post.likes}</span>
             </button>
-            <button className="flex items-center space-x-1 text-slate-500 text-[10px]">
+            <button className="flex items-center space-x-1 text-slate-500 text-[10px] hover:text-slate-300 transition-colors">
               <MessageSquare className="w-3 h-3" />
               <span>Comment</span>
             </button>

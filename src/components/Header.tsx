@@ -107,13 +107,13 @@ export default function Header({
                 </button>
                 <button
                   onClick={() => setAuthMode('login')}
-                  className="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+                  className="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all bg-[#05070a] border border-white/5"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => setAuthMode('signup')}
-                  className="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-400"
+                  className="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest bg-amber-500 text-slate-950 transition-all hover:bg-amber-400"
                 >
                   Sign Up
                 </button>
@@ -126,7 +126,7 @@ export default function Header({
                   className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
                     activeTab === 'plan'
                       ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-400 hover:text-white bg-[#05070a]'
                   }`}
                 >
                   Plans
@@ -137,7 +137,7 @@ export default function Header({
                   className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
                     activeTab === 'trade'
                       ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-400 hover:text-white bg-[#05070a]'
                   }`}
                 >
                   Trade
@@ -148,7 +148,7 @@ export default function Header({
                   className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
                     activeTab === 'market'
                       ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-400 hover:text-white bg-[#05070a]'
                   }`}
                 >
                   Market
@@ -159,7 +159,7 @@ export default function Header({
                   className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
                     activeTab === 'wallet'
                       ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-400 hover:text-white bg-[#05070a]'
                   }`}
                 >
                   Wallet
@@ -170,7 +170,7 @@ export default function Header({
                   className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
                     activeTab === 'account'
                       ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-400 hover:text-white bg-[#05070a]'
                   }`}
                 >
                   Account
@@ -215,13 +215,13 @@ export default function Header({
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setAuthMode('login')}
-                    className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider text-slate-400 border border-white/5 bg-white/5 transition-all"
+                    className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider text-slate-400 border border-white/5 bg-white/5 transition-all hover:text-white"
                   >
                     Login
                   </button>
                   <button
                     onClick={() => setAuthMode('signup')}
-                    className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 transition-all"
+                    className="inline-flex items-center justify-center rounded-[11px] min-w-[100px] px-4 py-2 text-[10px] font-semibold text-white bg-amber-500 text-slate-950 transition-all hover:bg-amber-400"
                   >
                     Signup
                   </button>

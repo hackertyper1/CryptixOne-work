@@ -928,32 +928,35 @@ export default function TradeSection({
           {(['Crypto', 'TradFi', 'Alpha', 'Options', 'Grow', 'Square', 'Data', 'Market'] as const).map((tab) => {
             const isActive = activeHeaderTab === tab;
             return (
-              <button
-                key={tab}
-                id={`btn-terminal-tag-${tab.toLowerCase()}`}
-                onClick={() => {
-                  setActiveHeaderTab(tab);
-                  if (tab === 'Crypto') {
-                    setSelectedChart('CRYPTO');
-                  } else if (tab === 'TradFi') {
-                    setSelectedChart('STOCK');
-                  }
-                }}
-                className="relative pb-2.5 pt-1.5 px-2 transition-all duration-300 focus:outline-none select-none shrink-0"
-              >
-                <span className={`text-base md:text-xl font-bold tracking-tight ${
-                  isActive ? 'text-[#f0b90b] font-extrabold' : 'text-[#848e9c] hover:text-slate-200'
-                }`}>
-                  {tab}
-                </span>
+              <div key={tab} className="relative">
+                <button
+                  id={`btn-terminal-tag-${tab.toLowerCase()}`}
+                  onClick={() => {
+                    setActiveHeaderTab(tab);
+                    if (tab === 'Crypto') {
+                      setSelectedChart('CRYPTO');
+                    } else if (tab === 'TradFi') {
+                      setSelectedChart('STOCK');
+                    }
+                  }}
+                  className={`whitespace-nowrap px-4 py-2 rounded-lg transition-all relative ${
+                    isActive ? 'bg-amber-500/10' : 'bg-transparent hover:bg-white/5'
+                  }`}
+                >
+                  <span className={`text-base md:text-xl font-bold tracking-tight ${
+                    isActive ? 'text-[#f0b90b] font-extrabold' : 'text-[#848e9c] hover:text-slate-200'
+                  }`}>
+                    {tab}
+                  </span>
+                </button>
                 {isActive && (
                   <motion.div
                     layoutId="activeUnderlineBar"
-                    className="absolute bottom-0 left-1 right-1 h-[4px] bg-[#f0b90b] rounded-full shadow-[0_2px_10px_rgba(240,185,11,0.6)]"
+                    className="absolute -bottom-2 left-1 right-1 h-[4px] bg-[#f0b90b] rounded-full shadow-[0_2px_10px_rgba(240,185,11,0.6)]"
                     transition={{ type: 'spring', stiffness: 350, damping: 25 }}
                   />
                 )}
-              </button>
+              </div>
             );
           })}
         </div>
@@ -1066,7 +1069,7 @@ export default function TradeSection({
                     key={sub}
                     onClick={() => setCryptoSubFilter(sub)}
                     className={`px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
-                      cryptoSubFilter === sub ? 'bg-[#f0b90b] text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
+                      cryptoSubFilter === sub ? 'bg-[#f0b90b] text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
                     }`}
                   >
                     {sub}
@@ -1986,7 +1989,7 @@ export default function TradeSection({
                       setOptionsPrice('0.66006');
                       setOptionsAmount('250');
                     }}
-                    className="w-full sm:w-64 bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black py-4 px-8 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center uppercase tracking-wider font-mono text-sm shadow-amber-500/10"
+                    className="bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black py-4 px-8 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center uppercase tracking-wider font-mono text-sm shadow-amber-500/10 w-full sm:w-64"
                   >
                     Trade KERNEL Spot ➔
                   </button>
@@ -2052,7 +2055,7 @@ export default function TradeSection({
                           <button
                             key={presetAmt}
                             onClick={() => handleExecuteQuickTrade(presetAmt)}
-                            className="flex-1 sm:flex-initial bg-gradient-to-b from-amber-500/10 to-amber-500/5 hover:from-amber-500 hover:to-amber-600 hover:text-slate-950 text-amber-500 border border-amber-500/30 hover:border-amber-500 font-mono text-[11px] font-black px-4 py-1.5 rounded-lg transition-all transform active:scale-95 shadow-sm"
+                            className="bg-gradient-to-b from-amber-500/10 to-amber-500/5 hover:from-amber-500 hover:to-amber-600 hover:text-slate-950 text-amber-500 border border-amber-500/30 hover:border-amber-500 font-mono text-[11px] font-black px-4 py-1.5 rounded-lg transition-all transform active:scale-95 shadow-sm flex-1 sm:flex-initial"
                           >
                             ₹{presetAmt.toLocaleString()}
                           </button>
@@ -2086,16 +2089,16 @@ export default function TradeSection({
                       <div className="flex bg-[#181a20] p-1 rounded-xl border border-slate-900 w-48">
                         <button
                           onClick={() => setOptionsActiveSide('Buy')}
-                          className={`flex-1 py-2.5 rounded-lg text-xs font-black font-mono transition-all ${
-                            optionsActiveSide === 'Buy' ? 'bg-[#10b981] text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
+                          className={`flex-1 py-2.5 rounded-lg text-xs font-black font-mono transition-all text-center block ${
+                            optionsActiveSide === 'Buy' ? 'bg-[#10b981] text-white shadow-lg' : 'text-slate-500 hover:text-slate-300 bg-[#181a20]'
                           }`}
                         >
                           Buy
                         </button>
                         <button
                           onClick={() => setOptionsActiveSide('Sell')}
-                          className={`flex-1 py-2.5 rounded-lg text-xs font-black font-mono transition-all ${
-                            optionsActiveSide === 'Sell' ? 'bg-[#f43f5e] text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
+                          className={`flex-1 py-2.5 rounded-lg text-xs font-black font-mono transition-all text-center block ${
+                            optionsActiveSide === 'Sell' ? 'bg-[#f43f5e] text-white shadow-lg' : 'text-slate-500 hover:text-slate-300 bg-[#181a20]'
                           }`}
                         >
                           Sell
@@ -2272,7 +2275,7 @@ export default function TradeSection({
                     {/* Primary BUY/SELL Button (Replaces "Log In") */}
                     <button
                       onClick={handleExecuteOptionsTrade}
-                      className={`w-full py-4 rounded-2xl font-black text-white font-mono text-sm tracking-wide transition-all transform active:scale-[0.98] shadow-lg ${
+                      className={`w-full py-4 rounded-2xl font-black text-white font-mono text-sm tracking-wide transition-all transform active:scale-[0.98] shadow-lg text-center ${
                         optionsActiveSide === 'Buy' 
                           ? 'bg-[#10b981] hover:bg-emerald-400 shadow-emerald-500/10 hover:shadow-emerald-500/20' 
                           : 'bg-[#f43f5e] hover:bg-rose-400 shadow-rose-500/10 hover:shadow-rose-500/20'

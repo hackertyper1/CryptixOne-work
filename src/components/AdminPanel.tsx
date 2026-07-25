@@ -430,7 +430,7 @@ export default function AdminPanel({
           <button
             type="submit"
             id="btn-admin-submit"
-            className="w-full bg-red-500 hover:bg-red-400 text-slate-950 font-black text-xs py-3 rounded-lg uppercase tracking-wider transition-all mt-2"
+            className="w-full mt-2 bg-red-500 hover:bg-red-400 text-slate-950 font-black text-xs py-3 rounded-lg uppercase tracking-wider transition-all flex items-center justify-center"
           >
             Authorize Terminal Access
           </button>
@@ -457,7 +457,7 @@ export default function AdminPanel({
         <div className="flex bg-[#070b14] p-1 rounded-lg border border-slate-800 font-mono text-[11px] font-bold overflow-x-auto max-w-full space-x-1">
           <button
             onClick={() => setAdminTab('dashboard')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'dashboard' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -466,7 +466,7 @@ export default function AdminPanel({
           </button>
           <button
             onClick={() => setAdminTab('transactions')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'transactions' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -476,7 +476,7 @@ export default function AdminPanel({
           <button
             id="btn-admin-tab-investments"
             onClick={() => setAdminTab('investments')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'investments' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -485,7 +485,7 @@ export default function AdminPanel({
           </button>
           <button
             onClick={() => setAdminTab('messages')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'messages' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -494,7 +494,7 @@ export default function AdminPanel({
           </button>
           <button
             onClick={() => setAdminTab('traders')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'traders' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -503,7 +503,7 @@ export default function AdminPanel({
           </button>
           <button
             onClick={() => setAdminTab('posts')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'posts' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -513,7 +513,7 @@ export default function AdminPanel({
           <button
             id="btn-admin-tab-users"
             onClick={() => setAdminTab('users')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'users' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -523,7 +523,7 @@ export default function AdminPanel({
           <button
             id="btn-admin-tab-trades"
             onClick={() => setAdminTab('trades')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'trades' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -532,7 +532,7 @@ export default function AdminPanel({
           </button>
           <button
             onClick={() => setAdminTab('payments')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'payments' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -541,7 +541,7 @@ export default function AdminPanel({
           </button>
           <button
             onClick={() => setAdminTab('settings')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'settings' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -550,7 +550,7 @@ export default function AdminPanel({
           </button>
           <button
             onClick={() => setAdminTab('logs')}
-            className={`px-3 py-2 rounded transition-all uppercase flex items-center space-x-1 shrink-0 ${
+            className={`px-3 py-2 rounded flex items-center space-x-1 transition-all uppercase shrink-0 ${
               adminTab === 'logs' ? 'bg-red-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -1002,7 +1002,7 @@ export default function AdminPanel({
               <button
                 type="submit"
                 id="btn-settings-save"
-                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-red-500 hover:bg-red-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-lg uppercase tracking-wider transition-all shadow"
+                className="inline-flex items-center justify-center space-x-1.5 bg-red-500 hover:bg-red-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-lg uppercase tracking-wider transition-all shadow w-full sm:w-auto"
               >
                 <Save className="w-4 h-4" />
                 <span>Save System Configurations</span>
@@ -1021,7 +1021,7 @@ export default function AdminPanel({
                     toast.success("Global Trader settings applied to all client profiles.");
                   }
                 }}
-                className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-lg uppercase tracking-wider transition-all shadow"
+                className="inline-flex items-center justify-center space-x-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-lg uppercase tracking-wider transition-all shadow w-full sm:w-auto"
               >
                 <Users className="w-4 h-4" />
                 <span>Apply Trader to All Users</span>
@@ -2013,9 +2013,19 @@ export default function AdminPanel({
                     </td>
                     <td className="py-3.5 px-4 text-right space-x-2">
                       {!post.approved && (
-                        <button onClick={() => approvePost(post.id)} className="bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded text-[10px] uppercase">Approve</button>
+                        <button 
+                          onClick={() => approvePost(post.id)} 
+                          className="bg-emerald-500 text-slate-950 font-bold px-2 py-1 rounded text-[10px] uppercase"
+                        >
+                          Approve
+                        </button>
                       )}
-                      <button onClick={() => rejectPost(post.id)} className="bg-rose-500 text-white font-bold px-2 py-1 rounded text-[10px] uppercase">Reject</button>
+                      <button 
+                        onClick={() => rejectPost(post.id)} 
+                        className="bg-rose-500 text-white font-bold px-2 py-1 rounded text-[10px] uppercase"
+                      >
+                        Reject
+                      </button>
                     </td>
                   </tr>
                 ))}

@@ -11,7 +11,8 @@ import {
   Lock, 
   User,
   Award,
-  ShieldCheck
+  ShieldCheck,
+  Landmark
 } from 'lucide-react';
 
 import EducationSection from './EducationSection';
@@ -117,42 +118,15 @@ export default function HomeSection({
         {/* 1. CryptixOne Website Name */}
         <div className="space-y-4 relative z-10 flex flex-col items-center">
           <div className="space-y-3">
-            <h1 className="text-5xl md:text-8xl font-black tracking-tight text-white font-sans text-center">
+            <h1 className="text-[42px] font-bold leading-[21px] tracking-tight text-white font-sans text-center">
               Cryptix<span className="text-amber-500">One</span>
             </h1>
             <div className="flex items-center justify-center space-x-4">
               <div className="h-[1px] w-12 md:w-20 bg-amber-500/30"></div>
-              <p className="text-[10px] md:text-sm font-black text-amber-400 tracking-[0.35em] md:tracking-[0.5em] uppercase font-sans text-center">
+              <p className="text-[8px] leading-[13px] font-['Inter'] font-black text-amber-400 tracking-[0.35em] md:tracking-[0.5em] uppercase font-sans text-center">
                 Leading Digital Asset Management Platform
               </p>
               <div className="h-[1px] w-12 md:w-20 bg-amber-500/30"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Official Authority Logos */}
-        <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16 pt-4 relative z-10">
-          {/* Ministry of Finance India */}
-          <div className="flex items-center space-x-4 bg-white/[0.02] backdrop-blur-sm p-4 rounded-2xl border border-white/5 shadow-2xl">
-            <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-1.5 overflow-hidden bg-black/60">
-              <img src={systemSettings.logoUrl || "/logo.png"} alt="Company Logo" className="w-full h-full object-contain" />
-            </div>
-            <div className="text-left font-sans">
-              <p className="text-[9px] font-semibold text-amber-500 leading-tight uppercase tracking-wider">वित्त मंत्रालय</p>
-              <p className="text-[11px] font-bold text-white leading-none mt-0.5">MINISTRY OF FINANCE</p>
-              <p className="text-[8px] text-slate-500 leading-tight uppercase font-medium">GOVERNMENT OF INDIA</p>
-            </div>
-          </div>
-
-          {/* SBI Finance of India */}
-          <div className="flex items-center space-x-4 bg-white/[0.02] backdrop-blur-sm p-4 rounded-2xl border border-white/5 shadow-2xl">
-            <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-1.5 overflow-hidden bg-black/60 shadow-lg">
-              <img src={systemSettings.logoUrl || "/logo.png"} alt="Company Logo" className="w-full h-full object-contain" />
-            </div>
-            <div className="text-left font-sans">
-              <p className="text-xs font-black text-[#00a5ec] leading-none tracking-tight">SBI Finance</p>
-              <p className="text-[10px] font-bold text-white leading-none">OF INDIA</p>
-              <p className="text-[8px] text-amber-500 font-mono tracking-widest uppercase mt-0.5">REGISTERED PLATFORM</p>
             </div>
           </div>
         </div>
@@ -189,27 +163,33 @@ export default function HomeSection({
               <span>Secure Wealth Management</span>
             </div>
             
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter text-white leading-[1.1] font-sans">
+            <h2 className="text-[28px] font-bold tracking-tighter text-white leading-[29.6px] font-sans">
               Grow Your Capital With <br />
               <span className="text-amber-500">
                 Professional Trading Tools
               </span>
             </h2>
             
-            <p className="text-slate-400 text-lg max-w-xl leading-relaxed font-medium">
+            <p className="text-slate-400 text-[17px] max-w-xl leading-[26.25px] font-medium">
               Cryptix One is your gateway to professional digital asset management. Our platform uses advanced technology to help you achieve consistent growth while keeping your assets secure.
             </p>
 
             <div className="flex flex-wrap gap-6 pt-4">
               <button 
                 onClick={onNavigateToPlans}
-                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-10 py-5 rounded-xl text-xs uppercase tracking-[0.3em] transition-all shadow-[0_15px_30px_rgba(245,158,11,0.2)] hover:-translate-y-1"
+                className="brand-gradient-button group"
               >
-                Start Investing
+                <span>
+                  Start Free Trial
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 group-hover:translate-x-1 transition-transform">
+                    <path d="M7 7h10v10"></path>
+                    <path d="M7 17 17 7"></path>
+                  </svg>
+                </span>
               </button>
               <button 
                 onClick={() => onNavigateToAuth('signup')}
-                className="bg-transparent border border-white/10 hover:bg-white/5 text-white font-black px-10 py-5 rounded-xl text-xs uppercase tracking-[0.3em] transition-all"
+                className="bg-transparent border border-white/10 hover:bg-white/5 text-white font-black px-10 py-5 rounded-xl text-[12px] leading-[5px] uppercase tracking-[0.3em] transition-all"
               >
                 {isLoggedIn ? "Go to Dashboard" : "Create Account"}
               </button>
@@ -222,7 +202,7 @@ export default function HomeSection({
               <Award className="w-24 h-24 text-amber-500" />
             </div>
             
-            <div className="flex justify-between items-center pb-6 border-b border-white/5 relative z-10">
+            <div className="flex justify-between items-center pb-6 border-b border-white/5 relative z-10 text-[15px] leading-[12px] rounded-[23px]">
               <div className="flex space-x-3">
                 {(['NIFTY', 'SENSEX', 'CRYPTIX'] as const).map(idx => (
                   <button
@@ -322,6 +302,46 @@ export default function HomeSection({
         </div>
       </section>
 
+      {/* Institutional Trust Section */}
+      <section className="py-8 border-y border-white/5 bg-[#05070a]/50 backdrop-blur-sm rounded-3xl" id="institutional-trust-footer">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-wrap items-center justify-center gap-12 md:gap-24 opacity-60 hover:opacity-100 transition-opacity duration-500">
+            {/* Govt of India */}
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-1.5 bg-black/60 shadow-lg">
+                <img src="/src/assets/images/ministry_finance_india_logo_1784909476009.jpg" alt="Govt of India" className="w-full h-full object-contain" />
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] font-black text-amber-500 leading-none uppercase tracking-widest">MINISTRY OF FINANCE</p>
+                <p className="text-[8px] text-white leading-tight uppercase font-bold mt-1 tracking-tighter">GOVERNMENT OF INDIA</p>
+              </div>
+            </div>
+
+            {/* SBI Finance */}
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full border border-blue-500/30 flex items-center justify-center p-1.5 bg-black/60 shadow-lg">
+                <img src="/src/assets/images/sbi_finance_logo_1784909491498.jpg" alt="SBI" className="w-full h-full object-contain" />
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] font-black text-blue-400 leading-none uppercase tracking-widest">SBI FINANCE</p>
+                <p className="text-[8px] text-white leading-tight uppercase font-bold mt-1 tracking-tighter">OFFICIAL PARTNER</p>
+              </div>
+            </div>
+
+            {/* SEBI Compliance Placeholder Icon */}
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full border border-emerald-500/30 flex items-center justify-center p-1.5 bg-black/60 shadow-lg text-emerald-500">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] font-black text-emerald-400 leading-none uppercase tracking-widest">SECURE & VERIFIED</p>
+                <p className="text-[8px] text-white leading-tight uppercase font-bold mt-1 tracking-tighter">REGULATORY COMPLIANT</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Trust & Support footer badge */}
       <section className="bg-gradient-to-r from-[#0a0c12] to-black rounded-[2rem] p-10 border border-white/5 flex flex-col sm:flex-row items-center justify-between text-left gap-8 shadow-2xl" id="support-bar">
         <div className="flex items-center space-x-6">
@@ -334,23 +354,246 @@ export default function HomeSection({
           </div>
         </div>
 
-        <div className="flex space-x-4 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto items-center">
           <a
             href={`https://wa.me/91${systemSettings.supportWhatsApp}?text=Hello%20CryptixOne%20Team,%20I%20need%20assistance%20regarding%20investment%20slots.`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-8 py-4 rounded-xl text-[10px] uppercase tracking-[0.2em] transition-all shadow-xl shadow-amber-500/20"
+            className="animated-loader-button w-full sm:w-auto"
           >
-            <MessageCircle className="w-4 h-4" />
-            <span>Chat WhatsApp</span>
+            <div className="loader-background">
+              <div className="loader-background-inner"></div>
+            </div>
+            <span className="loader-text items-center">
+              <MessageCircle className="w-5 h-5 mr-2 text-[#25D366] drop-shadow-[0_0_8px_#25D366]" />
+              {"Chat WhatsApp".split('').map((char, index) => (
+                <span
+                  key={index}
+                  className="loader-letter"
+                  style={{
+                    animationDelay: `${index * 0.1}s`,
+                    width: char === ' ' ? '0.3rem' : 'auto'
+                  }}
+                >
+                  {char}
+                </span>
+              ))}
+            </span>
           </a>
+
           <a
             href={`mailto:${systemSettings.companyEmail}`}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 bg-white/5 hover:bg-white/10 text-white font-black px-8 py-4 rounded-xl text-[10px] uppercase tracking-[0.2em] border border-white/10 transition-all"
+            className="animated-loader-button w-full sm:w-auto"
           >
-            <Mail className="w-4 h-4" />
-            <span>Email Support</span>
+            <div className="loader-background">
+              <div className="loader-background-inner"></div>
+            </div>
+            <span className="loader-text items-center">
+              <Mail className="w-5 h-5 mr-2 text-rose-500 drop-shadow-[0_0_8px_#f43f5e]" />
+              {"Email Support".split('').map((char, index) => (
+                <span
+                  key={index}
+                  className="loader-letter"
+                  style={{
+                    animationDelay: `${index * 0.1}s`,
+                    width: char === ' ' ? '0.3rem' : 'auto'
+                  }}
+                >
+                  {char}
+                </span>
+              ))}
+            </span>
           </a>
+        </div>
+      </section>
+
+      {/* Customer Success Section */}
+      <section className="z-10 sm:pb-8 sm:pt-8 sm:ml-auto sm:mr-auto sm:mt-24 sm:mb-24 max-w-7xl mt-24 mr-auto mb-24 ml-auto pt-8 pr-6 pb-8 pl-6 relative shadow-2xl" id="customer-success-results">
+        <div className="flex items-center gap-2 text-sm text-zinc-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+          </svg>
+          <span className="font-normal font-geist">Customer Success</span>
+        </div>
+        <div className="mt-2 text-left">
+          <h2 className="text-[44px] sm:text-6xl lg:text-7xl xl:text-8xl leading-[0.9] text-white font-geist font-medium tracking-tighter">
+            Results.
+          </h2>
+          <p className="mt-1 text-sm sm:text-base text-zinc-400 font-normal font-geist">
+            Real impact from real workflows
+          </p>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 text-left">
+          {/* Metrics card */}
+          <article className="sm:p-6 flex flex-col min-h-[420px] bg-zinc-800/50 rounded-2xl pt-5 pr-5 pb-5 pl-5 backdrop-blur-lg justify-between hover:border-zinc-700 transition border border-white/5 relative overflow-hidden group">
+            <div className="space-y-5">
+              <div className="flex items-end gap-2">
+                <span className="text-5xl sm:text-6xl text-white font-geist font-normal tracking-tighter">
+                  99.8
+                </span>
+                <span className="text-zinc-400 text-base font-normal font-geist">
+                  %
+                </span>
+              </div>
+              <p className="text-sm text-zinc-300 font-geist">
+                We've automated <span className="font-medium text-white font-geist">250K+ workflows</span> with industry-leading uptime and reliability.
+              </p>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-white font-geist">
+                  CryptixAI®
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-full flex items-center justify-center">
+                  <TrendingUp className="h-3 w-3 text-zinc-300" />
+                </div>
+                <div className="h-7 w-7 bg-gradient-to-br from-zinc-700 to-zinc-800 border border-zinc-700 -ml-2 rounded-full flex items-center justify-center">
+                  <Award className="h-3 w-3 text-zinc-300" />
+                </div>
+                <div className="h-7 w-7 bg-gradient-to-br from-zinc-700 to-zinc-800 border border-zinc-700 -ml-2 rounded-full flex items-center justify-center">
+                  <ShieldCheck className="h-3 w-3 text-zinc-300" />
+                </div>
+                <span className="inline-flex items-center justify-center -ml-1 h-7 px-2 rounded-full bg-white text-zinc-900 text-xs font-normal font-geist">
+                  250K+
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-emerald-500">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-xs text-zinc-400 font-normal font-geist">
+                  Active across 50+ industries
+                </span>
+              </div>
+            </div>
+            <button 
+              onClick={onNavigateToPlans}
+              className="brand-gradient-button w-full mt-6"
+            >
+              <span>
+                Start your workflow
+              </span>
+            </button>
+          </article>
+
+          {/* Testimonial columns */}
+          <div className="grid grid-rows-[auto_1fr] gap-4">
+            <article className="flex bg-zinc-800/50 rounded-2xl pt-4 pr-4 pb-4 pl-4 backdrop-blur-lg items-center justify-between hover:border-zinc-700 transition border border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 bg-cover rounded-md bg-zinc-700" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=320')" }}></div>
+                <div className="text-left">
+                  <p className="text-sm font-medium tracking-tight leading-tight text-white font-geist">
+                    Sarah Chen
+                  </p>
+                  <p className="text-xs text-zinc-400 font-geist">
+                    TechFlow Solutions
+                  </p>
+                </div>
+              </div>
+              <span className="text-zinc-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5v14"></path>
+                </svg>
+              </span>
+            </article>
+
+            <article className="sm:p-6 flex flex-col min-h-[420px] bg-zinc-800/50 border border-zinc-800 rounded-2xl pt-5 pr-5 pb-5 pl-5 backdrop-blur-lg justify-between hover:border-zinc-700 transition">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 text-emerald-500">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg key={i} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 fill-emerald-500">
+                      <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-zinc-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                  </svg>
+                </span>
+              </div>
+              <p className="text-2xl sm:text-3xl text-right leading-snug text-white font-geist font-normal tracking-tighter">
+                CryptixOne reduced our processing time by 85% and eliminated manual errors completely.
+              </p>
+            </article>
+          </div>
+
+          <div className="grid grid-rows-[1fr_auto] gap-4">
+            <article className="flex flex-col min-h-[420px] bg-zinc-800/50 border border-zinc-800 rounded-2xl pt-6 pr-6 pb-6 pl-6 backdrop-blur-lg justify-between hover:border-zinc-700 transition">
+              <p className="text-2xl sm:text-3xl text-center leading-snug text-white font-geist font-normal tracking-tighter">
+                The AI learns our patterns and suggests optimizations we never considered.
+              </p>
+              <div className="mt-6 flex items-center justify-between">
+                <div className="flex items-center gap-1 text-emerald-500">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg key={i} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 fill-emerald-500">
+                      <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-zinc-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                  </svg>
+                </span>
+              </div>
+            </article>
+
+            <article className="flex gap-3 bg-zinc-800/50 border border-zinc-800 rounded-2xl pt-4 pr-4 pb-4 pl-4 backdrop-blur-lg items-center hover:border-zinc-700 transition">
+              <div className="h-9 w-9 bg-cover border border-zinc-700 rounded-md bg-zinc-700" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=320')" }}></div>
+              <div className="text-left">
+                <p className="text-sm font-medium tracking-tight leading-tight text-white font-geist">
+                  Marcus Johnson
+                </p>
+                <p className="text-xs text-zinc-400 font-geist">Innovate Labs</p>
+              </div>
+            </article>
+          </div>
+
+          <div className="grid grid-rows-[auto_1fr] gap-4">
+            <article className="flex bg-zinc-800/50 border border-zinc-800 rounded-2xl pt-4 pr-4 pb-4 pl-4 backdrop-blur-lg items-center justify-between hover:border-zinc-700 transition">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 bg-cover border border-zinc-700 rounded-md bg-zinc-700" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=320')" }}></div>
+                <div className="text-left">
+                  <p className="text-sm font-medium tracking-tight leading-tight text-white font-geist">
+                    Maya Patel
+                  </p>
+                  <p className="text-xs text-zinc-400 font-geist">
+                    Operations Director
+                  </p>
+                </div>
+              </div>
+              <span className="text-zinc-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5v14"></path>
+                </svg>
+              </span>
+            </article>
+
+            <article className="sm:p-6 flex flex-col min-h-[420px] bg-zinc-800/50 border border-zinc-800 rounded-2xl pt-5 pr-5 pb-5 pl-5 backdrop-blur-lg justify-between hover:border-zinc-700 transition">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 text-emerald-500">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg key={i} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 fill-emerald-500">
+                      <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-zinc-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                  </svg>
+                </span>
+              </div>
+              <p className="text-2xl sm:text-3xl text-right leading-snug text-white font-geist font-normal tracking-tighter">
+                Seamless integration with our existing tools. Setup took minutes, not weeks.
+              </p>
+            </article>
+          </div>
         </div>
       </section>
     </div>

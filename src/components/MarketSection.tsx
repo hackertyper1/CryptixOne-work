@@ -1056,7 +1056,7 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
           <div className="flex bg-slate-900/90 border border-slate-800 p-1.5 rounded-2xl shrink-0 w-full md:w-auto" id="market-sub-tabs">
             <button
               onClick={() => setActiveSubTab('analyse')}
-              className={`flex-1 md:flex-initial flex items-center justify-center space-x-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+              className={`flex items-center justify-center space-x-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex-1 md:flex-initial ${
                 activeSubTab === 'analyse'
                   ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -1067,7 +1067,7 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
             </button>
             <button
               onClick={() => setActiveSubTab('research')}
-              className={`flex-1 md:flex-initial flex items-center justify-center space-x-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+              className={`flex items-center justify-center space-x-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex-1 md:flex-initial ml-1.5 ${
                 activeSubTab === 'research'
                   ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
@@ -1293,23 +1293,23 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
 
                   {/* Interaction bar */}
                   <div className="flex justify-between items-center text-slate-500 border-t border-slate-900/80 pt-3 mt-1.5 text-[11px] font-mono">
-                    <button className="flex items-center space-x-1.5 hover:text-white transition-all">
+                    <button className="flex items-center space-x-1.5 hover:text-white transition-all px-2 py-1 rounded-lg">
                       <MessageSquare className="w-3.5 h-3.5" />
                       <span>{post.metrics.comments}</span>
                     </button>
-                    <button className="flex items-center space-x-1.5 hover:text-white transition-all">
+                    <button className="flex items-center space-x-1.5 hover:text-white transition-all px-2 py-1 rounded-lg">
                       <Repeat className="w-3.5 h-3.5" />
                       <span>{post.metrics.reposts}</span>
                     </button>
-                    <button className="flex items-center space-x-1.5 hover:text-white transition-all">
+                    <button className="flex items-center space-x-1.5 hover:text-white transition-all px-2 py-1 rounded-lg">
                       <ThumbsUp className="w-3.5 h-3.5" />
                       <span>{post.metrics.likes}</span>
                     </button>
-                    <button className="flex items-center space-x-1.5 text-slate-600">
+                    <button className="flex items-center space-x-1.5 text-slate-600 px-2 py-1">
                       <BarChart2 className="w-3.5 h-3.5" />
                       <span>{post.metrics.views}</span>
                     </button>
-                    <button className="flex items-center hover:text-white transition-all">
+                    <button className="flex items-center hover:text-white transition-all px-2 py-1 rounded-lg">
                       <Share2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1356,7 +1356,7 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
                           className={`w-full p-3.5 rounded-2xl border text-left flex items-center justify-between transition-all ${
                             selectedAssetId === asset.id
                               ? 'bg-slate-900 border-amber-500/80 shadow-lg shadow-amber-500/5'
-                              : 'bg-slate-950/40 border-slate-900 hover:bg-slate-900/40 hover:border-slate-800'
+                              : 'bg-[#070b14] border-slate-900 hover:bg-slate-900/40 hover:border-slate-800'
                           }`}
                         >
                           <div className="space-y-1">
@@ -1453,13 +1453,13 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
                     <div className="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800 text-[10px] uppercase font-bold tracking-widest">
                       <button 
                         onClick={() => setTradeAction('buy')}
-                        className={`px-3 py-1 rounded transition-all ${tradeAction === 'buy' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400'}`}
+                        className={`px-3 py-1 rounded transition-all font-black ${tradeAction === 'buy' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
                       >
                         Buy (Kharidein)
                       </button>
                       <button 
                         onClick={() => setTradeAction('sell')}
-                        className={`px-3 py-1 rounded transition-all ${tradeAction === 'sell' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400'}`}
+                        className={`px-3 py-1 rounded transition-all font-black ml-1 ${tradeAction === 'sell' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
                       >
                         Sell (Bechein)
                       </button>
@@ -1592,7 +1592,7 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
 
                             <button
                               onClick={() => handleSellAll(item)}
-                              className="w-full md:w-auto px-4 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                              className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all w-full md:w-auto"
                             >
                               Sell All
                             </button>

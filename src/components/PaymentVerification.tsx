@@ -73,7 +73,7 @@ export default function PaymentVerification({ method, amount, upiId, address, is
         </div>
         <button 
           onClick={onCancel}
-          className="text-[10px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-tight flex items-center space-x-1"
+          className="px-2 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-tight flex items-center space-x-1"
         >
           <span>← Back</span>
         </button>
@@ -186,7 +186,7 @@ export default function PaymentVerification({ method, amount, upiId, address, is
 
         <button
           type="submit"
-          className="w-full py-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-[1.5rem] uppercase tracking-[0.4em] transition-all shadow-[0_10px_30px_rgba(16,185,129,0.3)] transform active:scale-[0.98] relative overflow-hidden group"
+          className="w-full py-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-[1.5rem] uppercase tracking-[0.4em] transition-all shadow-[0_10px_30px_rgba(16,185,129,0.3)] transform active:scale-[0.98] relative overflow-hidden flex items-center justify-center group"
         >
           <span className="relative z-10">Initiate Verification</span>
           <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />

@@ -40,17 +40,17 @@ export default function EducationSection() {
   ];
 
   return (
-    <section className="space-y-20 py-16" id="trading-intelligence-intelligence">
+    <section className="space-y-20 py-16 leading-[15px] text-[20px]" id="trading-intelligence-intelligence">
       <div className="text-center space-y-6 max-w-3xl mx-auto">
         <div className="inline-flex items-center space-x-3 bg-amber-500/10 text-amber-500 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.4em] border border-amber-500/20">
           <BookOpen className="w-4 h-4" />
           <span>Strategic Trading Intelligence</span>
         </div>
-        <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tighter font-sans leading-tight">
+        <h2 className="text-[26px] font-bold text-white tracking-tighter font-sans leading-[37px]">
           Mastering the <span className="text-amber-500">Institutional</span> <br />
           Capital Markets
         </h2>
-        <p className="text-slate-500 text-sm md:text-base font-medium leading-relaxed">
+        <p className="text-slate-500 font-medium text-[13px] leading-[19.75px]">
           Our proprietary methodologies bridge the gap between retail trading and sovereign-grade capital management, 
           leveraging advanced analytics to ensure consistent portfolio growth.
         </p>
@@ -63,33 +63,33 @@ export default function EducationSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="bg-white/[0.01] backdrop-blur-sm border border-white/5 p-10 rounded-[2.5rem] relative overflow-hidden group hover:bg-white/[0.03] hover:border-amber-500/20 transition-all duration-500"
+            className="p-10 rounded-[2.5rem] bg-slate-900/40 border border-white/5 relative overflow-hidden hover:bg-white/[0.04] transition-all duration-500 group cursor-pointer"
           >
             <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 blur-[100px] rounded-full -mr-24 -mt-24 group-hover:bg-amber-500/10 transition-colors" />
             
             <div className="space-y-8 relative">
-              <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center border border-amber-500/20 shadow-inner group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-500">
-                {strategy.icon}
-              </div>
-              
-              <div className="space-y-4">
-                <h3 className="text-2xl font-normal text-white font-sans tracking-tight">
-                  {strategy.title}
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                  {strategy.description}
-                </p>
-              </div>
+                <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center border border-amber-500/20 shadow-inner group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-500">
+                  {strategy.icon}
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className={`text-2xl font-normal text-white font-sans tracking-tight ${idx === 1 ? 'leading-[5px]' : ''}`}>
+                    {strategy.title}
+                  </h3>
+                  <p className="text-slate-500 font-medium text-[13px] leading-[19.75px]">
+                    {strategy.description}
+                  </p>
+                </div>
 
-              <div className="space-y-3 pt-4 border-t border-white/5">
-                {strategy.points.map((point, pIdx) => (
-                  <div key={pIdx} className="flex items-center text-[10px] text-amber-500 font-black uppercase tracking-[0.2em]">
-                    <ArrowRight className="w-3 h-3 mr-3 opacity-40" />
-                    {point}
-                  </div>
-                ))}
+                <div className="space-y-3 pt-4 border-t border-white/5">
+                  {strategy.points.map((point, pIdx) => (
+                    <div key={pIdx} className="flex items-center text-[10px] text-amber-500 font-black uppercase tracking-[0.2em]">
+                      <ArrowRight className="w-3 h-3 mr-3 opacity-40" />
+                      {point}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
           </motion.div>
         ))}
       </div>

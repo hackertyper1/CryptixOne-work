@@ -209,8 +209,8 @@ export default function AccountSection({
             <button
               id="btn-switch-login"
               onClick={() => { setAuthMode('login'); setLoginError(''); }}
-              className={`flex-1 py-2.5 rounded-lg transition-all text-xs font-bold uppercase tracking-wider ${
-                authMode === 'login' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
+              className={`py-2.5 rounded-lg flex-1 transition-all text-xs font-bold uppercase tracking-wider ${
+                authMode === 'login' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white bg-[#050914]'
               }`}
             >
               Sign In
@@ -218,8 +218,8 @@ export default function AccountSection({
             <button
               id="btn-switch-register"
               onClick={() => { setAuthMode('signup'); setSignupError(''); }}
-              className={`flex-1 py-2.5 rounded-lg transition-all text-xs font-bold uppercase tracking-wider ${
-                authMode === 'signup' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
+              className={`py-2.5 rounded-lg flex-1 transition-all text-xs font-bold uppercase tracking-wider ${
+                authMode === 'signup' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white bg-[#050914]'
               }`}
             >
               Register
@@ -278,7 +278,7 @@ export default function AccountSection({
 
             <button
               id="btn-login-submit"
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3.5 rounded-xl uppercase tracking-widest transition-all"
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3.5 rounded-xl uppercase tracking-widest transition-all flex items-center justify-center"
             >
               Login Now
             </button>
@@ -293,11 +293,11 @@ export default function AccountSection({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3" id="social-login-grid-signin">
               <button
                 type="button"
                 onClick={() => onSocialLogin?.('google')}
-                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all group"
+                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all w-full group"
               >
                 <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-color-icon.png" alt="Google" className="w-4 h-4" />
                 <span className="text-[10px] font-black text-white uppercase tracking-widest">Google</span>
@@ -305,7 +305,7 @@ export default function AccountSection({
               <button
                 type="button"
                 onClick={() => onSocialLogin?.('facebook')}
-                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all group"
+                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all w-full group"
               >
                 <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/facebook-app-round-white-icon.png" alt="Facebook" className="w-4 h-4" />
                 <span className="text-[10px] font-black text-white uppercase tracking-widest">Facebook</span>
@@ -416,7 +416,7 @@ export default function AccountSection({
             <button
               type="submit"
               id="btn-signup-submit"
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3.5 rounded-xl uppercase tracking-widest transition-all mt-2"
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs py-3.5 rounded-xl uppercase tracking-widest transition-all flex items-center justify-center mt-2"
             >
               Sign Up Now
             </button>
@@ -430,11 +430,11 @@ export default function AccountSection({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3" id="social-login-grid-signup">
               <button
                 type="button"
                 onClick={() => onSocialLogin?.('google')}
-                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all group"
+                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all w-full group"
               >
                 <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-color-icon.png" alt="Google" className="w-4 h-4" />
                 <span className="text-[10px] font-black text-white uppercase tracking-widest">Google</span>
@@ -442,7 +442,7 @@ export default function AccountSection({
               <button
                 type="button"
                 onClick={() => onSocialLogin?.('facebook')}
-                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all group"
+                className="flex items-center justify-center space-x-2 py-3 bg-[#070b14] border border-slate-800 rounded-xl hover:bg-[#111827] transition-all w-full group"
               >
                 <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/facebook-app-round-white-icon.png" alt="Facebook" className="w-4 h-4" />
                 <span className="text-[10px] font-black text-white uppercase tracking-widest">Facebook</span>
@@ -760,7 +760,7 @@ export default function AccountSection({
         {/* Top Traders Button */}
         <button 
           onClick={() => setView('top-traders')}
-          className="group relative flex flex-col items-center justify-center p-8 bg-[#05070a] border border-white/10 rounded-[2.5rem] hover:border-amber-500/30 transition-all overflow-hidden shadow-2xl"
+          className="relative flex flex-col items-center justify-center p-8 bg-[#05070a] border border-white/10 rounded-[2.5rem] hover:border-amber-500/30 transition-all overflow-hidden shadow-2xl group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <TrendingUp className="w-12 h-12 text-amber-500 mb-4 group-hover:scale-110 transition-transform" />
