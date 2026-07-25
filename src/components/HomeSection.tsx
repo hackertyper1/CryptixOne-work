@@ -427,7 +427,10 @@ export default function HomeSection({
                 </div>
 
                 <div className="mt-auto pt-4">
-                  <button className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 text-zinc-100 py-3.5 ring-1 ring-white/5 hover:bg-zinc-800 transition">
+                  <button 
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 text-zinc-100 py-3.5 ring-1 ring-white/5 hover:bg-zinc-800 transition"
+                    onClick={() => onNavigateToAuth('login')}
+                  >
                     <TrendingUp className="w-4 h-4" />
                     <span className="text-sm font-medium">View Dashboard</span>
                   </button>

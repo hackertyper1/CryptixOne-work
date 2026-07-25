@@ -745,6 +745,9 @@ export default function App() {
         toast.error('Login cancelled.');
         return;
       }
+      if (error?.code === 'auth/operation-not-allowed') {
+        toast.error('Social login method not enabled. Falling back to secure preview mode.');
+      }
     }
 
     // Seamless fallback authentication for preview / restricted domains
@@ -1476,7 +1479,7 @@ export default function App() {
       </div>
 
       {/* Footer component */}
-      <Footer />
+      {activeTab === 'home' && <Footer />}
     </div>
   );
 }
