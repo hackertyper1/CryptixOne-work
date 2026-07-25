@@ -12,7 +12,18 @@ import {
   User,
   Award,
   ShieldCheck,
-  Landmark
+  Landmark,
+  Zap,
+  CreditCard,
+  Check,
+  Smartphone,
+  Globe,
+  Shield,
+  BarChart3,
+  Coins,
+  Code2,
+  Headphones,
+  Phone
 } from 'lucide-react';
 
 import EducationSection from './EducationSection';
@@ -264,6 +275,169 @@ export default function HomeSection({
       {/* Strategic Trading Intelligence Section */}
       <EducationSection />
 
+      {/* Features Section */}
+      {!isLoggedIn && (
+        <section className="sm:px-6 lg:px-8 max-w-7xl mr-auto ml-auto pt-16 pr-4 pb-24 pl-4">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 ring-1 ring-white/5 text-sm text-zinc-400 mb-6">
+              <Sparkles className="w-4 h-4" />
+              <span>Features</span>
+            </div>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl tracking-tight font-semibold mb-6">
+              Everything you need
+            </h1>
+            <p className="text-lg text-zinc-400 leading-relaxed">
+              A complete payment solution designed for modern businesses. Fast, secure, and reliable.
+            </p>
+          </div>
+
+          {/* Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Feature 1 - Instant Payments */}
+            <div
+              className="relative rounded-3xl bg-zinc-950/80 ring-1 ring-white/5 p-6 sm:p-7 overflow-hidden hover:ring-white/10 transition-all">
+              <div
+                className="absolute inset-0 rounded-3xl pointer-events-none [mask-image:radial-gradient(60%_60%_at_80%_0%,white,transparent)]"
+                style={{ background: 'radial-gradient(1200px 400px at 85% -10%, rgba(120,120,255,0.08), transparent)' }}></div>
+
+              <div className="relative">
+                <div className="size-12 rounded-2xl bg-zinc-900 ring-1 ring-white/5 flex items-center justify-center mb-5">
+                  <Zap className="w-6 h-6 text-blue-400" />
+                </div>
+
+                <h3 className="text-2xl tracking-tight font-semibold mb-3">Instant Payments</h3>
+                <p className="text-zinc-400 text-sm leading-relaxed mb-6">
+                  Process transactions in real-time with our lightning-fast payment infrastructure. No delays, no hassle.
+                </p>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-zinc-900/60 ring-1 ring-white/5">
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="w-4 h-4 text-zinc-400" />
+                      <span className="text-sm">All major cards</span>
+                    </div>
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-zinc-900/60 ring-1 ring-white/5">
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="w-4 h-4 text-zinc-400" />
+                      <span className="text-sm">Digital wallets</span>
+                    </div>
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-zinc-900/60 ring-1 ring-white/5">
+                    <div className="flex items-center gap-3">
+                      <Globe className="w-4 h-4 text-zinc-400" />
+                      <span className="text-sm">Global coverage</span>
+                    </div>
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 2 - Secure Transactions */}
+            <div
+              className="relative rounded-3xl bg-zinc-950/90 ring-1 ring-white/5 p-6 sm:p-8 overflow-hidden hover:ring-white/10 transition-all">
+              <div className="absolute inset-x-0 -bottom-24 h-64 pointer-events-none"
+                style={{ background: 'radial-gradient(60% 50% at 50% 100%, rgba(16,185,129,0.18), transparent 60%)' }}></div>
+
+              <div className="relative">
+                <div
+                  className="size-12 rounded-2xl bg-emerald-600/20 ring-1 ring-emerald-500/30 flex items-center justify-center mb-5">
+                  <ShieldCheck className="w-6 h-6 text-emerald-400" />
+                </div>
+
+                <h3 className="text-2xl tracking-tight font-semibold mb-3">Secure Transactions</h3>
+                <p className="text-zinc-400 text-sm leading-relaxed mb-6">
+                  Bank-level encryption and fraud detection to keep your payments safe and secure.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Encryption</p>
+                    <p className="text-lg font-semibold text-zinc-200">256-bit SSL</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Uptime</p>
+                    <p className="text-lg font-semibold text-zinc-200">99.99%</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Compliance</p>
+                    <p className="text-lg font-semibold text-zinc-200">PCI DSS</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Verification</p>
+                    <div className="inline-flex items-center gap-1.5">
+                      <div className="size-1.5 rounded-full bg-emerald-400"></div>
+                      <p className="text-lg font-semibold text-emerald-400">Active</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="relative rounded-2xl bg-gradient-to-b from-zinc-900 to-zinc-950 ring-1 ring-white/5 p-4 overflow-hidden">
+                  <div className="absolute inset-0 rounded-2xl pointer-events-none"
+                    style={{ background: 'linear-gradient(120deg, rgba(16,185,129,0.18), transparent 40%)' }}></div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-emerald-400" />
+                      <span className="text-sm font-medium">End-to-end encrypted</span>
+                    </div>
+                    <Shield className="w-4 h-4 text-zinc-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 3 - Analytics Dashboard */}
+            <div
+              className="relative rounded-3xl bg-zinc-950/90 ring-1 ring-white/5 p-5 overflow-hidden hover:ring-white/10 transition-all flex flex-col">
+              <div className="absolute inset-0 rounded-3xl pointer-events-none"
+                style={{ background: 'linear-gradient(160deg, rgba(168,85,247,0.18), transparent 40%)' }}></div>
+
+              <div className="relative flex-1 flex flex-col">
+                <div
+                  className="size-12 rounded-2xl bg-purple-600/20 ring-1 ring-purple-500/30 flex items-center justify-center mb-5">
+                  <BarChart3 className="w-6 h-6 text-purple-400" />
+                </div>
+
+                <h3 className="text-2xl tracking-tight font-semibold mb-3">Analytics Dashboard</h3>
+                <p className="text-zinc-400 text-sm leading-relaxed mb-6">
+                  Track every transaction with real-time insights and detailed reporting.
+                </p>
+
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-sm text-zinc-400">Total Revenue</span>
+                    <span className="text-sm font-semibold">$847,250</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-zinc-900 overflow-hidden ring-1 ring-white/5">
+                    <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500" style={{ width: '68%' }}></div>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-sm text-zinc-400">Transactions</span>
+                    <span className="text-sm font-semibold">12,847</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-zinc-900 overflow-hidden ring-1 ring-white/5">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: '84%' }}></div>
+                  </div>
+                </div>
+
+                <div className="mt-auto pt-4">
+                  <button className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-900 text-zinc-100 py-3.5 ring-1 ring-white/5 hover:bg-zinc-800 transition">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="text-sm font-medium">View Dashboard</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* How It Works Flow Chart Section */}
       <section className="bg-black border border-white/5 rounded-[3rem] p-12 md:p-20 relative overflow-hidden" id="how-it-works-section">
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-[150px]"></div>
@@ -342,42 +516,8 @@ export default function HomeSection({
         </div>
       </section>
 
-      {/* Trust & Support footer badge */}
-      <section className="bg-gradient-to-r from-[#0a0c12] to-black rounded-[2rem] p-10 border border-white/5 flex flex-col sm:flex-row items-center justify-between text-left gap-8 shadow-2xl" id="support-bar">
-        <div className="flex items-center space-x-6">
-          <div className="w-14 h-14 bg-amber-500/5 rounded-2xl border border-amber-500/20 flex items-center justify-center shadow-inner">
-            <MessageCircle className="w-7 h-7 text-amber-500" />
-          </div>
-          <div>
-            <h4 className="text-lg font-normal text-white uppercase tracking-widest font-sans">24/7 Priority Support Desk</h4>
-            <p className="text-xs text-slate-500 font-medium">Direct integration with WhatsApp desk and regulatory email channels.</p>
-          </div>
-        </div>
 
-        <div className="flex flex-row space-x-4 w-full sm:w-auto items-center justify-center">
-          <a
-            href={`https://wa.me/91${systemSettings.supportWhatsApp}?text=Hello%20CryptixOne%20Team,%20I%20need%20assistance%20regarding%20investment%20slots.`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="brand-gradient-button"
-          >
-            <span>
-              <MessageCircle className="w-5 h-5 text-[#25D366]" />
-              Chat WhatsApp
-            </span>
-          </a>
 
-          <a
-            href={`mailto:${systemSettings.companyEmail}`}
-            className="brand-gradient-button"
-          >
-            <span>
-              <Mail className="w-5 h-5 text-rose-500" />
-              Email Support
-            </span>
-          </a>
-        </div>
-      </section>
 
       {/* Customer Success Section */}
       <section className="z-10 sm:pb-8 sm:pt-8 sm:ml-auto sm:mr-auto sm:mt-24 sm:mb-24 max-w-7xl mt-24 mr-auto mb-24 ml-auto pt-8 pr-6 pb-8 pl-6 relative shadow-2xl" id="customer-success-results">
@@ -560,6 +700,8 @@ export default function HomeSection({
           </div>
         </div>
       </section>
+
     </div>
   );
 }
+
