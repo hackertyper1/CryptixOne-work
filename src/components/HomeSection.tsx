@@ -354,54 +354,26 @@ export default function HomeSection({
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto items-center">
+        <div className="flex flex-row space-x-4 w-full sm:w-auto items-center justify-center">
           <a
             href={`https://wa.me/91${systemSettings.supportWhatsApp}?text=Hello%20CryptixOne%20Team,%20I%20need%20assistance%20regarding%20investment%20slots.`}
             target="_blank"
             rel="noopener noreferrer"
-            className="animated-loader-button w-full sm:w-auto"
+            className="brand-gradient-button"
           >
-            <div className="loader-background">
-              <div className="loader-background-inner"></div>
-            </div>
-            <span className="loader-text items-center">
-              <MessageCircle className="w-5 h-5 mr-2 text-[#25D366] drop-shadow-[0_0_8px_#25D366]" />
-              {"Chat WhatsApp".split('').map((char, index) => (
-                <span
-                  key={index}
-                  className="loader-letter"
-                  style={{
-                    animationDelay: `${index * 0.1}s`,
-                    width: char === ' ' ? '0.3rem' : 'auto'
-                  }}
-                >
-                  {char}
-                </span>
-              ))}
+            <span>
+              <MessageCircle className="w-5 h-5 text-[#25D366]" />
+              Chat WhatsApp
             </span>
           </a>
 
           <a
             href={`mailto:${systemSettings.companyEmail}`}
-            className="animated-loader-button w-full sm:w-auto"
+            className="brand-gradient-button"
           >
-            <div className="loader-background">
-              <div className="loader-background-inner"></div>
-            </div>
-            <span className="loader-text items-center">
-              <Mail className="w-5 h-5 mr-2 text-rose-500 drop-shadow-[0_0_8px_#f43f5e]" />
-              {"Email Support".split('').map((char, index) => (
-                <span
-                  key={index}
-                  className="loader-letter"
-                  style={{
-                    animationDelay: `${index * 0.1}s`,
-                    width: char === ' ' ? '0.3rem' : 'auto'
-                  }}
-                >
-                  {char}
-                </span>
-              ))}
+            <span>
+              <Mail className="w-5 h-5 text-rose-500" />
+              Email Support
             </span>
           </a>
         </div>
@@ -465,14 +437,6 @@ export default function HomeSection({
                 </span>
               </div>
             </div>
-            <button 
-              onClick={onNavigateToPlans}
-              className="brand-gradient-button w-full mt-6"
-            >
-              <span>
-                Start your workflow
-              </span>
-            </button>
           </article>
 
           {/* Testimonial columns */}

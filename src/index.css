@@ -209,71 +209,6 @@ html, body, #root {
     background: rgba(245, 158, 11, 0.1);
   }
 
-  .animated-loader-button {
-    display: inline-flex;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    position: relative;
-    padding: 2px;
-    border-radius: 9999px;
-    isolation: isolate;
-    cursor: pointer;
-    height: 60px;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, rgb(26, 26, 26) 0%, rgb(10, 10, 10) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: rgba(0, 0, 0, 0.4) 0px 8px 32px, rgba(255, 255, 255, 0.1) 0px 1px 0px inset, rgba(0, 0, 0, 0.5) 0px -1px 0px inset;
-  }
-
-  .animated-loader-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.6), 0 0 0 2px rgba(244,63,94,0.3);
-  }
-
-  .loader-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    z-index: 1;
-    background-color: transparent;
-    mask: repeating-linear-gradient(90deg, transparent 0, transparent 6px, black 7px, black 8px);
-    -webkit-mask: repeating-linear-gradient(90deg, transparent 0, transparent 6px, black 7px, black 8px);
-  }
-
-  .loader-background-inner {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: radial-gradient(circle at 50% 50%, #f43f5e 0%, transparent 50%), radial-gradient(circle at 45% 45%, #ef4444 0%, transparent 45%), radial-gradient(circle at 55% 55%, #fb7185 0%, transparent 45%), radial-gradient(circle at 45% 55%, #f87171 0%, transparent 45%), radial-gradient(circle at 55% 45%, #dc2626 0%, transparent 45%);
-    mask: radial-gradient(circle at 50% 50%, transparent 0%, transparent 10%, black 25%);
-    -webkit-mask: radial-gradient(circle at 50% 50%, transparent 0%, transparent 10%, black 25%);
-    animation: transform-animation 2s infinite alternate, opacity-animation 4s infinite;
-    animation-timing-function: cubic-bezier(0.6, 0.8, 0.5, 1);
-    filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.6));
-  }
-
-  .loader-text {
-    position: relative;
-    z-index: 2;
-    font-weight: 600;
-    user-select: none;
-    color: #fff;
-    display: flex;
-    gap: 0.5rem;
-    padding: 0 1.5rem;
-  }
-
-  .loader-letter {
-    display: inline-block;
-    opacity: 0;
-    animation: loader-letter-anim 4s infinite linear;
-  }
-
   .gradient-button {
     position: relative;
     appearance: none;
@@ -420,43 +355,5 @@ html, body, #root {
 @keyframes border-shift {
   to {
     transform: translateX(-25%);
-  }
-}
-
-@keyframes transform-animation {
-  0% {
-    transform: translate(-55%);
-  }
-  100% {
-    transform: translate(55%);
-  }
-}
-
-@keyframes opacity-animation {
-  0%, 100% {
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  65% {
-    opacity: 0;
-  }
-}
-
-@keyframes loader-letter-anim {
-  0% {
-    opacity: 0;
-  }
-  5% {
-    opacity: 1;
-    text-shadow: 0 0 8px #f43f5e, 0 0 12px #f43f5e;
-    transform: scale(1.1) translateY(-2px);
-  }
-  20% {
-    opacity: 0.2;
-  }
-  100% {
-    opacity: 0;
   }
 }
