@@ -11,6 +11,7 @@ import AdminPanel from './components/AdminPanel';
 import MarketSection from './components/MarketSection';
 import SplashScreen from './components/SplashScreen';
 import AuthGate from './components/AuthGate';
+import Footer from './components/Footer';
 import { User, ActiveTrade, Transaction, SystemSettings, ActivityLog, InvestmentPlan, InvestmentRequest, AdminMessage } from './types';
 import { DEFAULT_SETTINGS, encryptPayload, INVESTMENT_PLANS } from './data';
 import { db, auth } from './lib/firebase';
@@ -1474,36 +1475,8 @@ export default function App() {
       )}
       </div>
 
-      {/* Luxury Footer bar with regulatory clearance - Render ONLY on Desktop Home page */}
-      {activeTab === 'home' && !isMobile && (
-        <footer className="bg-[#050811] border-t border-slate-800/80 py-8 text-xs text-slate-500 font-mono" id="app-footer">
-          <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
-            {/* Logo Brand */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-bold text-slate-300 font-sans uppercase tracking-widest">CryptixOne Asset Group</h4>
-              <p className="text-[11px] text-slate-500 leading-normal">
-                Regulated micro-yield allocations licensed in compliance with digital assets protocols and secure national ledger auditing. Partner of SBI Finance.
-              </p>
-            </div>
-
-            {/* Links / T&C */}
-            <div className="space-y-1 text-[11px]">
-              <span className="font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans">Official Links</span>
-              <p className="hover:text-slate-300 transition-all cursor-pointer">Sovereign Asset Disclosures</p>
-              <p className="hover:text-slate-300 transition-all cursor-pointer">SBI Finance of India Terms</p>
-              <p className="hover:text-slate-300 transition-all cursor-pointer">Digital UTR Claims Protocol</p>
-            </div>
-
-            {/* Contact support */}
-            <div className="space-y-1 text-[11px]">
-              <span className="font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans">Central Compliance Desk</span>
-              <p className="text-slate-400">Email: <span className="text-amber-500 font-bold">{systemSettings.companyEmail}</span></p>
-              <p className="text-slate-400">WhatsApp Hotlines: <span className="text-emerald-400 font-bold">+91 {systemSettings.supportWhatsApp}</span></p>
-              <p className="text-[10px] text-slate-600 uppercase mt-2">© 2026 CryptixOne.com. All Rights Reserved.</p>
-            </div>
-          </div>
-        </footer>
-      )}
+      {/* Footer component */}
+      <Footer />
     </div>
   );
 }
