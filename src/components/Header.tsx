@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Phone, TrendingUp, Award, User, Wallet, Menu, X, LogOut, Home, Lock, MessageSquare, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { HeaderButton } from './HeaderButton';
 
 interface HeaderProps {
   activeTab: string;
@@ -105,18 +106,8 @@ export default function Header({
                 >
                   Home
                 </button>
-                <button
-                  onClick={() => setAuthMode('login')}
-                  className="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-all bg-[#05070a] border border-white/5"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => setAuthMode('signup')}
-                  className="px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest bg-amber-500 text-slate-950 transition-all hover:bg-amber-400"
-                >
-                  Sign Up
-                </button>
+                <HeaderButton onClick={() => setAuthMode('login')} text="Login" variant="secondary" />
+                <HeaderButton onClick={() => setAuthMode('signup')} text="Sign Up" variant="primary" />
               </div>
             ) : (
               <nav className="flex items-center space-x-2 bg-white/5 p-1.5 rounded-xl border border-white/5">

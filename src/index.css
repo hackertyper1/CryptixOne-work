@@ -357,3 +357,16 @@ html, body, #root {
     transform: translateX(-25%);
   }
 }
+
+@keyframes sparkle-anim {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: white;
+  animation: sparkle-anim 2s infinite;
+}
