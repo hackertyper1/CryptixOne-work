@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Transaction, SystemSettings, InvestmentPlan, InvestmentRequest, ActiveTrade } from '../types';
 import { formatIndianCurrency, INVESTMENT_PLANS } from '../data';
 import WalletHero from './WalletHero';
+import { BalanceCounter } from './BalanceCounter';
 import LiveMarketChart from './LiveMarketChart';
 import MarketAssetList from './MarketAssetList';
 import PaymentVerification from './PaymentVerification';
@@ -766,7 +767,10 @@ export default function WalletSection({
         <div className="bg-[#0b101f] border border-slate-800 rounded-xl sm:rounded-3xl p-2 sm:p-4 md:p-6 flex items-center justify-center shadow-xl group hover:border-emerald-500/30 transition-all duration-500 h-full">
           <div className="flex flex-col items-center text-center space-y-0.5 sm:space-y-1">
             <span className="text-[7px] xs:text-[9px] sm:text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-0.5 sm:mb-1">Trading Wallet</span>
-            <p className="text-xs xs:text-sm sm:text-2xl md:text-3xl font-black text-white tabular-nums">{formatIndianCurrency(currentUser?.depositWallet || 0)}</p>
+            <BalanceCounter 
+              value={currentUser?.depositWallet || 0} 
+              className="text-xs xs:text-sm sm:text-2xl md:text-3xl font-black text-white tabular-nums" 
+            />
             <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-emerald-500 mt-0.5 sm:mt-1 bg-[#0b101f] px-2 py-0.5 rounded-full border border-emerald-500/20">
               <Wallet className="w-2 sm:w-3.5 h-2 sm:h-3.5" />
               <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">Main Principal</span>
@@ -782,7 +786,10 @@ export default function WalletSection({
               ⭐ Premium
             </div>
             <span className="text-[8px] xs:text-[10px] sm:text-[11px] text-emerald-400 uppercase font-black tracking-widest">Profit Wallet</span>
-            <p className="text-sm xs:text-base sm:text-3xl md:text-4xl font-black text-emerald-400 tabular-nums leading-none">{formatIndianCurrency(currentUser?.profitWallet || 0)}</p>
+            <BalanceCounter 
+              value={currentUser?.profitWallet || 0} 
+              className="text-sm xs:text-base sm:text-3xl md:text-4xl font-black text-emerald-400 tabular-nums leading-none" 
+            />
             <div className="flex items-center space-x-0.5 sm:space-x-1.5 text-emerald-400 mt-0.5 sm:mt-1 bg-[#0b101f] px-2 py-0.5 rounded-full border border-emerald-500/20">
               <TrendingUp className="w-2.5 sm:w-4 h-2.5 sm:h-4 animate-bounce" />
               <span className="text-[6px] xs:text-[8px] sm:text-[10px] font-black uppercase tracking-widest">Withdrawal Active</span>
