@@ -2412,7 +2412,7 @@ export default function TradeSection({
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
               <div className="space-y-2 relative z-10">
                 <span className="text-[9px] font-extrabold text-[#f0b90b] bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full uppercase tracking-widest">Stake Node</span>
-                <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">Earn 2.36% APR on ETH</h4>
+                <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-geist">Earn 2.36% APR on ETH</h4>
                 <p className="text-xs text-slate-400 max-w-xl">
                   Automated staking protocols with auto-liquid yield distribution. Compound rewards deposited directly into wallet profit vaults.
                 </p>
@@ -2481,7 +2481,7 @@ export default function TradeSection({
                 ].map(trader => (
                   <div key={trader.name} className="py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-10 h-10 ${trader.color} rounded-full flex items-center justify-center font-bold text-slate-950 font-display uppercase shadow-lg`}>
+                      <div className={`w-10 h-10 ${trader.color} rounded-full flex items-center justify-center font-bold text-slate-950 font-geist uppercase shadow-lg`}>
                         {trader.name.slice(0, 2)}
                       </div>
                       <div>
@@ -2531,7 +2531,7 @@ export default function TradeSection({
             {/* Publisher Form */}
             <form onSubmit={handlePostSquare} className="bg-[#121212] border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
               <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center font-bold text-slate-950 font-display">
+                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center font-bold text-slate-950 font-geist">
                   {currentUser?.username?.slice(0, 2).toUpperCase() || 'TR'}
                 </div>
                 <textarea
@@ -2765,7 +2765,7 @@ export default function TradeSection({
             <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-400">
               <Calculator className="w-6 h-6" />
             </div>
-            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight font-display">Profit Projection Calculator</h3>
+            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight font-geist">Profit Projection Calculator</h3>
             <p className="text-slate-400 text-xs md:text-sm max-w-xl">
               Simulate potential earnings based on plan yields and duration.
             </p>

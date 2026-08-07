@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { SystemSettings, StockTicker } from '../types';
 import { formatIndianCurrency, INITIAL_TICKERS } from '../data';
 import { CryptixLogo } from './Header';
@@ -120,7 +121,12 @@ export default function HomeSection({
   return (
     <div className="space-y-12 pb-16" id="home-section-container">
       {/* Brand & Regulatory Header */}
-      <div className="bg-[#05070a] border border-amber-500/10 rounded-[2.5rem] p-10 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden text-center space-y-8" id="home-branding-banner">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="bg-[#05070a] border border-amber-500/10 rounded-[2.5rem] p-10 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden text-center space-y-8" id="home-branding-banner">
         {/* Decorative Luxury Elements */}
         <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #f59e0b 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
         <div className="absolute top-10 left-10 w-20 h-20 border-t-2 border-l-2 border-amber-500/20 rounded-tl-3xl"></div>
@@ -159,10 +165,15 @@ export default function HomeSection({
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Hero Welcome & Live Chart section */}
-      <section className="relative overflow-hidden rounded-[2.5rem] bg-[#05070a] p-10 md:p-16 border border-white/5 shadow-2xl" id="hero-banner">
+      <motion.section 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1 }}
+        className="relative overflow-hidden rounded-[2.5rem] bg-[#05070a] p-10 md:p-16 border border-white/5 shadow-2xl" id="hero-banner">
         {/* Subtle Luxury Glow */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] -mr-64 -mt-64"></div>
         
@@ -270,14 +281,19 @@ export default function HomeSection({
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Strategic Trading Intelligence Section */}
       <EducationSection />
 
       {/* Features Section */}
       {!isLoggedIn && (
-        <section className="sm:px-6 lg:px-8 max-w-7xl mr-auto ml-auto pt-16 pr-4 pb-24 pl-4">
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="sm:px-6 lg:px-8 max-w-7xl mr-auto ml-auto pt-16 pr-4 pb-24 pl-4">
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div
@@ -296,7 +312,11 @@ export default function HomeSection({
           {/* Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Feature 1 - Instant Payments */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
               className="relative rounded-3xl bg-zinc-950/80 ring-1 ring-white/5 p-6 sm:p-7 overflow-hidden hover:ring-white/10 transition-all">
               <div
                 className="absolute inset-0 rounded-3xl pointer-events-none [mask-image:radial-gradient(60%_60%_at_80%_0%,white,transparent)]"
@@ -336,10 +356,14 @@ export default function HomeSection({
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Feature 2 - Secure Transactions */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
               className="relative rounded-3xl bg-zinc-950/90 ring-1 ring-white/5 p-6 sm:p-8 overflow-hidden hover:ring-white/10 transition-all">
               <div className="absolute inset-x-0 -bottom-24 h-64 pointer-events-none"
                 style={{ background: 'radial-gradient(60% 50% at 50% 100%, rgba(16,185,129,0.18), transparent 60%)' }}></div>
@@ -390,10 +414,14 @@ export default function HomeSection({
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Feature 3 - Analytics Dashboard */}
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
               className="relative rounded-3xl bg-zinc-950/90 ring-1 ring-white/5 p-5 overflow-hidden hover:ring-white/10 transition-all flex flex-col">
               <div className="absolute inset-0 rounded-3xl pointer-events-none"
                 style={{ background: 'linear-gradient(160deg, rgba(168,85,247,0.18), transparent 40%)' }}></div>
@@ -436,13 +464,18 @@ export default function HomeSection({
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
       )}
 
       {/* How It Works Flow Chart Section */}
-      <section className="bg-black border border-white/5 rounded-[3rem] p-12 md:p-20 relative overflow-hidden" id="how-it-works-section">
+      <motion.section 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="bg-black border border-white/5 rounded-[3rem] p-12 md:p-20 relative overflow-hidden" id="how-it-works-section">
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-[150px]"></div>
         
         <div className="text-center space-y-6 mb-20 max-w-3xl mx-auto">
@@ -460,7 +493,13 @@ export default function HomeSection({
             { step: '03', title: 'Add Funds', desc: 'Deposit money into your wallet securely and invest in your chosen plan.', icon: Lock },
             { step: '04', title: 'Withdraw Profits', desc: 'Watch your profits grow. Once your investment cycle is complete, you can withdraw your earnings.', icon: Sparkles }
           ].map((item, idx) => (
-            <div key={idx} className="group relative">
+            <motion.div 
+              key={idx} 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              className="group relative">
               <div className="space-y-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div className="w-14 h-14 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-2xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-500">
@@ -474,10 +513,10 @@ export default function HomeSection({
                 </p>
               </div>
               {idx < 3 && <div className="hidden lg:block absolute top-7 -right-6 w-12 h-[1px] bg-white/5"></div>}
-            </div>
+            </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Institutional Trust Section */}
       <section className="py-8 border-y border-white/5 bg-[#05070a]/50 backdrop-blur-sm rounded-3xl" id="institutional-trust-footer">
@@ -486,7 +525,7 @@ export default function HomeSection({
             {/* Govt of India */}
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 rounded-full border border-amber-500/30 flex items-center justify-center p-1.5 bg-black/60 shadow-lg">
-                <img src="/src/assets/images/ministry_finance_india_logo_1784909476009.jpg" alt="Govt of India" className="w-full h-full object-contain" />
+                <img src="/src/assets/images/ministry_finance_india_logo_1784909476009.jpg" alt="Govt of India" className="w-full h-full object-contain" loading="lazy" />
               </div>
               <div className="text-left">
                 <p className="text-[10px] font-black text-amber-500 leading-none uppercase tracking-widest">MINISTRY OF FINANCE</p>
@@ -497,7 +536,7 @@ export default function HomeSection({
             {/* SBI Finance */}
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 rounded-full border border-blue-500/30 flex items-center justify-center p-1.5 bg-black/60 shadow-lg">
-                <img src="/src/assets/images/sbi_finance_logo_1784909491498.jpg" alt="SBI" className="w-full h-full object-contain" />
+                <img src="/src/assets/images/sbi_finance_logo_1784909491498.jpg" alt="SBI" className="w-full h-full object-contain" loading="lazy" />
               </div>
               <div className="text-left">
                 <p className="text-[10px] font-black text-blue-400 leading-none uppercase tracking-widest">SBI FINANCE</p>
@@ -541,7 +580,12 @@ export default function HomeSection({
 
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 text-left">
           {/* Metrics card */}
-          <article className="sm:p-6 flex flex-col min-h-[420px] bg-zinc-800/50 rounded-2xl pt-5 pr-5 pb-5 pl-5 backdrop-blur-lg justify-between hover:border-zinc-700 transition border border-white/5 relative overflow-hidden group">
+          <motion.article 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="sm:p-6 flex flex-col min-h-[420px] bg-zinc-800/50 rounded-2xl pt-5 pr-5 pb-5 pl-5 backdrop-blur-lg justify-between hover:border-zinc-700 transition border border-white/5 relative overflow-hidden group">
             <div className="space-y-5">
               <div className="flex items-end gap-2">
                 <span className="text-5xl sm:text-6xl text-white font-geist font-normal tracking-tighter">
@@ -580,7 +624,7 @@ export default function HomeSection({
                 </span>
               </div>
             </div>
-          </article>
+          </motion.article>
 
           {/* Testimonial columns */}
           <div className="grid grid-rows-[auto_1fr] gap-4">

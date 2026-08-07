@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Toaster, toast } from 'sonner';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Loader2 } from 'lucide-react';
 import Header from './components/Header';
 import HomeSection from './components/HomeSection';
-import PlanSection from './components/PlanSection';
-import TradeSection from './components/TradeSection';
-import WalletSection from './components/WalletSection';
-import AccountSection from './components/AccountSection';
-import AdminPanel from './components/AdminPanel';
-import MarketSection from './components/MarketSection';
+const PlanSection = lazy(() => import('./components/PlanSection'));
+const TradeSection = lazy(() => import('./components/TradeSection'));
+const WalletSection = lazy(() => import('./components/WalletSection'));
+const AccountSection = lazy(() => import('./components/AccountSection'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
+const MarketSection = lazy(() => import('./components/MarketSection'));
 import SplashScreen from './components/SplashScreen';
 import AuthGate from './components/AuthGate';
 import Footer from './components/Footer';
@@ -1349,7 +1349,11 @@ export default function App() {
         {(!showSplash || !isApk) && (!isApk || currentUser || activeTab === 'admin' || activeTab === 'account') && (
           <main className="max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8">
             {/* Desktop or Mobile view */}
-            <>
+            <Suspense fallback={
+              <div className="flex items-center justify-center min-h-[50vh]">
+                <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+              </div>
+            }>
             {activeTab === 'home' && (
               <HomeSection
                 systemSettings={systemSettings}
@@ -1473,7 +1477,7 @@ export default function App() {
                 onSendMessage={handleSendMessage}
               />
             )}
-          </>
+            </Suspense>
         </main>
       )}
       </div>

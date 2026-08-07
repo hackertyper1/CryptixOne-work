@@ -1044,7 +1044,7 @@ export default function MarketSection({ currentUser, onUpdateWallet, addLog, sys
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
               <span className="text-[10px] font-mono font-black text-amber-500 uppercase tracking-widest">Global Market Hub</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight font-display">
+            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight font-geist">
               Cryptix<span className="text-amber-500">Market</span> Intelligence
             </h2>
             <p className="text-xs text-slate-400 max-w-xl font-sans leading-relaxed">

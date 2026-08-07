@@ -93,7 +93,7 @@ export default function PlanSection({
                         )}
                       </div>
 
-                      <h5 className="text-4xl font-black text-white font-display">
+                      <h5 className="text-4xl font-black text-white font-geist">
                         {formatIndianCurrency(plan.amount)}
                       </h5>
 
@@ -172,7 +172,7 @@ export default function PlanSection({
                         )}
                       </div>
 
-                      <h5 className="text-4xl font-black text-white font-display">
+                      <h5 className="text-4xl font-black text-white font-geist">
                         {formatIndianCurrency(plan.amount)}
                       </h5>
 
@@ -206,7 +206,7 @@ export default function PlanSection({
           <div className="space-y-8">
             <div className="flex items-center space-x-4 border-l-4 border-yellow-500 pl-4">
               <Award className="w-6 h-6 text-yellow-500" />
-              <h4 className="text-xl font-black text-white uppercase tracking-tight font-display">Elite Tier Allocations</h4>
+              <h4 className="text-xl font-black text-white uppercase tracking-tight font-geist">Elite Tier Allocations</h4>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -244,7 +244,7 @@ export default function PlanSection({
                         </div>
                         {plan.badge && <span className="bg-yellow-500/10 text-yellow-500 text-[8px] font-black px-2 py-0.5 rounded border border-yellow-500/20 uppercase">{plan.badge}</span>}
                       </div>
-                      <h5 className="text-3xl font-black text-white font-display">{formatIndianCurrency(plan.amount)}</h5>
+                      <h5 className="text-3xl font-black text-white font-geist">{formatIndianCurrency(plan.amount)}</h5>
                       <div className="flex justify-between items-center border-t border-yellow-500/10 pt-4">
                         <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Est. Return</span>
                         <span className="text-sm font-black text-emerald-400">+{formatIndianCurrency(plan.estimatedProfit)}</span>
@@ -265,7 +265,7 @@ export default function PlanSection({
           <div className="space-y-8">
             <div className="flex items-center space-x-4 border-l-4 border-emerald-500 pl-4">
               <Sparkles className="w-6 h-6 text-emerald-500" />
-              <h4 className="text-xl font-black text-white uppercase tracking-tight font-display">Institutional Portfolios</h4>
+              <h4 className="text-xl font-black text-white uppercase tracking-tight font-geist">Institutional Portfolios</h4>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -303,7 +303,7 @@ export default function PlanSection({
                         </div>
                         {plan.badge && <span className="bg-emerald-500/10 text-emerald-500 text-[8px] font-black px-2 py-0.5 rounded border border-emerald-500/20 uppercase">{plan.badge}</span>}
                       </div>
-                      <h5 className="text-3xl font-black text-white font-display">{formatIndianCurrency(plan.amount)}</h5>
+                      <h5 className="text-3xl font-black text-white font-geist">{formatIndianCurrency(plan.amount)}</h5>
                       <div className="flex justify-between items-center border-t border-emerald-500/10 pt-4">
                         <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Est. Return</span>
                         <span className="text-sm font-black text-emerald-400">+{formatIndianCurrency(plan.estimatedProfit)}</span>

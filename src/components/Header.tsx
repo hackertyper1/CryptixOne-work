@@ -23,7 +23,7 @@ export function CryptixLogo({ className = "w-9 h-9", logoUrl }: { className?: st
 
   if (hasError || !logoUrl || logoUrl === '/logo.png') {
     return (
-      <div className={`${className} bg-gradient-to-tr from-amber-600 via-amber-500 to-emerald-400 rounded-xl flex items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.5)] border border-amber-300/50 text-slate-950 font-black font-display relative overflow-hidden group`}>
+      <div className={`${className} bg-gradient-to-tr from-amber-600 via-amber-500 to-emerald-400 rounded-xl flex items-center justify-center shadow-[0_0_18px_rgba(245,158,11,0.5)] border border-amber-300/50 text-slate-950 font-black font-geist relative overflow-hidden group`}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.4),transparent)]"></div>
         <span className="relative z-10 text-xs tracking-tighter drop-shadow-sm flex items-center font-mono">
           <span className="text-slate-950 font-extrabold">CX</span>

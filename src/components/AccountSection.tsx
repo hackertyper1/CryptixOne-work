@@ -230,7 +230,7 @@ export default function AccountSection({
         {authMode === 'login' ? (
           <form onSubmit={handleLoginSubmit} className="space-y-4" id="login-form">
             <div className="space-y-1">
-              <h3 className="text-xl font-black text-white font-display">Welcome Back</h3>
+              <h3 className="text-xl font-black text-white font-geist">Welcome Back</h3>
               <p className="text-xs text-slate-400">Please enter your details to access your account.</p>
             </div>
 
@@ -320,7 +320,7 @@ export default function AccountSection({
         ) : (
           <form onSubmit={handleSignupSubmit} className="space-y-4" id="register-form">
             <div className="space-y-1">
-              <h3 className="text-xl font-black text-white font-display">Create Account</h3>
+              <h3 className="text-xl font-black text-white font-geist">Create Account</h3>
               <p className="text-xs text-slate-400">Join our trading community today.</p>
             </div>
 
@@ -482,7 +482,7 @@ export default function AccountSection({
           {currentUser.restrictionReason && (
             <div className="bg-slate-950/80 p-4 rounded-xl border border-rose-500/20 w-full">
               <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest block mb-2">Audit Reason:</span>
-              <p className="text-xs text-white font-bold italic font-display leading-tight italic">
+              <p className="text-xs text-white font-bold italic font-geist leading-tight italic">
                 "{currentUser.restrictionReason}"
               </p>
             </div>

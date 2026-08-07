@@ -383,7 +383,7 @@ export default function WalletSection({
                   <img src={systemSettings.logoUrl || "/logo.png"} alt="Wallet Protected" className="w-16 h-16 mb-4 grayscale opacity-50" />
                 </div>
         <div className="space-y-2">
-          <h3 className="text-xl md:text-2xl font-black text-white font-display">Wallet Protected</h3>
+          <h3 className="text-xl md:text-2xl font-black text-white font-geist">Wallet Protected</h3>
           <p className="text-xs text-slate-400">Please sign in or create an account to access, deposit, or withdraw funds.</p>
         </div>
         <button
@@ -409,7 +409,7 @@ export default function WalletSection({
             <div className="space-y-8 animate-fadeIn relative z-10 text-left">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tight font-display">
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tight font-geist">
                     Choose <span className="text-emerald-500">Deposit Method</span>
                   </h3>
                   <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em] font-black">
@@ -616,7 +616,7 @@ export default function WalletSection({
             <div className="space-y-6 animate-fadeIn text-left">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tight font-display">
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tight font-geist">
                     Crypto <span className="text-emerald-500">Trading Form</span>
                   </h3>
                   <p className="text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em] font-black">
@@ -856,7 +856,7 @@ export default function WalletSection({
                 <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500">
                   <TrendingUp className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-black text-white uppercase tracking-wider font-display">Active Trades Tracker</h3>
+                <h3 className="text-sm font-black text-white uppercase tracking-wider font-geist">Active Trades Tracker</h3>
               </div>
               <span className="text-[10px] text-slate-500 font-mono font-bold uppercase">Live Audit</span>
             </div>
@@ -932,7 +932,7 @@ export default function WalletSection({
                   </div>
                 </div>
                 <div className="space-y-2 max-w-md mx-auto relative z-10">
-                  <h3 className="text-lg md:text-xl font-black text-white font-display uppercase tracking-tight">Institutional <span className="text-emerald-500">Allocation</span></h3>
+                  <h3 className="text-lg md:text-xl font-black text-white font-geist uppercase tracking-tight">Institutional <span className="text-emerald-500">Allocation</span></h3>
                   <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
                     Please select a verified trading contract slot from the registry below to initialize the sovereign capital settlement protocol.
                   </p>
@@ -971,7 +971,7 @@ export default function WalletSection({
               <section className="bg-[#0b101f] border border-white/5 rounded-[1.5rem] p-6 space-y-6 relative overflow-hidden">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
                   <div className="space-y-1 text-left">
-                    <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-display">
+                    <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-geist">
                       Custom Deposit <span className="text-emerald-500">PROTOCOL</span>
                     </h4>
                     <p className="text-[9px] text-slate-500 font-mono uppercase tracking-widest font-black">Audit: HFT-LEDGER-V4</p>
@@ -1018,7 +1018,7 @@ export default function WalletSection({
               <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center text-red-500 mb-6 border-2 border-red-500/40 shadow-[0_0_40px_rgba(239,68,68,0.4)] relative z-10">
                 <Lock className="w-10 h-10 animate-pulse" />
               </div>
-              <h4 className="text-2xl font-black text-white uppercase tracking-tighter font-display mb-3 relative z-10">Account Restricted</h4>
+              <h4 className="text-2xl font-black text-white uppercase tracking-tighter font-geist mb-3 relative z-10">Account Restricted</h4>
               <p className="text-xs text-slate-300 max-w-sm font-bold leading-relaxed uppercase tracking-[0.15em] mb-8 relative z-10">
                 Your withdrawal channel has been secured by the regulatory desk.
               </p>
@@ -1041,7 +1041,7 @@ export default function WalletSection({
           )}
 
           <div className="border-b border-slate-800/60 pb-3">
-            <h4 className="text-base font-black text-white uppercase tracking-tight font-display">Withdrawal Center</h4>
+            <h4 className="text-base font-black text-white uppercase tracking-tight font-geist">Withdrawal Center</h4>
             <p className="text-[10px] text-slate-400">Withdraw matured profits directly to your bank account. Transfers are subject to security checks.</p>
           </div>
 
@@ -1338,7 +1338,7 @@ export default function WalletSection({
           </div>
 
           <div className="border-b border-slate-800/60 pb-3 mb-4">
-            <h4 className="text-base font-extrabold text-white uppercase tracking-wider font-display">My Transaction Ledger</h4>
+            <h4 className="text-base font-extrabold text-white uppercase tracking-wider font-geist">My Transaction Ledger</h4>
             <p className="text-[10px] text-slate-400 font-sans">Full cryptographic history of your capital allocations, deposits, and withdrawal settlements.</p>
           </div>
 

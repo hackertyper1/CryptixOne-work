@@ -390,7 +390,7 @@ export default function AdminPanel({
         </div>
 
         <div className="text-center space-y-2 mb-6">
-          <h3 className="text-xl md:text-2xl font-black text-white font-display">CryptixOne Administration Gateway</h3>
+          <h3 className="text-xl md:text-2xl font-black text-white font-geist">CryptixOne Administration Gateway</h3>
           <p className="text-xs text-slate-400">Restricted zone. Authentication requires state audit keys & clearance.</p>
         </div>
 
@@ -449,7 +449,7 @@ export default function AdminPanel({
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Encrypted Administrator Node Connected</span>
           </div>
-          <h2 className="text-xl md:text-3xl font-black text-white tracking-tight font-display">Main Admin Control Terminal</h2>
+          <h2 className="text-xl md:text-3xl font-black text-white tracking-tight font-geist">Main Admin Control Terminal</h2>
           <p className="text-xs text-slate-400">Review claims, edit user limits, manage assigned traders, and update website configs.</p>
         </div>
 
@@ -568,7 +568,7 @@ export default function AdminPanel({
               <UserPlus className="w-5 h-5 text-cyan-400" />
             </div>
             <p className="text-[10px] text-slate-500 uppercase font-mono font-bold">Total Registered</p>
-            <h4 className="text-2xl font-black text-white font-display">{users.length}</h4>
+            <h4 className="text-2xl font-black text-white font-geist">{users.length}</h4>
             <p className="text-[9px] text-slate-600 mt-1">Verified Client Entities</p>
           </div>
           
@@ -577,7 +577,7 @@ export default function AdminPanel({
               <Activity className="w-5 h-5 text-emerald-400" />
             </div>
             <p className="text-[10px] text-slate-500 uppercase font-mono font-bold">Active Users</p>
-            <h4 className="text-2xl font-black text-white font-display">{activeUsers}</h4>
+            <h4 className="text-2xl font-black text-white font-geist">{activeUsers}</h4>
             <p className="text-[9px] text-slate-600 mt-1">Sovereign Node Activity</p>
           </div>
 
@@ -586,7 +586,7 @@ export default function AdminPanel({
               <ArrowDownCircle className="w-5 h-5 text-blue-400" />
             </div>
             <p className="text-[10px] text-slate-500 uppercase font-mono font-bold">Total Deposits</p>
-            <h4 className="text-xl font-black text-white font-display">{formatIndianCurrency(totalDeposits)}</h4>
+            <h4 className="text-xl font-black text-white font-geist">{formatIndianCurrency(totalDeposits)}</h4>
             <p className="text-[9px] text-slate-600 mt-1">Approved Ledger Credits</p>
           </div>
 
@@ -595,7 +595,7 @@ export default function AdminPanel({
               <ArrowUpCircle className="w-5 h-5 text-rose-400" />
             </div>
             <p className="text-[10px] text-slate-500 uppercase font-mono font-bold">Total Withdrawals</p>
-            <h4 className="text-xl font-black text-white font-display">{formatIndianCurrency(totalWithdrawals)}</h4>
+            <h4 className="text-xl font-black text-white font-geist">{formatIndianCurrency(totalWithdrawals)}</h4>
             <p className="text-[9px] text-slate-600 mt-1">Processed Payouts</p>
           </div>
 
@@ -604,7 +604,7 @@ export default function AdminPanel({
               <TrendingUp className="w-5 h-5 text-amber-400" />
             </div>
             <p className="text-[10px] text-slate-500 uppercase font-mono font-bold">Active Contracts</p>
-            <h4 className="text-2xl font-black text-white font-display">{activeInvestmentPlans}</h4>
+            <h4 className="text-2xl font-black text-white font-geist">{activeInvestmentPlans}</h4>
             <p className="text-[9px] text-slate-600 mt-1">Live Trading Allocations</p>
           </div>
         </div>
