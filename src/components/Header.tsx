@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Phone, TrendingUp, Award, User, Wallet, Menu, X, LogOut, Home, Lock, MessageSquare, BarChart2 } from 'lucide-react';
+import { ShieldCheck, Phone, TrendingUp, Award, User, Wallet, Menu, X, LogOut, Home, Lock, MessageSquare, BarChart2, Compass } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HeaderButton } from './HeaderButton';
 
@@ -134,15 +134,15 @@ export default function Header({
                   Trade
                 </button>
                 <button
-                  id="btn-nav-market"
-                  onClick={() => setActiveTab('market')}
+                  id="btn-nav-explore"
+                  onClick={() => setActiveTab('explore')}
                   className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
-                    activeTab === 'market'
+                    activeTab === 'explore'
                       ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
                       : 'text-slate-400 hover:text-white bg-[#05070a]'
                   }`}
                 >
-                  Market
+                  Explore
                 </button>
                 <button
                   id="btn-nav-wallet"
@@ -180,7 +180,7 @@ export default function Header({
         </div>
 
         {/* MOBILE HEADER (visible only on mobile) */}
-        {(activeTab === 'home' || activeTab === 'plan' || activeTab === 'account' || activeTab === 'market' || activeTab === 'trade' || activeTab === 'wallet') && (
+        {(activeTab === 'home' || activeTab === 'plan' || activeTab === 'account' || activeTab === 'trade' || activeTab === 'wallet') && (
           <div className="flex md:hidden w-full px-4 py-3 flex-row justify-between items-center bg-[#05070a]" id="mobile-header-bar">
             {/* Logo & Brand (Left) */}
             <div 
@@ -380,17 +380,17 @@ export default function Header({
 
                       <button
                         onClick={() => {
-                          setActiveTab('market');
+                          setActiveTab('explore');
                           setDrawerOpen(false);
                         }}
                         className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-lg text-[10px] uppercase tracking-wider font-black transition-all border ${
-                          activeTab === 'market'
+                          activeTab === 'explore'
                             ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md'
                             : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        <BarChart2 className="w-4 h-4 shrink-0" />
-                        <span>Market Intelligence</span>
+                        <Compass className="w-4 h-4 shrink-0" />
+                        <span>Explore Hub</span>
                       </button>
 
                       <button
@@ -489,15 +489,15 @@ export default function Header({
               <span className="text-[9px] tracking-wide font-mono uppercase">Trade</span>
             </button>
 
-            {/* Market Button */}
+            {/* Explore Button */}
             <button
-              onClick={() => setActiveTab('market')}
+              onClick={() => setActiveTab('explore')}
               className={`flex flex-col items-center justify-center space-y-0.5 py-1 px-2 rounded-xl transition-all ${
-                activeTab === 'market' ? 'text-amber-400 font-extrabold scale-105' : 'text-slate-400 hover:text-slate-200'
+                activeTab === 'explore' ? 'text-amber-400 font-extrabold scale-105' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <BarChart2 className="w-4.5 h-4.5" />
-              <span className="text-[9px] tracking-wide font-mono uppercase">Market</span>
+              <Compass className="w-4.5 h-4.5" />
+              <span className="text-[9px] tracking-wide font-mono uppercase">Explore</span>
             </button>
 
             {/* Wallet Button */}

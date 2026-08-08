@@ -1,161 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import OrderBook from './OrderBook';
-import LiveMarketChart from './LiveMarketChart';
-import MarketAssetList from './MarketAssetList';
-import { ActiveTrade, InvestmentPlan, SystemSettings, User } from '../types';
-import { formatIndianCurrency, INVESTMENT_PLANS } from '../data';
 import { 
-  TrendingUp, 
-  Activity, 
-  Clock, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  AlertCircle, 
+  Star, 
   Coins, 
-  Globe, 
-  Zap,
-  Calculator,
-  Flame,
-  Award,
-  ArrowLeft,
-  Search,
-  Star,
-  Info,
-  SlidersHorizontal,
-  ChevronUp,
+  Building2, 
+  Zap, 
+  Leaf, 
+  LayoutGrid, 
+  RefreshCcw, 
+  DollarSign, 
+  Sliders, 
   ChevronDown,
-  MoreVertical,
-  CheckCircle2,
+  Home,
+  PieChart,
+  Repeat,
+  BarChart2,
   Wallet,
-  ShieldCheck,
-  Percent,
-  Lock,
-  MessageSquare,
-  ThumbsUp,
-  Share2,
-  Heart,
-  Bitcoin,
-  CircleDollarSign
+  TrendingUp,
+  Menu,
+  Inbox
 } from 'lucide-react';
+import { ActiveTrade, InvestmentPlan, SystemSettings, User } from '../types';
 import { toast } from 'sonner';
-
-// Strict Asset Configurations matching provided image data exactly
-const CRYPTO_ASSETS = [
-  { symbol: 'BTC/USDT', label: 'Bitcoin', extra: '4,102,401.90', price: 94120.00, change: 1.45, multiplier: '10x', icon: 'BTC' },
-  { symbol: 'ETH/USDT', label: 'Ethereum', extra: '2,903,412.10', price: 3420.00, change: 2.10, multiplier: '10x', icon: 'ETH' },
-  { symbol: 'SOL/USDT', label: 'Solana', extra: '1,500,412.50', price: 165.20, change: 5.67, multiplier: '10x', icon: 'OTHER' },
-  { symbol: 'DOGE/USDT', label: 'Dogecoin', extra: '900,412.10', price: 0.14, change: -2.34, multiplier: '10x', icon: 'OTHER' },
-  { symbol: 'BNB/USDT', label: 'BNB', extra: '1,324,291.50', price: 592.50, change: 0.85, multiplier: '10x', icon: 'BNB' },
-  { symbol: 'NEXO/USDT', label: 'Nexo', extra: '329,023.10', price: 0.762, change: 0.93, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'KERNEL/USDT', label: 'KernelDAO', extra: '324,291.76', price: 0.0338, change: -1.74, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'MANA/USDT', label: 'Decentraland', extra: '325,222.90', price: 0.0697, change: 0.29, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'LUNA/USDT', label: 'Terra', extra: '325,049.88', price: 0.0460, change: -0.22, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'FOGO/USDT', label: 'FOGO', extra: '324,304.49', price: 0.00911, change: 1.11, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'JUV/USDT', label: 'Juventus Fan Token', extra: '322,445.78', price: 0.327, change: -0.61, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'COMP/USDT', label: 'Compound', extra: '318,013.52', price: 17.03, change: -0.70, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'MEME/USDT', label: 'Memecoin', extra: '313,793.98', price: 0.000532, change: -0.37, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'USUAL/USDT', label: 'Usual', extra: '310,221.37', price: 0.00860, change: 1.03, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'Fartcoin/USDT', label: 'Fartcoin Meme Token', extra: '302,401.90', price: 0.13837, change: 4.77, multiplier: '5x', icon: 'OTHER' },
-  { symbol: 'HANA/USDT', label: 'Hana Network', extra: '298,142.10', price: 0.043309, change: 20.36, multiplier: '5x', icon: 'OTHER' }
-];
-
-const renderAssetIcon = (iconType: string) => {
-  switch (iconType) {
-    case 'BTC': return <Bitcoin className="w-5 h-5 text-amber-500" />;
-    case 'ETH': return <CircleDollarSign className="w-5 h-5 text-slate-400" />;
-    case 'BNB': return <CircleDollarSign className="w-5 h-5 text-amber-400" />;
-    default: return <Coins className="w-5 h-5 text-slate-500" />;
-  }
-};
-
-const TRADFI_ASSETS = [
-  { symbol: 'BILL', label: 'BILL Holdings, Inc.', extra: '$22.11M Vol', price: 0.025135, change: -5.76 },
-  { symbol: 'HANA', label: 'Hana Network Tokenized', extra: '$16.03M Vol', price: 0.043309, change: 20.36 },
-  { symbol: 'NVDAon', label: 'Nvidia Corp Tokenized', extra: '$13.35M Vol', price: 203.95, change: 0.59 },
-  { symbol: 'LAB', label: 'Laboratory Corp', extra: '$10.85M Vol', price: 0.15348, change: -0.81 },
-  { symbol: 'RTX', label: 'Raytheon Technologies', extra: '$8.01M Vol', price: 1.13471, change: 11.34 },
-  { symbol: 'ON', label: 'ON Semiconductor', extra: '$6.30M Vol', price: 0.13668, change: 11.17 },
-  { symbol: 'ESPORTS', label: 'Esports Entertainment', extra: '$5.93M Vol', price: 0.019404, change: -14.89 },
-  { symbol: 'BASED', label: 'Based Base Protocol', extra: '$5.89M Vol', price: 0.086082, change: -10.08 },
-  { symbol: 'EVAA', label: 'Evaa Protocol', extra: '$5.86M Vol', price: 0.95989, change: 23.94 },
-  { symbol: 'AGT', label: 'Agorand Tokenized', extra: '$5.82M Vol', price: 0.011552, change: -16.47 },
-  { symbol: 'BSB', label: 'BSB Tokenized x4', extra: '$3.81M Vol', price: 0.13374, change: -1.08 },
-  { symbol: 'CAP', label: 'Cap Protocol x4', extra: '$3.29M Vol', price: 0.0214, change: 14.90 },
-  { symbol: 'BEAT', label: 'Beatport Token', extra: '$3.27M Vol', price: 2.45917, change: 5.35 },
-  { symbol: 'AVAAI', label: 'Ava AI Token', extra: '$3.05M Vol', price: 0.0083038, change: -20.23 },
-  { symbol: 'SIREN', label: 'Siren Token', extra: '$2.93M Vol', price: 0.031327, change: 19.82 },
-  { symbol: 'VVV', label: 'VVV Global Equity', extra: '$2.91M Vol', price: 11.52, change: -0.49 },
-  { symbol: 'ZEREBRO', label: 'Zerebro AI Token', extra: '$2.71M Vol', price: 0.037049, change: -8.72 },
-  { symbol: 'STAR', label: 'Star Securities', extra: '$2.62M Vol', price: 0.17951, change: -11.97 },
-  { symbol: 'TRADOOR', label: 'Tradoor Protocol', extra: '$2.59M Vol', price: 0.49592, change: 2.96 },
-  { symbol: 'TAG', label: 'Tag Tokenized', extra: '$2.38M Vol', price: 0.0011741, change: -1.62 },
-  { symbol: 'SENTIS', label: 'Sentis AI Solutions', extra: '$2.34M Vol', price: 0.19797, change: 1.18 },
-  { symbol: 'EDGE', label: 'Edge Finance', extra: '$2.31M Vol', price: 0.40792, change: -0.15 },
-  { symbol: 'VELVET', label: 'Velvet Capital', extra: '$1.89M Vol', price: 0.53977, change: 5.49 },
-  { symbol: 'IN', label: 'IN Tokenized', extra: '$1.85M Vol', price: 0.040882, change: -5.84 },
-  { symbol: 'MAGMA', label: 'Magma Staking', extra: '$1.78M Vol', price: 0.31225, change: 4.88 },
-  { symbol: 'CRCLon', label: 'Circle Internet Group Tokenized', extra: '$1.77M Vol', price: 65.56, change: 7.71 },
-  { symbol: 'UAI', label: 'Universal AI Token', extra: '$1.77M Vol', price: 0.32102, change: -7.19 },
-  { symbol: 'Fartcoin', label: 'Fartcoin Meme Token', extra: '$1.70M Vol', price: 0.13837, change: 4.77 },
-  { symbol: 'JCT', label: 'JCT Tokenized', extra: '$1.67M Vol', price: 0.0041165, change: -5.88 },
-  { symbol: 'RAVE', label: 'Rave Tokenized', extra: '$1.66M Vol', price: 0.28299, change: -4.26 },
-  { symbol: 'AOP', label: 'Alliance of Planets', extra: '$1.64M Vol', price: 0.043122, change: 7.38 },
-  { symbol: 'IDOL', label: 'Idol Tokenized', extra: '$1.58M Vol', price: 0.015116, change: -12.60 },
-  { symbol: 'GWEI', label: 'Gwei Tokenized', extra: '$1.46M Vol', price: 0.028064, change: -4.70 },
-  { symbol: 'MUon', label: 'Micron Technology Inc. Tokenized', extra: '$1.14M Vol', price: 888.37, change: 4.83 },
-  { symbol: 'IVVon', label: 'iShares Core S&P 500 Tokenized', extra: '$810.7k Vol', price: 748.44, change: 0.29 },
-  { symbol: 'SPYon', label: 'SPDR S&P 500 ETF Tokenized', extra: '$771.5k Vol', price: 744.93, change: 0.33 },
-  { symbol: 'GOOGLon', label: 'Alphabet Inc. Tokenized', extra: '$686.6k Vol', price: 354.61, change: 1.94 },
-  { symbol: 'TSLAon', label: 'Tesla, Inc. Tokenized', extra: '$433.7k Vol', price: 372.85, change: -2.33 },
-  { symbol: 'AAPLon', label: 'Apple Inc. Tokenized', extra: '$357.0k Vol', price: 324.25, change: -2.80 },
-  { symbol: 'MSFTon', label: 'Microsoft Corp Tokenized', extra: '$194.4k Vol', price: 401.84, change: 2.03 },
-  { symbol: 'AMDon', label: 'Advanced Micro Devices Tokenized', extra: '$156.4k Vol', price: 508.94, change: 4.32 },
-  { symbol: 'TQQQon', label: 'ProShares UltraPro QQQ Tokenized', extra: '$153.6k Vol', price: 69.04, change: 2.91 },
-  { symbol: 'QCOMon', label: 'Qualcomm Inc Tokenized', extra: '$152.5k Vol', price: 171.96, change: 0.27 },
-  { symbol: 'ORCLon', label: 'Oracle Corp Tokenized', extra: '$126.1k Vol', price: 122.49, change: -3.15 },
-  { symbol: 'INTCon', label: 'Intel Corp Tokenized', extra: '$115.6k Vol', price: 98.40, change: 5.33 },
-  { symbol: 'COINon', label: 'Coinbase Global Inc. Tokenized', extra: '$95.5k Vol', price: 161.74, change: 2.89 },
-  { symbol: 'MRVLon', label: 'Marvell Technology Tokenized', extra: '$80.6k Vol', price: 198.25, change: 6.60 },
-  { symbol: 'BMNRon', label: 'Bitmine Immersion Tokenized', extra: '$80.5k Vol', price: 16.67, change: 6.12 },
-  { symbol: 'BABAon', label: 'Alibaba Group Tokenized', extra: '$77.9k Vol', price: 121.31, change: 5.34 },
-  { symbol: 'AVGOon', label: 'Broadcom Inc. Tokenized', extra: '$21.6k Vol', price: 381.60, change: 3.49 },
-  { symbol: 'LLYon', label: 'Eli Lilly & Co. Tokenized', extra: '$11.0k Vol', price: 1168.15, change: -0.44 },
-  { symbol: 'SQQQon', label: 'ProShares UltraPro Short QQQ Tokenized', extra: '$10.3k Vol', price: 41.81, change: -2.74 },
-  { symbol: 'COPon', label: 'ConocoPhillips Tokenized', extra: '$10.1k Vol', price: 116.58, change: 1.25 },
-  { symbol: 'VRTon', label: 'Vertiv Holdings Co. Tokenized', extra: '$8.4k Vol', price: 294.27, change: 1.92 },
-  { symbol: 'MARAon', label: 'MARA Holdings Inc. Tokenized', extra: '$7.2k Vol', price: 11.82, change: 10.83 },
-  { symbol: 'GLDon', label: 'SPDR Gold Shares Tokenized', extra: '$7.2k Vol', price: 367.76, change: -0.09 },
-  { symbol: 'COSTon', label: 'Costco Wholesale Corp Tokenized', extra: '$6.6k Vol', price: 936.04, change: -0.44 },
-  { symbol: 'CVXon', label: 'Chevron Corp Tokenized', extra: '$4.6k Vol', price: 190.11, change: 1.23 },
-  { symbol: 'ASMLon', label: 'ASML Holding NV Tokenized', extra: '$4.2k Vol', price: 1737.70, change: -0.24 },
-  { symbol: 'PALLon', label: 'abrdn Physical Palladium Tokenized', extra: '$57.2 Vol', price: 22.98, change: 1.23 },
-  { symbol: 'PBRon', label: 'Petroleo Brasileiro Tokenized', extra: '$31.0 Vol', price: 18.22, change: 1.59 },
-  { symbol: 'ANETon', label: 'Arista Networks Inc. Tokenized', extra: '$18.3 Vol', price: 170.23, change: 1.13 },
-  { symbol: 'ACNon', label: 'Accenture PLC Tokenized', extra: '$16.6 Vol', price: 144.33, change: 0.32 },
-  { symbol: 'TCOMon', label: 'Trip.com Group Tokenized', extra: '$2.6 Vol', price: 44.33, change: 4.94 },
-  { symbol: 'GMEon', label: 'GameStop Corp. Tokenized', extra: '$1.2 Vol', price: 21.81, change: -0.10 },
-  { symbol: 'TSMon', label: 'Taiwan Semiconductor Tokenized', extra: '$15.2k Vol', price: 404.14, change: 1.27 },
-  { symbol: 'APPon', label: 'Applovin Corp Tokenized', extra: '$15.1k Vol', price: 429.38, change: 1.00 },
-  { symbol: 'OXYon', label: 'Occidental Petroleum Tokenized', extra: '$19.8k Vol', price: 55.61, change: 1.24 },
-  { symbol: 'PDDon', label: 'PDD Holdings Inc. Tokenized', extra: '$19.6k Vol', price: 86.66, change: 2.96 },
-  { symbol: 'ARMon', label: 'Arm Holdings plc Tokenized', extra: '$18.9k Vol', price: 271.91, change: 2.93 },
-  { symbol: 'ADBEon', label: 'Adobe Inc. Tokenized', extra: '$17.0k Vol', price: 234.31, change: -1.28 }
-];
-
-const ALPHA_ASSETS = [
-  { symbol: 'EVAA', label: 'Evaa Protocol', extra: 'Vol: $5.86M', price: 0.95989, change: 23.94 },
-  { symbol: 'HANA', label: 'Hana Network', extra: 'Vol: $16.03M', price: 0.043309, change: 20.36 },
-  { symbol: 'ARX', label: 'ARX Protocol', extra: 'Vol: $1.11B', price: 0.16347, change: 10.07 },
-  { symbol: 'quq', label: 'QUQ Token', extra: 'Vol: $161.03M', price: 0.0038559, change: -0.04 },
-  { symbol: 'UP', label: 'UP token', extra: 'Vol: $138.75M', price: 0.33049, change: 1.42 },
-  { symbol: 'O', label: 'O-Securities', extra: 'Vol: $124.61M', price: 0.62511, change: 6.98 },
-  { symbol: 'BLUAI', label: 'BlueAI Ecosystem', extra: 'Vol: $83.38M', price: 0.012294, change: 5.23 },
-  { symbol: 'AKE', label: 'Ake.Finance', extra: 'Vol: $56.04M', price: 0.0016604, change: -13.00 },
-  { symbol: 'UB', label: 'UB Network', extra: 'Vol: $47.07M', price: 0.097238, change: 10.48 },
-  { symbol: 'BEE', label: 'BEE Chain', extra: 'Vol: $40.91M', price: 0.046452, change: 2.30 },
-  { symbol: 'NES', label: 'NES Systems', extra: 'Vol: $35.12M', price: 0.22543, change: -1.69 }
-];
+import { INSTRUMENTS, Instrument } from '../data/tradeData';
 
 interface TradeSectionProps {
   activeTrades: ActiveTrade[];
@@ -169,3125 +36,562 @@ interface TradeSectionProps {
   onNavigateToWallet?: (subTab?: 'deposit' | 'withdraw' | 'history') => void;
 }
 
-export default function TradeSection({
-  activeTrades,
-  isLoggedIn,
-  currentUser,
-  onNavigateToHome,
-  onInvestSelect,
-  systemSettings,
-  onChangeTab,
-  onExecuteTrade,
-  onNavigateToWallet
-}: TradeSectionProps) {
-  // Calculator states
-  const [selectedPlanId, setSelectedPlanId] = useState<string>(INVESTMENT_PLANS[0].id);
-  const [selectedDuration, setSelectedDuration] = useState<number>(7); // Days: 7, 15, 30
+type BrandTab = 'favorites' | 'crypto' | 'tradfi' | 'alpha' | 'grow' | 'square';
+type ViewTab = 'spot' | 'usdm' | 'coinm' | 'options';
+type FilterTab = 'DeFi' | 'Index' | 'Pre-IPO' | 'USDC' | 'Chinese' | 'Alpha' | 'AI' | 'all';
 
-  // Chart Selection state (for custom terminal widget compatibility)
-  const [selectedChart, setSelectedChart] = useState<'STOCK' | 'CRYPTO' | 'FOREX'>('STOCK');
+interface FuturesDashboardProps {
+  currentUser: User | null;
+  selectedAsset: Instrument;
+  setSelectedAsset: (asset: Instrument) => void;
+  onExecuteTrade?: (amount: number, estimatedProfit: number, assetName: string, durationLabel: string) => void;
+}
 
-  // Exact design header navigation tabs state (Crypto, TradFi, Alpha, Options, Grow, Square, Data, Market)
-  const [activeHeaderTab, setActiveHeaderTab] = useState<'Crypto' | 'TradFi' | 'Alpha' | 'Options' | 'Grow' | 'Square' | 'Data' | 'Market'>('Crypto');
+function FuturesDashboard({ currentUser, selectedAsset, setSelectedAsset, onExecuteTrade }: FuturesDashboardProps) {
+  const [tradeAmount, setTradeAmount] = useState('100');
+  const [timeframe, setTimeframe] = useState('15m');
+  const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
-  // Options (Spot, Stocks, Buy/Sell) state
-  const [optionsSubTab, setOptionsSubTab] = useState<'Spot' | 'Stocks' | 'Buy/Sell'>('Buy/Sell');
-  const [optionsAsset, setOptionsAsset] = useState<string>('BTC/USDT');
-  const [optionsPrice, setOptionsPrice] = useState<string>('66843.99');
-  const [optionsAmount, setOptionsAmount] = useState<string>('0.075');
-  const [optionsOrderType, setOptionsOrderType] = useState<'Limit' | 'Market'>('Limit');
-  const [optionsActiveSide, setOptionsActiveSide] = useState<'Buy' | 'Sell'>('Buy');
-  const [optionsMargin, setOptionsMargin] = useState<boolean>(false);
-  const [optionsTpsl, setOptionsTpsl] = useState<boolean>(false);
-  const [optionsIceberg, setOptionsIceberg] = useState<boolean>(false);
+  const walletBalance = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
 
-  // Real-time states for the Options tab
-  const [optionsBtcPrice, setOptionsBtcPrice] = useState<number>(66846.86);
-  const [optionsBtcChange, setOptionsBtcChange] = useState<number>(3.85);
-  const [optionsAsks, setOptionsAsks] = useState([
-    { price: 66847.82, amount: 0.00008 },
-    { price: 66847.39, amount: 0.00485 },
-    { price: 66847.20, amount: 0.00008 },
-    { price: 66846.89, amount: 0.00015 },
-    { price: 66846.88, amount: 0.00095 },
-    { price: 66846.87, amount: 0.21353 }
-  ]);
-  const [optionsBids, setOptionsBids] = useState([
-    { price: 66846.86, amount: 9.08418 },
-    { price: 66846.85, amount: 0.00047 },
-    { price: 66846.84, amount: 0.00031 },
-    { price: 66846.83, amount: 0.27024 },
-    { price: 66846.78, amount: 0.00016 },
-    { price: 66846.77, amount: 0.19682 }
-  ]);
-
+  // Draw simulated chart
   useEffect(() => {
-    const interval = setInterval(() => {
-      setOptionsBtcPrice(prev => {
-        const diff = (Math.random() - 0.49) * 0.18;
-        const next = parseFloat((prev + diff).toFixed(2));
-        
-        // Update asks and bids to be close to the new price
-        setOptionsAsks(asks => asks.map((ask, idx) => {
-          const newPrice = parseFloat((next + (6 - idx) * 0.12 + Math.random() * 0.05).toFixed(2));
-          const newAmount = parseFloat((Math.random() * 0.1 + 0.0001).toFixed(5));
-          return { price: newPrice, amount: newAmount };
-        }));
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-        setOptionsBids(bids => bids.map((bid, idx) => {
-          const newPrice = parseFloat((next - (idx + 1) * 0.11 - Math.random() * 0.04).toFixed(2));
-          const newAmount = parseFloat((Math.random() * 0.5 + 0.0001).toFixed(5));
-          return { price: newPrice, amount: newAmount };
-        }));
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
 
-        return next;
-      });
-      
-      setOptionsBtcChange(prev => parseFloat((prev + (Math.random() - 0.5) * 0.02).toFixed(2)));
-    }, 1500);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Search query & filtering states
-  const [searchQuery, setSearchQuery] = useState('');
-  const [cryptoSubFilter, setCryptoSubFilter] = useState<'Spot' | 'USDⓈ-M' | 'COIN-M' | 'Options'>('Spot');
-  const [cryptoCoinBadge, setCryptoCoinBadge] = useState<string>('USDT');
-
-  const [tradfiSubFilter, setTradfiSubFilter] = useState<'Stocks' | 'Spot' | 'USDⓈ-M'>('Stocks');
-  const [tradfiUSFilter, setTradfiUSFilter] = useState<'US Stocks' | 'ETFs'>('US Stocks');
-
-  const [alphaFilter, setAlphaFilter] = useState<'All' | 'Point+' | 'Tokenized Securities' | 'BSC' | 'Ethereum' | 'Solana'>('All');
-
-  // Gold Investment (SIP & One Time) states for Alpha Section
-  const [goldMode, setGoldMode] = useState<'SIP' | 'One Time'>('SIP');
-  const [goldFrequency, setGoldFrequency] = useState<'Daily' | 'Weekly' | 'Monthly'>('Weekly');
-  const [goldAmount, setGoldAmount] = useState<number>(1000);
-  const [goldSipDate, setGoldSipDate] = useState<number>(22);
-  const [payFirstToday, setPayFirstToday] = useState<boolean>(true);
-  const [liveGoldRate, setLiveGoldRate] = useState<number>(14853.01);
-  const [showAlphaTokens, setShowAlphaTokens] = useState<boolean>(false);
-
-  useEffect(() => {
-    const goldInterval = setInterval(() => {
-      setLiveGoldRate(prev => parseFloat((prev + (Math.random() - 0.49) * 0.25).toFixed(2)));
-    }, 2000);
-    return () => clearInterval(goldInterval);
-  }, []);
-
-  // Copy Trade & staking interactive state
-  const [selectedTrader, setSelectedTrader] = useState<any | null>(null);
-  const [copyAmount, setCopyAmount] = useState('10000');
-  const [copyDuration, setCopyDuration] = useState('7 Days');
-
-  // Square interaction state
-  const [squarePosts, setSquarePosts] = useState([
-    { id: 1, author: '@TradeMaster', role: 'Elite Pro', avatarColor: 'bg-amber-500', time: '12m ago', content: 'BTC/USDT local bottom is fully consolidated around $65,200. Heavy volume spikes on micro contracts. Target $68k this week without fail!', likes: 45, comments: 12, liked: false },
-    { id: 2, author: '@WhaleShield', role: 'VIP Alpha', avatarColor: 'bg-indigo-500', time: '1h ago', content: 'On-chain signals detected a massive movement of $ARX and $NEXO into institutional wallets. Highly suggest launching 15m or 1h slots for maximized returns.', likes: 89, comments: 24, liked: false },
-    { id: 3, author: '@CryptoGurus', role: 'Growth Lead', avatarColor: 'bg-emerald-500', time: '3h ago', content: 'Just added ₹5,00,000 into the automatic ETH 102% yield pool. Absolute fire compounding rate. Secure MoF compliance structure makes it extremely seamless.', likes: 112, comments: 41, liked: false }
-  ]);
-  const [squareInput, setSquareInput] = useState('');
-
-  // Interactive Live detail / trade execution screen
-  const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
-  const [cryptoAssets, setCryptoAssets] = useState(CRYPTO_ASSETS);
-  const [tradFiAssets, setTradFiAssets] = useState(TRADFI_ASSETS);
-  const [alphaAssets, setAlphaAssets] = useState(ALPHA_ASSETS);
-
-  // Helper to project any base crypto asset to the selected category & quote coin
-  const projectCryptoAsset = (asset: any) => {
-    const btcAsset = cryptoAssets.find(a => a.symbol.includes('BTC') || a.label.toLowerCase() === 'bitcoin');
-    const bnbAsset = cryptoAssets.find(a => a.symbol.includes('BNB') || a.label.toLowerCase() === 'bnb');
-    const btcPriceVal = btcAsset ? btcAsset.price : 94120;
-    const bnbPriceVal = bnbAsset ? bnbAsset.price : 592.50;
-
-    let displayPrice = asset.price;
-    const baseLabel = asset.label;
-    const originalSymbol = asset.symbol;
-    const coinSymbol = originalSymbol.split('/')[0];
-
-    // If the coin is the same as the badge (e.g. BTC/BTC), swap it to make it look great
-    let finalCoinSymbol = coinSymbol;
-    if (coinSymbol === cryptoCoinBadge) {
-      if (coinSymbol === 'BTC') finalCoinSymbol = 'ETH';
-      else finalCoinSymbol = 'BTC';
+    const w = rect.width;
+    const h = rect.height;
+    const points = 60;
+    const data: number[] = [];
+    let p = selectedAsset.price;
+    for (let i = 0; i < points; i++) {
+      p = p * (1 + (Math.random() - 0.5) * 0.02);
+      data.push(p);
     }
 
-    // Calculate relative price based on selected quote badge
-    if (cryptoCoinBadge === 'USDC') {
-      displayPrice = displayPrice * 0.9998;
-    } else if (cryptoCoinBadge === 'U') {
-      displayPrice = displayPrice * 1.0015;
-    } else if (cryptoCoinBadge === 'USD1') {
-      displayPrice = displayPrice * 1.004;
-    } else if (cryptoCoinBadge === 'USD') {
-      displayPrice = displayPrice * 1.0008;
-    } else if (cryptoCoinBadge === 'BNB') {
-      displayPrice = displayPrice / bnbPriceVal;
-    } else if (cryptoCoinBadge === 'BTC') {
-      displayPrice = displayPrice / btcPriceVal;
+    const min = Math.min(...data) * 0.995;
+    const max = Math.max(...data) * 1.005;
+    const range = max - min;
+
+    ctx.clearRect(0, 0, w, h);
+    
+    // Grid lines
+    ctx.strokeStyle = '#2b3139';
+    ctx.lineWidth = 0.5;
+    for(let i=0; i<5; i++) {
+      const y = (h / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
     }
 
-    // Format symbol based on sub-filter (Spot, USDⓈ-M, COIN-M, Options)
-    let finalSymbol = `${finalCoinSymbol}/${cryptoCoinBadge}`;
-    let finalMultiplier = asset.multiplier || '5x';
+    // Path
+    ctx.beginPath();
+    ctx.strokeStyle = data[data.length-1] >= data[0] ? '#0ecb81' : '#f6465d';
+    ctx.lineWidth = 2;
+    data.forEach((val, i) => {
+      const x = (i / (points - 1)) * w;
+      const y = h - ((val - min) / range) * h;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
 
-    if (cryptoSubFilter === 'USDⓈ-M') {
-      finalSymbol = `${finalCoinSymbol}${cryptoCoinBadge} Perpetual`;
-      finalMultiplier = '20x';
-    } else if (cryptoSubFilter === 'COIN-M') {
-      finalSymbol = `${finalCoinSymbol}USD COIN-M`;
-      finalMultiplier = '50x';
-      displayPrice = asset.price; // keep USD-based price
-    } else if (cryptoSubFilter === 'Options') {
-      const strikePrice = Math.round(displayPrice * 1.05);
-      finalSymbol = `${finalCoinSymbol}-${cryptoCoinBadge}-24JUL26-${strikePrice}-C`;
-      finalMultiplier = 'Option';
-      displayPrice = displayPrice * 0.024; // Options premium is a small fraction of spot price
+    // Area
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, data[data.length-1] >= data[0] ? 'rgba(14,203,129,0.1)' : 'rgba(246,70,93,0.1)');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+  }, [selectedAsset, timeframe]);
+
+  const handleTrade = (typeOverride?: 'BUY' | 'SELL') => {
+    if (isProcessing) return;
+    const finalType = typeOverride || tradeType;
+    const amount = parseFloat(tradeAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Enter valid amount');
+      return;
     }
 
-    return {
-      ...asset,
-      baseSymbol: coinSymbol,
-      symbol: finalSymbol,
-      label: baseLabel,
-      price: displayPrice,
-      usdPrice: asset.price,
-      multiplier: finalMultiplier,
-    };
+    if (amount > walletBalance) {
+      toast.error('Insufficient wallet balance');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    // Simulate network delay for micro-interaction
+    setTimeout(() => {
+      if (onExecuteTrade) {
+        const profitMultiplier = finalType === 'BUY' ? 1.12 : 1.15; // simplified logic
+        const profit = Math.round(amount * profitMultiplier);
+        onExecuteTrade(amount, profit, selectedAsset.symbol, timeframe);
+        toast.success(`${finalType} order executed for ${selectedAsset.symbol}`);
+      }
+      setIsProcessing(false);
+    }, 1200);
   };
 
-  const liveSelectedAsset = selectedAsset ? (
-    selectedAsset.baseSymbol ? (
-      (() => {
-        const base = cryptoAssets.find(a => a.symbol.startsWith(selectedAsset.baseSymbol + '/') || a.symbol === selectedAsset.baseSymbol);
-        return base ? projectCryptoAsset(base) : selectedAsset;
-      })()
-    ) : (
-      cryptoAssets.find(a => a.symbol === selectedAsset.symbol) ||
-      tradFiAssets.find(a => a.symbol === selectedAsset.symbol) ||
-      alphaAssets.find(a => a.symbol === selectedAsset.symbol) ||
-      selectedAsset
-    )
-  ) : null;
-  const activeAsset = liveSelectedAsset || selectedAsset;
-  const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY');
-  const [orderType, setOrderType] = useState<'LIMIT' | 'MARKET'>('MARKET');
-  const [limitPrice, setLimitPrice] = useState('');
-  const [tradeAmountInput, setTradeAmountInput] = useState('5000');
-  const [targetDuration, setTargetDuration] = useState('3m'); // 60s, 3m, 5m, 15m, 1h, 1D
-  const [quickTradeAsset, setQuickTradeAsset] = useState('BTC/USDT');
-  const [quickTradeDuration, setQuickTradeDuration] = useState('60s');
-  const [chartTimeframe, setChartTimeframe] = useState<'Time' | '15m' | '1h' | '4h' | '1D' | 'More'>('15m');
-  const [indicatorMode, setIndicatorMode] = useState<'MA' | 'EMA' | 'BOLL' | 'SAR' | 'AVL' | 'SUPER' | 'VOL' | 'MACD' | 'RSI'>('MA');
-  const [orderBookTab, setOrderBookTab] = useState<'Order Book' | 'Depth' | 'Trades' | 'Network'>('Order Book');
+  return (
+    <div className="grid lg:grid-cols-3 gap-3">
+      <div className="lg:col-span-2 bg-[#181a20] rounded-xl border border-slate-800 p-4 space-y-3 shadow-xl">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-black text-white tracking-tighter uppercase">{selectedAsset.symbol} <span className="text-[8px] text-slate-500 font-normal ml-1 border border-slate-800 px-1 rounded">PERP</span></span>
+            <span className={`text-xs font-black ${selectedAsset.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {selectedAsset.change > 0 ? '+' : ''}{selectedAsset.change}%
+            </span>
+          </div>
+          <div className="flex bg-slate-900 rounded-lg p-1">
+            {['15m', '1h', '4h', '1D'].map(tf => (
+              <button 
+                key={tf} 
+                onClick={() => setTimeframe(tf)}
+                className={`px-2 py-0.5 rounded text-[9px] font-black uppercase transition-all ${timeframe === tf ? 'bg-amber-500 text-slate-950' : 'text-slate-500 hover:text-white'}`}
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="h-[220px] w-full relative bg-slate-950/50 rounded-lg border border-slate-800/50 overflow-hidden">
+          <canvas ref={canvasRef} className="w-full h-full" />
+          <div className="absolute top-2 left-2 flex flex-wrap gap-2 text-[8px] font-mono text-slate-500 pointer-events-none">
+            <span className="flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-emerald-500"></span> MA60: {selectedAsset.price.toFixed(4)}</span>
+            <span className="flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-amber-500"></span> MA5: {selectedAsset.vol}</span>
+          </div>
+          <div className="absolute bottom-2 right-2 flex flex-col items-end gap-0 pointer-events-none">
+             <div className="text-lg font-black text-white font-mono">{selectedAsset.price.toFixed(4)}</div>
+             <div className="text-[8px] text-slate-500 font-mono uppercase">USDT</div>
+          </div>
+        </div>
 
-  // Real-time fluctuating tickers for the trading screens
-  const [sbiPrice, setSbiPrice] = useState(843.50);
-  const [btcPrice, setBtcPrice] = useState(5412980);
-  const [forexPrice, setForexPrice] = useState(89.42);
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: 'High', val: (selectedAsset.price * 1.05).toFixed(4) },
+            { label: 'Low', val: (selectedAsset.price * 0.95).toFixed(4) },
+            { label: '24h Vol', val: selectedAsset.vol },
+            { label: 'OI', val: (Math.random() * 20 + 10).toFixed(1) + 'B' }
+          ].map(s => (
+            <div key={s.label} className="bg-slate-900/30 p-1.5 rounded-lg border border-slate-800/50">
+              <div className="text-[7px] text-slate-500 uppercase font-black tracking-tighter truncate">{s.label}</div>
+              <div className="text-[10px] font-black text-white mt-0.5 truncate">{s.val}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-  // Sparkline history data
-  const [sbiHistory, setSbiHistory] = useState<number[]>([]);
-  const [btcHistory, setBtcHistory] = useState<number[]>([]);
-  const [forexHistory, setForexHistory] = useState<number[]>([]);
+      {/* Trade Controls */}
+      <div className="bg-[#181a20] rounded-xl border border-slate-800 p-4 flex flex-col justify-between shadow-xl min-h-[400px]">
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 bg-slate-950 rounded-lg p-0.5 border border-slate-800">
+            <motion.button 
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setTradeType('BUY')} 
+              className={`py-1.5 rounded text-[10px] font-black uppercase tracking-widest transition-all ${tradeType === 'BUY' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500'}`}
+            >
+              LONG
+            </motion.button>
+            <motion.button 
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setTradeType('SELL')} 
+              className={`py-1.5 rounded text-[10px] font-black uppercase tracking-widest transition-all ${tradeType === 'SELL' ? 'bg-rose-500 text-white' : 'text-slate-500'}`}
+            >
+              SHORT
+            </motion.button>
+          </div>
 
-  // Tickers update interval
+          <div className="space-y-3">
+            <div className="flex justify-between text-[8px] font-black text-slate-500 uppercase tracking-widest">
+              <span>Size</span>
+              <span>Max: <span className="text-amber-500">${walletBalance.toFixed(0)}</span></span>
+            </div>
+            <div className="relative group">
+              <input 
+                type="number" 
+                value={tradeAmount}
+                onChange={(e) => setTradeAmount(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-3 px-3 text-white font-black text-xl outline-none focus:border-amber-500 transition-all text-center"
+                placeholder="0.00"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-700 font-black text-[9px]">USDT</div>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {[25, 50, 75, 100].map(p => (
+                <button 
+                  key={p} 
+                  onClick={() => setTradeAmount((walletBalance * (p/100)).toFixed(0))}
+                  className="py-1 rounded-md bg-slate-900 text-[9px] font-black text-slate-500 hover:text-white hover:bg-slate-800 border border-slate-800 transition-all"
+                >
+                  {p}%
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-3 border-t border-slate-900">
+            <div className="flex justify-between items-center text-[9px]">
+              <span className="text-slate-500 font-bold uppercase tracking-tighter">Market Price</span>
+              <span className="text-slate-300 font-mono font-bold">${selectedAsset.price.toFixed(4)}</span>
+            </div>
+            <div className="flex justify-between items-center text-[9px]">
+              <span className="text-slate-500 font-bold uppercase tracking-tighter">Liquidation</span>
+              <span className="text-rose-400 font-mono font-bold">${(selectedAsset.price * (tradeType === 'BUY' ? 0.85 : 1.15)).toFixed(4)}</span>
+            </div>
+            <div className="flex justify-between items-center text-[9px]">
+              <span className="text-slate-500 font-bold uppercase tracking-tighter">Est. ROI</span>
+              <span className="text-emerald-400 font-black tracking-tight">+12.00%</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2 mt-6">
+          <motion.button 
+            whileTap={{ scale: 0.96 }}
+            onClick={() => handleTrade()}
+            disabled={isProcessing}
+            className={`w-full py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-lg flex items-center justify-center gap-2 ${
+              isProcessing ? 'opacity-80 cursor-not-allowed' : 'active:scale-[0.98]'
+            } ${
+              tradeType === 'BUY' 
+                ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/10' 
+                : 'bg-rose-500 text-white shadow-rose-500/10'
+            }`}
+          >
+            {isProcessing ? (
+              <>
+                <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
+                EXEC...
+              </>
+            ) : (
+              `CONFIRM ${tradeType === 'BUY' ? 'LONG' : 'SHORT'}`
+            )}
+          </motion.button>
+          <p className="text-[7px] text-slate-600 text-center uppercase font-black tracking-widest opacity-60">Auto-Scaling Enabled</p>
+        </div>
+      </div>
+
+      {/* Asset Navigation Scroller */}
+      <div className="lg:col-span-3 bg-[#121212] rounded-xl border border-slate-800 p-0.5 mt-auto">
+        <div className="flex items-center overflow-x-auto scrollbar-hide">
+          {INSTRUMENTS.map((asset, index) => (
+            <button 
+              key={`${asset.symbol}-${index}`}
+              onClick={() => setSelectedAsset(asset)}
+              className={`flex-shrink-0 min-w-[110px] p-3 bg-[#121212] hover:bg-slate-900 transition-all text-left group border-r border-slate-800 last:border-0 ${selectedAsset.symbol === asset.symbol ? 'bg-slate-900/80 border-b border-b-[#f0b90b]' : ''}`}
+            >
+              <div className="text-[10px] font-black text-white group-hover:text-amber-500 transition-colors uppercase tracking-tight">{asset.symbol}</div>
+              <div className="flex justify-between items-center mt-1">
+                 <span className="text-[8px] text-slate-600 font-mono font-bold">${asset.price < 10 ? asset.price.toFixed(4) : asset.price.toFixed(1)}</span>
+                 <span className={`text-[9px] font-black ${asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {asset.change > 0 ? '+' : ''}{asset.change}%
+                 </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function TradeSection({
+  isLoggedIn,
+  currentUser,
+  onExecuteTrade,
+  onNavigateToWallet,
+  onChangeTab,
+}: TradeSectionProps) {
+  // --- State ---
+  const [currentBrand, setCurrentBrand] = useState<BrandTab>('favorites');
+  const [currentView, setCurrentView] = useState<ViewTab>('spot');
+  const [currentFilter, setCurrentFilter] = useState<FilterTab>('all');
+  const [instruments, setInstruments] = useState<Instrument[]>(INSTRUMENTS);
+  const [selectedAssetSymbol, setSelectedAssetSymbol] = useState<string>(INSTRUMENTS[0].symbol);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set(['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT', 'LTCUSDT', 'PYPLUSDT', 'JPMUSDT']));
+  const [updateTime, setUpdateTime] = useState<string>(new Date().toLocaleTimeString('en-US', { hour12: false }));
+
+  const selectedAsset = useMemo(() => {
+    return instruments.find(i => i.symbol === selectedAssetSymbol) || instruments[0];
+  }, [instruments, selectedAssetSymbol]);
+
+  // --- Real-time Price Simulation ---
   useEffect(() => {
-    const initSbi = Array.from({ length: 15 }, () => 840 + Math.random() * 8);
-    setSbiHistory(initSbi);
-    setSbiPrice(initSbi[initSbi.length - 1]);
-
-    const initBtc = Array.from({ length: 15 }, () => 5410000 + Math.random() * 8000);
-    setBtcHistory(initBtc);
-    setBtcPrice(initBtc[initBtc.length - 1]);
-
-    const initForex = Array.from({ length: 15 }, () => 89.1 + Math.random() * 0.7);
-    setForexHistory(initForex);
-    setForexPrice(initForex[initForex.length - 1]);
-
     const interval = setInterval(() => {
-      setSbiPrice(prev => {
-        const change = (Math.random() - 0.48) * 1.5;
-        const next = Math.max(10, prev + change);
-        setSbiHistory(h => [...h.slice(1), next]);
-        return next;
-      });
+      setInstruments(prev => prev.map(item => {
+        const delta = (Math.random() - 0.5) * 0.008;
+        let newPrice = item.price * (1 + delta);
+        if (newPrice < 0.0001) newPrice = 0.0001;
 
-      setBtcPrice(prev => {
-        const change = (Math.random() - 0.47) * 950;
-        const next = Math.max(100, prev + change);
-        setBtcHistory(h => [...h.slice(1), next]);
-        return next;
-      });
+        const shift = (Math.random() - 0.5) * 0.3;
+        let newChange = item.change + shift;
+        if (newChange > 30) newChange = 30;
+        if (newChange < -30) newChange = -30;
 
-      setForexPrice(prev => {
-        const change = (Math.random() - 0.49) * 0.08;
-        const next = Math.max(1, prev + change);
-        setForexHistory(h => [...h.slice(1), next]);
-        return next;
-      });
-
-      // Update Crypto, TradFi, and Alpha assets with random live ticking fluctuations
-      setCryptoAssets(prev => prev.map(asset => {
-        const changePercent = (Math.random() - 0.5) * 0.4;
-        const nextPrice = Math.max(0.000001, asset.price * (1 + changePercent / 100));
-        const nextChange = asset.change + changePercent;
-        return { ...asset, price: nextPrice, change: nextChange };
+        return {
+          ...item,
+          price: newPrice,
+          change: Math.round(newChange * 100) / 100
+        };
       }));
-
-      setTradFiAssets(prev => prev.map(asset => {
-        const changePercent = (Math.random() - 0.5) * 0.3;
-        const nextPrice = Math.max(0.0001, asset.price * (1 + changePercent / 100));
-        const nextChange = asset.change + changePercent;
-        return { ...asset, price: nextPrice, change: nextChange };
-      }));
-
-      setAlphaAssets(prev => prev.map(asset => {
-        const changePercent = (Math.random() - 0.5) * 0.5;
-        const nextPrice = Math.max(0.000001, asset.price * (1 + changePercent / 100));
-        const nextChange = asset.change + changePercent;
-        return { ...asset, price: nextPrice, change: nextChange };
-      }));
+      setUpdateTime(new Date().toLocaleTimeString('en-US', { hour12: false }));
     }, 2500);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Compute active trade countdown progress
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(Date.now());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Set default values for limit price when an asset is clicked
-  useEffect(() => {
-    if (selectedAsset) {
-      setLimitPrice(selectedAsset.price.toString());
-    }
-  }, [selectedAsset]);
-
-  // Sync activeHeaderTab with main terminal selections
-  useEffect(() => {
-    if (selectedChart === 'CRYPTO') {
-      setActiveHeaderTab('Crypto');
-    } else if (selectedChart === 'STOCK' || selectedChart === 'FOREX') {
-      setActiveHeaderTab('TradFi');
-    }
-  }, [selectedChart]);
-
-  // Calculate dynamic compound outputs for calculator
-  const selectedPlan = INVESTMENT_PLANS.find(p => p.id === selectedPlanId) || INVESTMENT_PLANS[0];
-  
-  const calculateReturns = () => {
-    const principal = selectedPlan.amount;
-    const hourProfit = selectedPlan.estimatedProfit;
-    
-    let multiplier = 1;
-    if (selectedDuration === 7) {
-      multiplier = 8.5; 
-    } else if (selectedDuration === 15) {
-      multiplier = 18.2; 
-    } else if (selectedDuration === 30) {
-      multiplier = 38.6; 
-    }
-    
-    const netProfit = hourProfit * multiplier;
-    const totalReturn = principal + netProfit;
-    
-    return {
-      principal,
-      netProfit: Math.round(netProfit),
-      totalReturn: Math.round(totalReturn)
-    };
+  // --- Helpers ---
+  const formatPrice = (p: number) => {
+    if (p >= 1000) return p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (p >= 1) return p.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    if (p >= 0.01) return p.toFixed(5);
+    if (p >= 0.0001) return p.toFixed(7);
+    return p.toFixed(8);
   };
 
-  const { principal, netProfit, totalReturn } = calculateReturns();
-
-  // SVG Chart path calculation helper
-  const getSvgPathForPoints = (points: number[]) => {
-    if (points.length === 0) return '';
-    const min = Math.min(...points);
-    const max = Math.max(...points);
-    const height = 180;
-    const width = 600;
-    const range = max - min || 1;
-    
-    return points.map((val, idx) => {
-      const x = (idx / (points.length - 1)) * width;
-      const y = height - ((val - min) / range) * height + 15;
-      return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
-    }).join(' ');
+  const toggleFavorite = (symbol: string) => {
+    const newFavs = new Set(favorites);
+    if (newFavs.has(symbol)) newFavs.delete(symbol);
+    else newFavs.add(symbol);
+    setFavorites(newFavs);
   };
 
-  const getSvgAreaPathForPoints = (points: number[]) => {
-    const linePath = getSvgPathForPoints(points);
-    if (!linePath) return '';
-    const width = 600;
-    const height = 210;
-    return `${linePath} L ${width} ${height} L 0 ${height} Z`;
-  };
+  const filteredData = useMemo(() => {
+    let list = instruments;
 
-  const getActiveChartDetails = () => {
-    if (selectedChart === 'STOCK') {
-      return {
-        title: 'State Bank of India (SBI-IN)',
-        price: sbiPrice,
-        history: sbiHistory,
-        unit: 'INR',
-        icon: <Zap className="w-5 h-5 text-cyan-400" />,
-        color: 'cyan',
-        themeClass: 'from-cyan-500/10 to-transparent',
-        strokeColor: '#22d3ee'
-      };
-    } else if (selectedChart === 'CRYPTO') {
-      return {
-        title: 'Bitcoin / Indian Rupee (BTC-INR)',
-        price: btcPrice,
-        history: btcHistory,
-        unit: 'INR',
-        icon: <Coins className="w-5 h-5 text-amber-500" />,
-        color: 'amber',
-        themeClass: 'from-amber-500/10 to-transparent',
-        strokeColor: '#f59e0b'
-      };
-    } else {
-      return {
-        title: 'EUR / INR Currency Exchange Spot',
-        price: forexPrice,
-        history: forexHistory,
-        unit: 'INR',
-        icon: <Globe className="w-5 h-5 text-emerald-400" />,
-        color: 'emerald',
-        themeClass: 'from-emerald-500/10 to-transparent',
-        strokeColor: '#10b981'
-      };
-    }
-  };
-
-  const currentChart = getActiveChartDetails();
-
-  // Format price gracefully based on its scale to avoid redundant trailing zeros or truncation of small values
-  const formatCryptoPrice = (price: number) => {
-    if (!price || isNaN(price)) return '0.00';
-    if (price === 0) return '0.00';
-    if (price >= 1000) {
-      return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-    if (price >= 1) {
-      return price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-    }
-    if (price >= 0.0001) {
-      return price.toFixed(6);
-    }
-    return price.toFixed(8);
-  };
-
-  // Filtered Assets based on user selections and Search Query
-  const getFilteredCryptoAssets = () => {
-    let list = cryptoAssets.map(a => projectCryptoAsset(a));
-
-    if (cryptoSubFilter === 'Spot') {
-      if (cryptoCoinBadge === 'BTC') {
-        list = list.filter(a => !a.symbol.startsWith('BTC/'));
-      } else if (cryptoCoinBadge === 'BNB') {
-        list = list.filter(a => !a.symbol.startsWith('BNB/'));
-      }
-      const shift = cryptoCoinBadge.length % list.length;
-      list = [...list.slice(shift), ...list.slice(0, shift)];
-    } 
-    else if (cryptoSubFilter === 'USDⓈ-M') {
-      list = list.filter(a => ['BTC', 'ETH', 'BNB', 'NEXO', 'KERNEL', 'MANA', 'HANA', 'Fartcoin'].includes(a.baseSymbol || ''));
-      const shift = (cryptoCoinBadge.length + 2) % Math.max(1, list.length);
-      list = [...list.slice(shift), ...list.slice(0, shift)];
-    } 
-    else if (cryptoSubFilter === 'COIN-M') {
-      list = list.filter(a => ['BTC', 'ETH', 'BNB', 'LUNA', 'COMP', 'MEME', 'USUAL'].includes(a.baseSymbol || ''));
-      const shift = (cryptoCoinBadge.length + 4) % Math.max(1, list.length);
-      list = [...list.slice(shift), ...list.slice(0, shift)];
-    } 
-    else if (cryptoSubFilter === 'Options') {
-      list = list.filter(a => ['BTC', 'ETH', 'BNB'].includes(a.baseSymbol || ''));
-      const optionsList: any[] = [];
-      list.forEach(asset => {
-        const basePrice = asset.price;
-        const baseSymbol = asset.baseSymbol;
-        
-        const strike1 = Math.round(basePrice * 1.00);
-        optionsList.push({
-          ...asset,
-          symbol: `${baseSymbol}-${cryptoCoinBadge}-24JUL26-${strike1}-C`,
-          label: `${asset.label} ATM Call Option`,
-          price: basePrice * 0.035,
-          multiplier: 'Option',
-          change: asset.change * 4.5,
-          baseSymbol: baseSymbol,
-        });
-
-        const strike2 = Math.round(basePrice * 1.05);
-        optionsList.push({
-          ...asset,
-          symbol: `${baseSymbol}-${cryptoCoinBadge}-24JUL26-${strike2}-C`,
-          label: `${asset.label} OTM $${strike2} Call`,
-          price: basePrice * 0.015,
-          multiplier: 'Option',
-          change: asset.change * 8.2,
-          baseSymbol: baseSymbol,
-        });
-
-        const strike3 = Math.round(basePrice * 0.98);
-        optionsList.push({
-          ...asset,
-          symbol: `${baseSymbol}-${cryptoCoinBadge}-24JUL26-${strike3}-P`,
-          label: `${asset.label} ITM $${strike3} Put`,
-          price: basePrice * 0.022,
-          multiplier: 'Option',
-          change: asset.change * -5.4,
-          baseSymbol: baseSymbol,
-        });
-      });
-      list = optionsList;
+    // Brand filter
+    if (currentBrand === 'favorites') {
+      list = list.filter(item => favorites.has(item.symbol));
+      if (list.length === 0) list = instruments.slice(0, 20);
+    } else if (currentBrand === 'crypto') {
+      list = list.filter(item => item.type === 'crypto' || item.type === 'cross');
+    } else if (currentBrand === 'tradfi') {
+      list = list.filter(item => item.type === 'stocks');
+    } else if (currentBrand === 'alpha') {
+      list = list.filter(item => Math.abs(item.change) > 5);
+    } else if (currentBrand === 'grow') {
+      list = list.filter(item => item.change > 0 && item.vol.includes('M') && parseFloat(item.vol) > 10);
     }
 
-    return list.filter(a => {
-      const matchSearch = a.symbol.toLowerCase().includes(searchQuery.toLowerCase()) || a.label.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchSearch;
-    });
-  };
-
-  const getFilteredTradFiAssets = () => {
-    let list = tradFiAssets;
-    
-    if (tradfiUSFilter === 'ETFs') {
-      list = list.filter(a => a.symbol.includes('on') || a.symbol.includes('ETF') || a.label.includes('ETF'));
-    } else {
-      list = list.filter(a => !a.symbol.includes('on') && !a.symbol.includes('ETF') && !a.label.includes('ETF'));
-    }
-    
-    if (tradfiSubFilter === 'Spot') {
-      const shift = 2 % Math.max(1, list.length);
-      list = [...list.slice(shift), ...list.slice(0, shift)];
-    } else if (tradfiSubFilter === 'USDⓈ-M') {
-      const shift = 4 % Math.max(1, list.length);
-      list = [...list.slice(shift), ...list.slice(0, shift)].map(item => ({
-        ...item,
-        symbol: `${item.symbol} Perpetual`,
-        multiplier: '20x'
-      }));
+    // Category filter (dummy logic for new labels)
+    if (currentFilter !== 'all') {
+      const lower = currentFilter.toLowerCase();
+      list = list.filter(item => item.category === lower || item.symbol.toLowerCase().includes(lower));
     }
 
-    return list.filter(a => {
-      const matchSearch = a.symbol.toLowerCase().includes(searchQuery.toLowerCase()) || a.label.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchSearch;
-    });
-  };
+    return list;
+  }, [instruments, currentBrand, currentFilter, favorites]);
 
-  const getFilteredAlphaAssets = () => {
-    let list = alphaAssets;
+  const BRAND_TABS: { id: BrandTab; label: string }[] = [
+    { id: 'favorites', label: 'Favorites' },
+    { id: 'crypto', label: 'Crypto' },
+    { id: 'tradfi', label: 'TradFi' },
+    { id: 'alpha', label: 'Alpha' },
+    { id: 'grow', label: 'Grow' },
+    { id: 'square', label: 'Square' },
+  ];
 
-    if (alphaFilter === 'Point+') {
-      list = list.filter(a => a.symbol.includes('HANA') || a.symbol.includes('EVAA') || a.symbol.includes('ARX'));
-    } else if (alphaFilter === 'BSC') {
-      list = list.filter((_, i) => i % 2 === 0);
-    } else if (alphaFilter === 'Ethereum') {
-      list = list.filter((_, i) => i % 3 === 0);
-    } else if (alphaFilter === 'Solana') {
-      list = list.filter((_, i) => i % 3 !== 0);
-    }
+  const VIEW_TABS: { id: ViewTab; label: string }[] = [
+    { id: 'spot', label: 'Spot' },
+    { id: 'usdm', label: 'USDⓈ-M' },
+    { id: 'coinm', label: 'COIN-M' },
+    { id: 'options', label: 'Options' },
+  ];
 
-    return list.filter(a => {
-      const matchSearch = a.symbol.toLowerCase().includes(searchQuery.toLowerCase()) || a.label.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchSearch;
-    });
-  };
-
-  // Handle Quick Trade 1-Click Execution
-  const handleExecuteQuickTrade = (amt: number) => {
-    if (!isLoggedIn) {
-      toast.error('Identity Verification Required', {
-        description: 'Please authenticate your profile session under the Account section first.',
-      });
-      return;
-    }
-
-    const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-    if (amt > availableBal) {
-      toast.warning('Trade Amount Exceeds Total Balance', {
-        description: `Warning: You are attempting a Quick Trade of ₹${amt.toLocaleString()}, which exceeds your current total wallet balance of ₹${availableBal.toLocaleString()}. Please reduce the amount or deposit more funds.`,
-      });
-      return;
-    }
-
-    // Determine return multiplier based on duration
-    let profitRate = 1.12; // default +12%
-    if (quickTradeDuration === '60s') profitRate = 0.85; // +85% payout
-    else if (quickTradeDuration === '3m') profitRate = 1.05; // +105% payout
-    else if (quickTradeDuration === '5m') profitRate = 1.28; // +128% payout
-    else if (quickTradeDuration === '15m') profitRate = 1.95; // +195% payout
-    else if (quickTradeDuration === '1h') profitRate = 3.50; // +350% payout
-    else if (quickTradeDuration === '1D') profitRate = 14.50; // +1450% payout
-
-    const estimatedProfit = Math.round(amt * profitRate);
-
-    if (onExecuteTrade) {
-      onExecuteTrade(amt, estimatedProfit, quickTradeAsset, quickTradeDuration);
-      toast.success('Instant Quick Trade Executed!', {
-        description: `Deducted ₹${amt.toLocaleString()} to activate secure ${quickTradeAsset} ${quickTradeDuration} micro-contract.`,
-        icon: <Zap className="w-5 h-5 text-amber-500 animate-pulse" />
-      });
-      
-      // scroll to active contracts tracker
-      setTimeout(() => {
-        const trackerEl = document.getElementById('user-active-trades-section');
-        if (trackerEl) trackerEl.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
-    }
-  };
-
-  // Handle Options Terminal Trade Execution
-  const handleExecuteOptionsTrade = () => {
-    if (!isLoggedIn) {
-      toast.error('Identity Verification Required', {
-        description: 'Please authenticate your profile session under the Account section first.',
-      });
-      return;
-    }
-
-    const priceNum = parseFloat(optionsPrice);
-    const amountNum = parseFloat(optionsAmount);
-    if (isNaN(priceNum) || isNaN(amountNum) || amountNum <= 0) {
-      toast.error('Invalid Order Parameters', {
-        description: 'Please specify a valid price and non-zero amount to execute the order.',
-      });
-      return;
-    }
-
-    // Convert USDT to approx INR conversion (e.g. 87.5 INR per USDT)
-    const totalUsdt = priceNum * amountNum;
-    const totalInr = Math.round(totalUsdt * 87.5);
-
-    const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-    if (totalInr > availableBal) {
-      toast.warning('Trade Amount Exceeds Total Balance', {
-        description: `Warning: You are attempting a trade of ₹${totalInr.toLocaleString()} (${totalUsdt.toFixed(2)} USDT), which exceeds your current total wallet balance of ₹${availableBal.toLocaleString()}. Please reduce the amount or deposit more funds.`,
-      });
-      return;
-    }
-
-    // Allocate return multiplier +85% for 15m option trade by default
-    const estimatedProfit = Math.round(totalInr * 1.85);
-
-    if (onExecuteTrade) {
-      onExecuteTrade(totalInr, estimatedProfit, optionsAsset, '15m');
-      toast.success('Instant Market Contract Activated!', {
-        description: `Successfully allocated ₹${totalInr.toLocaleString()} to execute the ${optionsActiveSide} contract on ${optionsAsset}.`,
-        icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />
-      });
-
-      // scroll to active contracts tracker
-      setTimeout(() => {
-        const trackerEl = document.getElementById('user-active-trades-section');
-        if (trackerEl) trackerEl.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
-    }
-  };
-
-  // Handle Trade Execution Submit
-  const handleTradeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isLoggedIn) {
-      toast.error('Identity Verification Required', {
-        description: 'Please authenticate your profile session under the Account section first.',
-      });
-      return;
-    }
-
-    const amt = parseFloat(tradeAmountInput);
-    if (isNaN(amt) || amt <= 0) {
-      toast.error('Invalid Allocation Amount', {
-        description: 'Please specify a valid numeric transaction size.',
-      });
-      return;
-    }
-
-    const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-    if (amt > availableBal) {
-      toast.warning('Trade Amount Exceeds Total Balance', {
-        description: `Warning: You are attempting to place a trade of ₹${amt.toLocaleString()}, which exceeds your current total wallet balance of ₹${availableBal.toLocaleString()}. Please reduce the amount or deposit more funds.`,
-      });
-      return;
-    }
-
-    // Determine return multiplier based on duration
-    let profitRate = 1.12; // default +12%
-    if (targetDuration === '60s') profitRate = 0.85; // +85% payout
-    else if (targetDuration === '3m') profitRate = 1.05; // +105% payout
-    else if (targetDuration === '5m') profitRate = 1.28; // +128% payout
-    else if (targetDuration === '15m') profitRate = 1.95; // +195% payout
-    else if (targetDuration === '1h') profitRate = 3.50; // +350% payout
-    else if (targetDuration === '1D') profitRate = 14.50; // +1450% payout
-
-    const estimatedProfit = Math.round(amt * profitRate);
-
-    if (onExecuteTrade) {
-      onExecuteTrade(amt, estimatedProfit, selectedAsset?.symbol || 'Asset', targetDuration);
-      toast.success('Trade Execution Dispatched!', {
-        description: `Deducted ₹${amt.toLocaleString()} to activate secure ${selectedAsset?.symbol} ${targetDuration} micro-contract.`,
-        icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-      });
-      setSelectedAsset(null); // close modal
-      
-      // scroll to active contracts tracker
-      setTimeout(() => {
-        const trackerEl = document.getElementById('user-active-trades-section');
-        if (trackerEl) trackerEl.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
-    }
-  };
-
-  // Square action logic
-  const handleLikePost = (postId: number) => {
-    setSquarePosts(posts => posts.map(p => {
-      if (p.id === postId) {
-        return {
-          ...p,
-          liked: !p.liked,
-          likes: p.liked ? p.likes - 1 : p.likes + 1
-        };
-      }
-      return p;
-    }));
-  };
-
-  const handlePostSquare = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!squareInput.trim()) return;
-    if (!isLoggedIn) {
-      toast.error('Session Required', { description: 'Please log in to share trading insights.' });
-      return;
-    }
-
-    const newPost = {
-      id: Date.now(),
-      author: `@${currentUser?.username || 'You'}`,
-      role: 'VIP Member',
-      avatarColor: 'bg-emerald-600',
-      time: 'Just now',
-      content: squareInput,
-      likes: 1,
-      comments: 0,
-      liked: true
-    };
-
-    setSquarePosts([newPost, ...squarePosts]);
-    setSquareInput('');
-    toast.success('Insight Published to Square Node');
-  };
-
-  // Copy trading execution
-  const handleCopyTraderAction = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isLoggedIn) {
-      toast.error('Identity Verification Required');
-      return;
-    }
-    const amt = parseFloat(copyAmount);
-    if (isNaN(amt) || amt <= 0) {
-      toast.error('Please enter a valid amount.');
-      return;
-    }
-
-    const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-    if (amt > availableBal) {
-      toast.warning('Trade Amount Exceeds Total Balance', {
-        description: `Warning: You are attempting to copy with ₹${amt.toLocaleString()}, which exceeds your current total wallet balance of ₹${availableBal.toLocaleString()}.`,
-      });
-      return;
-    }
-
-    // Launch active trade simulating copy process
-    if (onExecuteTrade) {
-      const estimatedProfit = Math.round(amt * 1.85); // 85% return on 7 days block
-      onExecuteTrade(amt, estimatedProfit, `Copy Trader (${selectedTrader.name})`, copyDuration);
-      toast.success('Copy Portfolio Subscribed!', {
-        description: `Successfully allocated ₹${amt.toLocaleString()} to mirror ${selectedTrader.name}.`,
-        icon: <ShieldCheck className="w-5 h-5 text-emerald-400" />
-      });
-      setSelectedTrader(null);
-    }
-  };
+  const FILTER_TABS: FilterTab[] = ['DeFi', 'Index', 'Pre-IPO', 'USDC', 'Chinese', 'Alpha', 'AI'];
 
   return (
-    <div className="space-y-10 pb-16" id="trade-section-container">
+    <div className="max-w-[1400px] w-full mx-auto bg-[#0b0e11] rounded-[24px] p-2 md:p-4 border border-[#2b3139] text-left overflow-hidden shadow-2xl h-[calc(100vh-160px)] flex flex-col" id="trade-terminal-app">
       
-      {/* Premium Horizontal Navigation Bar mirroring user's image */}
-      <div className="bg-[#181a20] rounded-2xl border border-slate-800/80 px-6 py-4 shadow-2xl flex flex-row items-center justify-between gap-4" id="premium-terminal-tagbar">
-        <div className="flex items-center space-x-6 md:space-x-10 overflow-x-auto scrollbar-hide py-1">
-          {(['Crypto', 'TradFi', 'Alpha', 'Options', 'Grow', 'Square', 'Data', 'Market'] as const).map((tab) => {
-            const isActive = activeHeaderTab === tab;
-            return (
-              <div key={tab} className="relative">
-                <button
-                  id={`btn-terminal-tag-${tab.toLowerCase()}`}
-                  onClick={() => {
-                    setActiveHeaderTab(tab);
-                    if (tab === 'Crypto') {
-                      setSelectedChart('CRYPTO');
-                    } else if (tab === 'TradFi') {
-                      setSelectedChart('STOCK');
-                    }
-                  }}
-                  className={`whitespace-nowrap px-4 py-2 rounded-lg transition-all relative ${
-                    isActive ? 'bg-amber-500/10' : 'bg-transparent hover:bg-white/5'
-                  }`}
-                >
-                  <span className={`text-base md:text-xl font-bold tracking-tight ${
-                    isActive ? 'text-[#f0b90b] font-extrabold' : 'text-[#848e9c] hover:text-slate-200'
-                  }`}>
-                    {tab}
-                  </span>
-                </button>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeUnderlineBar"
-                    className="absolute -bottom-2 left-1 right-1 h-[4px] bg-[#f0b90b] rounded-full shadow-[0_2px_10px_rgba(240,185,11,0.6)]"
-                    transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Live Status indicator right-aligned */}
-        <div className="hidden sm:flex items-center space-x-3 shrink-0 pl-4 border-l border-slate-800">
-          <div className="flex items-center space-x-2 bg-slate-950 px-3.5 py-2 rounded-xl border border-slate-800">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#f0b90b] animate-pulse shadow-[0_0_8px_#f0b90b]"></span>
-            <span className="text-[10px] font-mono font-black text-slate-300 uppercase tracking-widest whitespace-nowrap">
-              {activeHeaderTab.toUpperCase()} ACTIVE
-            </span>
-          </div>
+      {/* Top Nav / Brand Tabs */}
+      <div className="flex-shrink-0 flex items-center justify-between border-b border-[#1e232c] mb-1 -mx-2 px-2 overflow-x-auto scrollbar-hide bg-[#0b0e11] sticky top-0 z-10">
+        <div className="flex items-center gap-0 flex-nowrap">
+          {BRAND_TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setCurrentBrand(tab.id)}
+              className={`relative px-3 py-3 text-xs font-bold transition-all whitespace-nowrap ${
+                currentBrand === tab.id ? 'text-[#f0b90b]' : 'text-[#848e9c]'
+              }`}
+            >
+              {tab.label}
+              {currentBrand === tab.id && (
+                <motion.div 
+                  layoutId="brandUnderline"
+                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#f0b90b] rounded-full"
+                />
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Main Dynamic View Content */}
-      <AnimatePresence mode="wait">
-        
-        {activeHeaderTab === 'Crypto' ? (
-          <motion.div
-            key="crypto-tab-content"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="bg-[#121212] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-5 text-left"
+      {/* Secondary / View Tabs */}
+      <div className="flex items-center gap-4 flex-nowrap mb-4 px-2 mt-2 overflow-x-auto scrollbar-hide">
+        {VIEW_TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setCurrentView(tab.id)}
+            className={`text-xs font-black transition-all uppercase tracking-tighter ${
+              currentView === tab.id ? 'text-[#eaecef] scale-105' : 'text-[#848e9c] hover:text-[#eaecef]'
+            }`}
           >
-            {/* MIXED LIVE TRADING STREAM - NEW REQUESTED SECTION */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {/* Trending */}
-              <div className="bg-[#1e2026] border border-slate-800 p-4 rounded-2xl space-y-3 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-2 opacity-5">
-                  <TrendingUp className="w-12 h-12 text-emerald-500" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Trending Assets</h5>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => setSelectedAsset(CRYPTO_ASSETS[0])}>
-                    <span className="text-[11px] font-bold text-white">BTC/USDT</span>
-                    <span className="text-[11px] font-mono text-emerald-400">+2.45%</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => setSelectedAsset(CRYPTO_ASSETS[2])}>
-                    <span className="text-[11px] font-bold text-white">SOL/USDT</span>
-                    <span className="text-[11px] font-mono text-emerald-400">+5.67%</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Perps */}
-              <div className="bg-[#1e2026] border border-slate-800 p-4 rounded-2xl space-y-3 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-2 opacity-5">
-                  <Zap className="w-12 h-12 text-amber-500" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">High-Leverage Perps</h5>
-                  <span className="text-[8px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded font-black">50x LIVE</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => { setCryptoSubFilter('USDⓈ-M'); setSelectedAsset(CRYPTO_ASSETS[1]); }}>
-                    <span className="text-[11px] font-bold text-white">ETH-PERP</span>
-                    <span className="text-[11px] font-mono text-amber-500">20x LEV</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => { setCryptoSubFilter('COIN-M'); setSelectedAsset(CRYPTO_ASSETS[4]); }}>
-                    <span className="text-[11px] font-bold text-white">BNB-PERP</span>
-                    <span className="text-[11px] font-mono text-amber-500">50x LEV</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Securities */}
-              <div className="bg-[#1e2026] border border-slate-800 p-4 rounded-2xl space-y-3 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-2 opacity-5">
-                  <ShieldCheck className="w-12 h-12 text-cyan-500" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Securities</h5>
-                  <Globe className="w-3 h-3 text-cyan-500" />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => { setActiveHeaderTab('TradFi'); setSelectedChart('STOCK'); }}>
-                    <span className="text-[11px] font-bold text-white">NVDA Corp</span>
-                    <span className="text-[11px] font-mono text-emerald-400">$124.20</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer" onClick={() => { setActiveHeaderTab('TradFi'); setSelectedChart('STOCK'); }}>
-                    <span className="text-[11px] font-bold text-white">AAPL Stock</span>
-                    <span className="text-[11px] font-mono text-rose-400">$220.15</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Search and Category Badges */}
-            <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-3.5 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Search coin pair and trend..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#1e2026] text-white text-sm border border-slate-800 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#f0b90b] transition-all"
-                />
-              </div>
-
-              {/* Sub filters */}
-              <div className="flex bg-[#1e2026] p-1 rounded-xl border border-slate-800 space-x-1 overflow-x-auto">
-                {(['Spot', 'USDⓈ-M', 'COIN-M', 'Options'] as const).map(sub => (
-                  <button
-                    key={sub}
-                    onClick={() => setCryptoSubFilter(sub)}
-                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${
-                      cryptoSubFilter === sub ? 'bg-[#f0b90b] text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
-                    }`}
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick coin badges selector */}
-            <div className="flex items-center space-x-2 overflow-x-auto py-1 scrollbar-hide border-b border-slate-900 pb-3">
-              {(['USDC', 'USDT', 'U', 'USD1', 'USD', 'BNB', 'BTC'] as const).map(badge => (
-                <button
-                  key={badge}
-                  onClick={() => setCryptoCoinBadge(badge)}
-                  className={`px-3.5 py-1.5 rounded-full text-[10px] font-bold border transition-all uppercase whitespace-nowrap ${
-                    cryptoCoinBadge === badge 
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' 
-                      : 'bg-[#181a20] text-slate-400 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  {badge}
-                </button>
-              ))}
-            </div>
-
-            {/* Crypto Grid Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-900 text-slate-500 text-[11px] font-mono uppercase tracking-wider">
-                    <th className="pb-3 font-semibold">Name / Vol</th>
-                    <th className="pb-3 text-right font-semibold">Last Price</th>
-                    <th className="pb-3 text-right font-semibold">24h Chg%</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-900">
-                  {getFilteredCryptoAssets().map((coin) => {
-                    const isUp = coin.change >= 0;
-                    return (
-                      <tr
-                        key={coin.symbol}
-                        onClick={() => setSelectedAsset(coin)}
-                        className="group hover:bg-[#1e2026]/50 cursor-pointer transition-all border-b border-slate-900/40"
-                      >
-                        <td className="py-4 flex items-center space-x-3">
-                          <div className="bg-slate-900/50 p-2 rounded-xl border border-slate-800">
-                            {renderAssetIcon(coin.icon)}
-                          </div>
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm font-black text-white tracking-tight font-mono">{coin.symbol}</span>
-                              <span className="text-[9px] bg-amber-500/10 text-[#f0b90b] px-1.5 py-0.5 rounded font-bold">{coin.multiplier}</span>
-                            </div>
-                            <span className="text-[11px] text-slate-500 font-medium">{coin.label} | Vol: {coin.extra}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 text-right">
-                          <div className="text-sm font-black text-white font-mono">{formatCryptoPrice(coin.price)}</div>
-                          <div className="text-[10px] text-slate-500 font-mono">${formatCryptoPrice(coin.usdPrice || coin.price)}</div>
-                        </td>
-                        <td className="py-4 text-right">
-                          <span className={`inline-block px-3 py-1.5 rounded-lg text-xs font-black font-mono transition-all duration-300 ${
-                            isUp 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20' 
-                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 group-hover:bg-rose-500/20'
-                          }`}>
-                            {isUp ? '+' : ''}{coin.change.toFixed(2)}%
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        ) : activeHeaderTab === 'TradFi' ? (
-          <motion.div
-            key="tradfi-tab-content"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="bg-[#121212] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-5 text-left"
-          >
-            {/* Header / Sub controls */}
-            <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-3.5 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Search equities & indexes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#1e2026] text-white text-sm border border-slate-800 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#f0b90b] transition-all"
-                />
-              </div>
-
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => setTradfiUSFilter('US Stocks')}
-                  className={`px-4 py-2 text-xs font-bold rounded-lg border transition-all ${
-                    tradfiUSFilter === 'US Stocks'
-                      ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-                      : 'bg-[#1e2026] text-slate-400 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  US Stocks
-                </button>
-                <button
-                  onClick={() => setTradfiUSFilter('ETFs')}
-                  className={`px-4 py-2 text-xs font-bold rounded-lg border transition-all ${
-                    tradfiUSFilter === 'ETFs'
-                      ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
-                      : 'bg-[#1e2026] text-slate-400 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  ETFs
-                </button>
-              </div>
-            </div>
-
-            {/* TradFi Grid Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-900 text-slate-500 text-[11px] font-mono uppercase tracking-wider">
-                    <th className="pb-3 font-semibold">Name / MCap</th>
-                    <th className="pb-3 text-right font-semibold">Last Price</th>
-                    <th className="pb-3 text-right font-semibold">Change(%)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-900">
-                  {getFilteredTradFiAssets().map((stock) => {
-                    const isUp = stock.change >= 0;
-                    return (
-                      <tr
-                        key={stock.symbol}
-                        onClick={() => setSelectedAsset(stock)}
-                        className="group hover:bg-[#1e2026]/50 cursor-pointer transition-all border-b border-slate-900/40"
-                      >
-                        <td className="py-4 flex items-center space-x-3">
-                          <div className="bg-cyan-500/10 p-2.5 rounded-xl border border-cyan-500/20">
-                            <Zap className="w-4 h-4 text-cyan-400" />
-                          </div>
-                          <div>
-                            <span className="text-sm font-black text-white tracking-tight font-mono">{stock.symbol}</span>
-                            <span className="text-[11px] text-slate-500 font-medium block">{stock.label} | {stock.extra}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 text-right">
-                          <div className="text-sm font-black text-white font-mono">${stock.price.toFixed(3)}</div>
-                          <div className="text-[10px] text-slate-500 font-mono">${stock.price.toFixed(2)}</div>
-                        </td>
-                        <td className="py-4 text-right">
-                          <span className={`inline-block px-3 py-1.5 rounded-lg text-xs font-black font-mono transition-all duration-300 ${
-                            isUp 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20' 
-                              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 group-hover:bg-rose-500/20'
-                          }`}>
-                            {isUp ? '+' : ''}{stock.change.toFixed(2)}%
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        ) : activeHeaderTab === 'Alpha' ? (
-          <motion.div
-            key="alpha-tab-content"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="space-y-6 text-left max-w-2xl mx-auto"
-          >
-            {/* View Switcher Top Pill (Invest in Gold vs On-Chain Tokens) */}
-            <div className="flex bg-[#121212] p-1.5 rounded-2xl border border-slate-800 justify-between items-center shadow-xl">
-              <button
-                onClick={() => setShowAlphaTokens(false)}
-                className={`flex-1 py-2.5 px-4 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center justify-center space-x-2 ${
-                  !showAlphaTokens ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <span>🪙 Gold Investment (24K)</span>
-              </button>
-              <button
-                onClick={() => setShowAlphaTokens(true)}
-                className={`flex-1 py-2.5 px-4 rounded-xl text-xs md:text-sm font-extrabold transition-all flex items-center justify-center space-x-2 ${
-                  showAlphaTokens ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <span>🔥 VIP Alpha Tokens</span>
-              </button>
-            </div>
-
-            {!showAlphaTokens ? (
-              /* Exact Gold Investment UI matching user screenshots */
-              <div className="bg-white text-slate-900 rounded-3xl border border-slate-200/80 p-4 md:p-6 shadow-2xl space-y-5 font-sans">
-                {/* Header Row */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div className="flex items-center space-x-3">
-                    <button 
-                      onClick={() => setShowAlphaTokens(true)}
-                      className="p-1.5 rounded-full hover:bg-slate-100 transition-colors text-slate-700"
-                      title="View Tokens"
-                    >
-                      <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 font-sans flex items-center space-x-2">
-                      <span>Invest in Gold</span>
-                      <span className="bg-[#f59e0b] text-white font-extrabold text-[11px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                        24K
-                      </span>
-                    </h2>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    {/* LIVE Indicator Pill */}
-                    <div className="flex items-center space-x-1 px-2.5 py-1 rounded-full border border-rose-200 bg-rose-50 text-rose-600 text-xs font-bold font-mono">
-                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                      <span>LIVE</span>
-                    </div>
-                    {/* Live Gold Price Badge */}
-                    <div className="bg-slate-100 px-3 py-1 rounded-lg text-xs md:text-sm font-bold text-slate-700 font-mono">
-                      ₹{liveGoldRate.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/gm
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tab Bar: SIP vs One Time */}
-                <div className="border-b border-slate-200 flex items-center justify-around text-center relative">
-                  <button
-                    onClick={() => {
-                      setGoldMode('SIP');
-                      if (goldFrequency === 'Weekly') setGoldAmount(1000);
-                      else if (goldFrequency === 'Daily') setGoldAmount(100);
-                      else if (goldFrequency === 'Monthly') setGoldAmount(5000);
-                    }}
-                    className={`flex-1 py-3 text-base md:text-lg font-black transition-all relative ${
-                      goldMode === 'SIP' ? 'text-[#005b52]' : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    SIP
-                    {goldMode === 'SIP' && (
-                      <motion.div
-                        layoutId="goldTabUnderline"
-                        className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#005b52] rounded-full"
-                      />
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setGoldMode('One Time');
-                      setGoldAmount(5000);
-                    }}
-                    className={`flex-1 py-3 text-base md:text-lg font-black transition-all relative ${
-                      goldMode === 'One Time' ? 'text-[#005b52]' : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    One Time
-                    {goldMode === 'One Time' && (
-                      <motion.div
-                        layoutId="goldTabUnderline"
-                        className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#005b52] rounded-full"
-                      />
-                    )}
-                  </button>
-                </div>
-
-                {/* Golden Yellow Container Box */}
-                <div className="bg-[#fefce8] border border-amber-200/80 rounded-3xl p-5 md:p-6 space-y-6 shadow-sm relative overflow-hidden">
-                  
-                  {/* Frequency Selector Pills (only for SIP) */}
-                  {goldMode === 'SIP' && (
-                    <div className="bg-slate-200/60 p-1 rounded-2xl flex items-center space-x-1 text-sm font-semibold max-w-md mx-auto">
-                      {(['Daily', 'Weekly', 'Monthly'] as const).map((freq) => (
-                        <button
-                          key={freq}
-                          onClick={() => {
-                            setGoldFrequency(freq);
-                            if (freq === 'Daily') setGoldAmount(100);
-                            else if (freq === 'Weekly') setGoldAmount(1000);
-                            else if (freq === 'Monthly') setGoldAmount(5000);
-                          }}
-                          className={`flex-1 py-2.5 rounded-xl transition-all font-bold text-center ${
-                            goldFrequency === freq
-                              ? 'bg-white text-slate-900 shadow-md'
-                              : 'text-slate-500 hover:text-slate-800'
-                          }`}
-                        >
-                          {freq}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Enter Amount Section */}
-                  <div className="text-center space-y-2">
-                    <p className="text-xs md:text-sm font-medium text-slate-500 uppercase tracking-wider">
-                      Enter amount
-                    </p>
-                    <div className="flex items-center justify-center space-x-1">
-                      <span className="text-3xl md:text-4xl font-extrabold text-slate-900">₹</span>
-                      <input
-                        type="number"
-                        value={goldAmount}
-                        onChange={(e) => setGoldAmount(Math.max(1, parseInt(e.target.value) || 0))}
-                        className="text-4xl md:text-5xl font-black text-slate-900 bg-transparent text-center outline-none w-48 font-sans tracking-tight"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Quick Amount Chips */}
-                  <div className="grid grid-cols-4 gap-2 md:gap-3 max-w-lg mx-auto">
-                    {(goldMode === 'SIP' 
-                      ? (goldFrequency === 'Daily' 
-                          ? [50, 200, 500, 1000] 
-                          : goldFrequency === 'Weekly' 
-                          ? [500, 1000, 2000, 3000] 
-                          : [1000, 5000, 10000, 15000])
-                      : [500, 1000, 5000, 10000]
-                    ).map((preset) => {
-                      const isPopular = (goldMode === 'SIP' && ((goldFrequency === 'Daily' && preset === 200) || (goldFrequency === 'Weekly' && preset === 1000) || (goldFrequency === 'Monthly' && preset === 5000))) || (goldMode === 'One Time' && preset === 5000);
-                      const isSelected = goldAmount === preset;
-
-                      return (
-                        <div key={preset} className="flex flex-col items-center">
-                          <button
-                            onClick={() => setGoldAmount(preset)}
-                            className={`w-full py-2.5 px-2 rounded-2xl border text-sm font-bold transition-all text-center ${
-                              isSelected
-                                ? 'border-[#005b52] bg-emerald-50/80 text-[#005b52] ring-2 ring-[#005b52]/20 font-black'
-                                : 'border-slate-300 bg-white/90 text-slate-800 hover:border-slate-400'
-                            }`}
-                          >
-                            ₹{preset.toLocaleString('en-IN')}
-                          </button>
-                          {isPopular && (
-                            <span className="bg-[#00796b] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full -mt-2.5 shadow-sm z-10">
-                              POPULAR
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Monthly specific options */}
-                  {goldMode === 'SIP' && goldFrequency === 'Monthly' && (
-                    <div className="border-t border-dashed border-slate-300/80 pt-4 space-y-3 text-center">
-                      <div className="flex items-center justify-center space-x-2 text-sm font-bold text-slate-800">
-                        <span>SIP Date: <strong className="text-[#005b52] font-extrabold">{goldSipDate}nd of every month</strong></span>
-                        <button 
-                          onClick={() => {
-                            const newD = prompt("Enter SIP day of the month (1-28):", goldSipDate.toString());
-                            if (newD && !isNaN(parseInt(newD))) {
-                              setGoldSipDate(Math.min(28, Math.max(1, parseInt(newD))));
-                            }
-                          }}
-                          className="text-emerald-600 hover:text-emerald-700"
-                        >
-                          ✏️
-                        </button>
-                      </div>
-
-                      <label className="inline-flex items-center space-x-2 text-xs md:text-sm font-semibold text-slate-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={payFirstToday}
-                          onChange={(e) => setPayFirstToday(e.target.checked)}
-                          className="w-4 h-4 text-[#005b52] rounded border-slate-300 focus:ring-[#005b52]"
-                        />
-                        <span>Pay your first SIP today</span>
-                        <Info className="w-3.5 h-3.5 text-slate-400" />
-                      </label>
-                    </div>
-                  )}
-
-                  {/* Projection Banner inside yellow card */}
-                  <div className="bg-amber-200/50 border border-amber-300/60 rounded-2xl p-3 md:p-3.5 flex items-center justify-center space-x-2 text-slate-900 font-bold text-xs md:text-sm">
-                    <span className="text-lg">🪙</span>
-                    <span>
-                      In 5 years, your gold can grow to <strong className="text-slate-950 font-black">
-                        {goldMode === 'SIP' 
-                          ? (goldFrequency === 'Daily' 
-                              ? `₹${((goldAmount * 365 * 5 * 1.53) / 100000).toFixed(2)} Lakh` 
-                              : goldFrequency === 'Weekly' 
-                              ? `₹${((goldAmount * 52 * 5 * 1.527) / 100000).toFixed(2)} Lakh` 
-                              : `₹${((goldAmount * 12 * 5 * 1.516) / 100000).toFixed(2)} Lakh`)
-                          : `₹${((goldAmount * 3.7) / 10000).toFixed(2)} Lakh`}
-                      </strong>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Order Details Summary Card */}
-                <div className="bg-white border border-slate-200 rounded-3xl p-4 md:p-5 space-y-3 shadow-sm font-sans">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500 font-medium">Frequency</span>
-                    <span className="font-bold text-slate-900">{goldMode === 'SIP' ? goldFrequency : 'One Time'}</span>
-                  </div>
-
-                  {goldMode === 'SIP' && (
-                    <>
-                      <div className="flex items-center justify-between text-sm border-t border-slate-100 pt-3">
-                        <span className="text-slate-500 font-medium">SIP Start date</span>
-                        <span className="font-bold text-slate-900">22nd Jul'26</span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm border-t border-slate-100 pt-3">
-                        <span className="text-slate-500 font-medium">Next SIP date</span>
-                        <span className="font-bold text-slate-900">
-                          {goldFrequency === 'Daily' ? '23rd Jul\'26' : goldFrequency === 'Weekly' ? '29th Jul\'26' : `${goldSipDate}nd Aug\'26`}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  <div className="flex items-center justify-between text-sm border-t border-slate-100 pt-3">
-                    <div className="flex items-center space-x-1 text-slate-500 font-medium">
-                      <span>Investment amount</span>
-                      <ChevronUp className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <span className="font-extrabold text-slate-900 text-base md:text-lg">
-                      ₹{goldAmount.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Real Gold, Real Benefits Section */}
-                <div className="space-y-3 text-center pt-2">
-                  <h3 className="text-sm font-bold text-slate-800 tracking-tight">Real Gold, Real Benefits</h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-1.5 shadow-2xs">
-                      <div className="w-9 h-9 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-xs font-black text-amber-700">
-                        24k
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-700 leading-tight">24K Pure Gold (99.9%)</span>
-                    </div>
-
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-1.5 shadow-2xs">
-                      <div className="w-9 h-9 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700">
-                        <Lock className="w-4 h-4" />
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-700 leading-tight">100% Insured Bank Vault</span>
-                    </div>
-
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-1.5 shadow-2xs">
-                      <div className="w-9 h-9 rounded-full bg-blue-100 border border-blue-300 flex items-center justify-center text-blue-700">
-                        <Coins className="w-4 h-4" />
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-700 leading-tight">Doorstep Delivery Option</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* T&Cs Disclaimer */}
-                <p className="text-[11px] text-slate-400 leading-relaxed text-center px-2">
-                  By continuing, I agree to the <a href="#tnc" className="text-blue-600 underline font-semibold">T&Cs on Digital Gold Services</a>. I hereby declare that the funds used to invest...<button className="text-slate-600 font-bold ml-1">Read More</button>
-                </p>
-
-                {/* Invest Now CTA Button */}
-                <button
-                  onClick={() => {
-                    if (!isLoggedIn) {
-                      toast.error('Identity Verification Required', {
-                        description: 'Please authenticate your profile session under the Account section first.',
-                      });
-                      return;
-                    }
-
-                    const availableBal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-                    if (goldAmount > availableBal) {
-                      toast.warning('Investment Exceeds Total Balance', {
-                        description: `Warning: You are attempting to invest ₹${goldAmount.toLocaleString()}, which exceeds your total wallet balance of ₹${availableBal.toLocaleString()}. Please deposit funds first.`,
-                      });
-                      return;
-                    }
-
-                    // Calculate estimated returns
-                    const estimatedProfit = Math.round(
-                      goldMode === 'SIP' 
-                        ? (goldFrequency === 'Daily' ? goldAmount * 0.85 : goldFrequency === 'Weekly' ? goldAmount * 1.5 : goldAmount * 2.2) 
-                        : goldAmount * 1.8
-                    );
-
-                    const planTitle = goldMode === 'SIP' ? `24K Gold SIP (${goldFrequency})` : `24K Gold Investment (One Time)`;
-
-                    if (onExecuteTrade) {
-                      onExecuteTrade(goldAmount, estimatedProfit, planTitle, goldMode === 'SIP' ? goldFrequency : 'One Time');
-                      toast.success(`Invested in ${planTitle}!`, {
-                        description: `Successfully allocated ₹${goldAmount.toLocaleString()} into 24K pure digital gold.`,
-                        icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                      });
-
-                      setTimeout(() => {
-                        const trackerEl = document.getElementById('user-active-trades-section');
-                        if (trackerEl) trackerEl.scrollIntoView({ behavior: 'smooth' });
-                      }, 300);
-                    }
-                  }}
-                  className="w-full bg-[#005b52] hover:bg-[#004d40] text-white py-4 rounded-full font-extrabold text-lg shadow-lg hover:shadow-xl transition-all active:scale-[0.99] flex items-center justify-center space-x-2"
-                >
-                  <span>Invest Now</span>
-                </button>
-              </div>
-            ) : (
-              /* On-Chain Tokens Table */
-              <div className="bg-[#121212] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-5 text-left font-sans">
-                {/* Warning Indicator */}
-                <div className="bg-amber-500/5 rounded-2xl border border-amber-500/10 p-4 flex items-start space-x-3">
-                  <Info className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-slate-400 leading-normal">
-                    <b>On-Chain Web3 Tokens:</b> These tokens are subject to greater fluctuations and capital liquidity risks. Please exercise absolute risk management.
-                  </p>
-                </div>
-
-                {/* Alpha Search / Filter tags */}
-                <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-4 top-3.5 w-4 h-4 text-slate-500" />
-                    <input
-                      type="text"
-                      placeholder="Search VIP Alpha tokens..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-[#1e2026] text-white text-sm border border-slate-800 rounded-xl py-3 pl-11 pr-4 outline-none focus:border-[#f0b90b] transition-all"
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-1.5 overflow-x-auto scrollbar-hide">
-                    {(['All', 'Point+', 'BSC', 'Ethereum', 'Solana'] as const).map(f => (
-                      <button
-                        key={f}
-                        onClick={() => setAlphaFilter(f)}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                          alphaFilter === f ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/30'
-                        }`}
-                      >
-                        {f}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Alpha Grid Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-slate-900 text-slate-500 text-[11px] font-mono uppercase tracking-wider">
-                        <th className="pb-3 font-semibold">Name / Vol</th>
-                        <th className="pb-3 text-right font-semibold">Last Price</th>
-                        <th className="pb-3 text-right font-semibold">24h Chg%</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-900">
-                      {getFilteredAlphaAssets().map((token) => {
-                        const isUp = token.change >= 0;
-                        return (
-                          <tr
-                            key={token.symbol}
-                            onClick={() => setSelectedAsset(token)}
-                            className="group hover:bg-[#1e2026]/50 cursor-pointer transition-all border-b border-slate-900/40"
-                          >
-                            <td className="py-4 flex items-center space-x-3">
-                              <div className="bg-amber-500/15 p-2.5 rounded-xl border border-amber-500/30">
-                                <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
-                              </div>
-                              <div>
-                                <span className="text-sm font-black text-white tracking-tight font-mono">${token.symbol}</span>
-                                <span className="text-[11px] text-slate-500 font-medium block">{token.label} | {token.extra}</span>
-                              </div>
-                            </td>
-                            <td className="py-4 text-right">
-                              <div className="text-sm font-black text-white font-mono">{token.price.toFixed(5)}</div>
-                              <div className="text-[10px] text-slate-500 font-mono">${token.price.toFixed(5)}</div>
-                            </td>
-                            <td className="py-4 text-right">
-                              <span className={`inline-block px-3 py-1.5 rounded-lg text-xs font-black font-mono transition-all duration-300 ${
-                                isUp 
-                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-500/20' 
-                                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 group-hover:bg-rose-500/20'
-                              }`}>
-                                {isUp ? '+' : ''}{token.change.toFixed(2)}%
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        ) : activeHeaderTab === 'Options' ? (
-          <motion.div
-            key="options-tab-content"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="space-y-6 text-left"
-          >
-            {/* Options Subtabs */}
-            <div className="flex bg-[#121212] p-1 rounded-xl border border-slate-800 space-x-1 font-bold text-xs uppercase tracking-wider max-w-xs shadow-inner">
-              {(['Spot', 'Stocks', 'Buy/Sell'] as const).map((subTab) => (
-                <button
-                  key={subTab}
-                  onClick={() => setOptionsSubTab(subTab)}
-                  className={`flex-1 py-2 rounded-lg transition-all font-mono font-black ${
-                    optionsSubTab === subTab ? 'bg-[#f0b90b] text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {subTab}
-                </button>
-              ))}
-            </div>
-
-            {optionsSubTab === 'Spot' && (
-              <div className="bg-[#181a20] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-6 animate-fade-in">
-                {/* Top Metrics Row mirroring Image 2 */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20 font-mono">Spot</span>
-                      <span className="text-xs text-slate-400 font-bold font-mono">Price &nbsp; DYOR &nbsp; Audit &nbsp; Square</span>
-                    </div>
-                    <div className="flex items-baseline space-x-2.5">
-                      <span className="text-3xl font-black text-emerald-400 font-mono tracking-tight">$0.0016447</span>
-                      <span className="text-sm font-black text-rose-500 font-mono">-11.51%</span>
-                      <span className="text-xs font-mono text-slate-500">0x2c3a...12f7d</span>
-                    </div>
-                  </div>
-
-                  {/* Market Stats Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-950/50 p-4 rounded-2xl border border-slate-800/60 text-xs font-mono">
-                    <div>
-                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Mkt Cap</span>
-                      <span className="text-slate-200 font-black font-mono">$37.49M</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Chain.Lq</span>
-                      <span className="text-slate-200 font-black font-mono">$1.11M</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Chain.Holders</span>
-                      <span className="text-slate-200 font-black font-mono">36,143</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">FDV</span>
-                      <span className="text-slate-200 font-black font-mono">$164.47M</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sub Header for chart settings */}
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-400">
-                  <div className="flex items-center space-x-3 overflow-x-auto scrollbar-hide py-1">
-                    <span className="text-slate-500">Time:</span>
-                    <span className="text-[#f0b90b] font-black cursor-pointer bg-[#f0b90b]/10 px-2 py-0.5 rounded">1D</span>
-                    <span className="hover:text-white cursor-pointer pl-1.5">15m</span>
-                    <span className="hover:text-white cursor-pointer pl-1.5">1h</span>
-                    <span className="hover:text-white cursor-pointer pl-1.5">4h</span>
-                    <span className="hover:text-white cursor-pointer pl-1.5">More ▾</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-[10px] text-slate-400">
-                    <span className="text-amber-500">MA(7): 0.00127664</span>
-                    <span className="text-purple-400">MA(25): 0.00057022</span>
-                    <span className="text-sky-400">MA(99): 0.00041132</span>
-                  </div>
-                </div>
-
-                {/* Main Candlestick Chart Area SVG Mirroring Image 2 exactly */}
-                <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800/80 h-72 relative flex flex-col justify-between overflow-hidden">
-                  {/* Grid Lines */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-15">
-                    <div className="border-b border-slate-700 w-full"></div>
-                    <div className="border-b border-slate-700 w-full"></div>
-                    <div className="border-b border-slate-700 w-full"></div>
-                    <div className="border-b border-slate-700 w-full"></div>
-                  </div>
-
-                  {/* SVG Candlestick layout */}
-                  <div className="w-full h-full relative z-10 flex items-end">
-                    <svg className="w-full h-full" viewBox="0 0 600 240">
-                      {/* Candlestick 1 (Red) */}
-                      <line x1="50" y1="90" x2="50" y2="160" stroke="#f43f5e" strokeWidth="1.5" />
-                      <rect x="42" y="100" width="16" height="40" fill="#f43f5e" rx="1" />
-
-                      {/* Candlestick 2 (Red) */}
-                      <line x1="110" y1="110" x2="110" y2="180" stroke="#f43f5e" strokeWidth="1.5" />
-                      <rect x="102" y="120" width="16" height="35" fill="#f43f5e" rx="1" />
-
-                      {/* Candlestick 3 (Green) */}
-                      <line x1="170" y1="80" x2="170" y2="150" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="162" y="90" width="16" height="45" fill="#10b981" rx="1" />
-
-                      {/* Candlestick 4 (Green) */}
-                      <line x1="230" y1="60" x2="230" y2="130" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="222" y="70" width="16" height="50" fill="#10b981" rx="1" />
-
-                      {/* Candlestick 5 (Green) */}
-                      <line x1="290" y1="40" x2="290" y2="100" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="282" y="50" width="16" height="40" fill="#10b981" rx="1" />
-
-                      {/* Candlestick 6 (Red - big drop) */}
-                      <line x1="350" y1="70" x2="350" y2="170" stroke="#f43f5e" strokeWidth="1.5" />
-                      <rect x="342" y="80" width="16" height="70" fill="#f43f5e" rx="1" />
-
-                      {/* Candlestick 7 (Green - huge pump) */}
-                      <line x1="410" y1="30" x2="410" y2="140" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="402" y="40" width="16" height="80" fill="#10b981" rx="1" />
-
-                      {/* Candlestick 8 (Current green tick) */}
-                      <line x1="470" y1="20" x2="470" y2="110" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="462" y="30" width="16" height="60" fill="#10b981" rx="1" />
-
-                      {/* SUPERTREND and MA line overlays */}
-                      <path d="M 50 120 Q 170 100 290 70 T 470 50" fill="none" stroke="#eab308" strokeWidth="2.5" />
-                      <path d="M 50 140 Q 170 120 290 90 T 470 70" fill="none" stroke="#a855f7" strokeWidth="1.5" />
-
-                      {/* Moving Price Cursor indicator */}
-                      <line x1="0" y1="60" x2="600" y2="60" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
-                      <rect x="495" y="48" width="100" height="24" fill="#10b981" rx="4" />
-                      <text x="502" y="64" fill="#090d16" fontSize="10" fontWeight="900" fontFamily="monospace">0.00164471 ➔</text>
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Indicator buttons list under chart */}
-                <div className="flex items-center justify-between border-t border-slate-800 pt-4">
-                  <div className="flex flex-wrap items-center gap-1.5 text-[9px] font-mono font-black text-slate-500">
-                    {['MA', 'EMA', 'BOLL', 'SAR', 'AVL', 'SUPER', 'VOL', 'MACD'].map((ind) => (
-                      <span key={ind} className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:text-white cursor-pointer transition-all">{ind}</span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Order Book Bid/Ask Metrics mirroring bottom of Image 2 */}
-                <div className="grid grid-cols-3 gap-4 bg-[#121212]/50 p-4 rounded-2xl border border-slate-800/80 font-mono text-xs items-center">
-                  <div>
-                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Total Bid</span>
-                    <span className="text-emerald-400 font-black font-mono">265.84K</span>
-                  </div>
-                  <div className="text-center">
-                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Dynamic spread</span>
-                    <span className="text-slate-300 font-bold font-mono">▲ 0.00164367 &nbsp; ▼ 0.00164441</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Total Ask</span>
-                    <span className="text-rose-400 font-black font-mono">265.84K</span>
-                  </div>
-                </div>
-
-                {/* Big Premium Action Button block at the bottom */}
-                <div className="flex justify-end pt-2">
-                  <button
-                    onClick={() => {
-                      setOptionsSubTab('Buy/Sell');
-                      setOptionsAsset('SOL/USDT');
-                      setOptionsPrice('0.0016447');
-                      setOptionsAmount('1000');
-                    }}
-                    className="w-full sm:w-64 bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black py-4 px-8 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center uppercase tracking-wider font-mono text-sm shadow-amber-500/10"
-                  >
-                    Trade SOL Spot ➔
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {optionsSubTab === 'Stocks' && (
-              <div className="bg-[#181a20] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-6 animate-fade-in">
-                {/* Top Metrics Row mirroring Image 3 */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-[10px] font-bold text-[#f0b90b] bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20 font-mono">Stocks</span>
-                      <span className="text-xs text-slate-400 font-bold font-mono">TradFi Securities List</span>
-                    </div>
-                    <div className="flex items-baseline space-x-2.5">
-                      <span className="text-3xl font-black text-emerald-400 font-mono tracking-tight">$0.66006</span>
-                      <span className="text-sm font-black text-emerald-400 font-mono">+12.16%</span>
-                      <span className="text-xs font-mono text-slate-500">0x500a...3b</span>
-                    </div>
-                  </div>
-
-                  {/* Market Stats Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-950/50 p-4 rounded-2xl border border-slate-800/60 text-xs font-mono">
-                    <div>
-                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Mkt Cap</span>
-                      <span className="text-slate-200 font-black font-mono">$105.61M</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Chain.Lq</span>
-                      <span className="text-slate-200 font-black font-mono">$3.21M</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">Chain.Holders</span>
-                      <span className="text-slate-200 font-black font-mono">34,486</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[9px] uppercase tracking-wider font-black">FDV</span>
-                      <span className="text-slate-200 font-black font-mono">$660.07M</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sub Header for chart settings */}
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-400">
-                  <div className="flex items-center space-x-3 overflow-x-auto scrollbar-hide py-1">
-                    <span className="text-slate-500">Time:</span>
-                    <span className="text-[#f0b90b] font-black cursor-pointer bg-[#f0b90b]/10 px-2 py-0.5 rounded">1D</span>
-                    <span className="hover:text-white cursor-pointer pl-1.5">15m</span>
-                    <span className="hover:text-white cursor-pointer pl-1.5">1h</span>
-                    <span className="hover:text-white cursor-pointer pl-1.5">4h</span>
-                    <span className="hover:text-white cursor-pointer pl-1.5">More ▾</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-[10px] text-slate-400">
-                    <span className="text-emerald-400">MA(7): 0.574418</span>
-                    <span className="text-rose-400">MA(25): 0.545936</span>
-                    <span className="text-slate-500">MA(99): --</span>
-                  </div>
-                </div>
-
-                {/* Main Candlestick Chart Area SVG Mirroring Image 3 exactly */}
-                <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800/80 h-72 relative flex flex-col justify-between overflow-hidden">
-                  {/* Grid Lines */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none opacity-15">
-                    <div className="border-b border-slate-700 w-full"></div>
-                    <div className="border-b border-slate-700 w-full"></div>
-                    <div className="border-b border-slate-700 w-full"></div>
-                    <div className="border-b border-slate-700 w-full"></div>
-                  </div>
-
-                  {/* SVG Candlestick layout */}
-                  <div className="w-full h-full relative z-10 flex items-end">
-                    <svg className="w-full h-full" viewBox="0 0 600 240">
-                      {/* Candlestick 1 (Green) */}
-                      <line x1="50" y1="130" x2="50" y2="190" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="42" y="140" width="16" height="40" fill="#10b981" rx="1" />
-
-                      {/* Candlestick 2 (Red) */}
-                      <line x1="110" y1="120" x2="110" y2="180" stroke="#f43f5e" strokeWidth="1.5" />
-                      <rect x="102" y="130" width="16" height="30" fill="#f43f5e" rx="1" />
-
-                      {/* Candlestick 3 (Red) */}
-                      <line x1="170" y1="140" x2="170" y2="200" stroke="#f43f5e" strokeWidth="1.5" />
-                      <rect x="162" y="150" width="16" height="35" fill="#f43f5e" rx="1" />
-
-                      {/* Candlestick 4 (Green) */}
-                      <line x1="230" y1="90" x2="230" y2="160" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="222" y="100" width="16" height="50" fill="#10b981" rx="1" />
-
-                      {/* Candlestick 5 (Green) */}
-                      <line x1="290" y1="70" x2="290" y2="130" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="282" y="80" width="16" height="40" fill="#10b981" rx="1" />
-
-                      {/* Candlestick 6 (Green) */}
-                      <line x1="350" y1="50" x2="350" y2="110" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="342" y="60" width="16" height="40" fill="#10b981" rx="1" />
-
-                      {/* Candlestick 7 (Red) */}
-                      <line x1="410" y1="80" x2="410" y2="150" stroke="#f43f5e" strokeWidth="1.5" />
-                      <rect x="402" y="90" width="16" height="45" fill="#f43f5e" rx="1" />
-
-                      {/* Candlestick 8 (Current green pump) */}
-                      <line x1="470" y1="30" x2="470" y2="120" stroke="#10b981" strokeWidth="1.5" />
-                      <rect x="462" y="40" width="16" height="70" fill="#10b981" rx="1" />
-
-                      {/* Indicator paths */}
-                      <path d="M 50 160 Q 170 140 290 100 T 470 65" fill="none" stroke="#10b981" strokeWidth="2.5" />
-                      <path d="M 50 180 Q 170 160 290 120 T 470 85" fill="none" stroke="#f43f5e" strokeWidth="1.5" />
-
-                      {/* Price Cursor overlay */}
-                      <line x1="0" y1="75" x2="600" y2="75" stroke="#10b981" strokeWidth="1" strokeDasharray="3,3" />
-                      <rect x="495" y="63" width="100" height="24" fill="#10b981" rx="4" />
-                      <text x="508" y="79" fill="#090d16" fontSize="10" fontWeight="900" fontFamily="monospace">0.666679 ➔</text>
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Indicators bottom line */}
-                <div className="flex items-center justify-between border-t border-slate-800 pt-4">
-                  <div className="flex flex-wrap items-center gap-1.5 text-[9px] font-mono font-black text-slate-500">
-                    {['MA', 'EMA', 'BOLL', 'SAR', 'AVL', 'SUPER', 'VOL', 'MACD'].map((ind) => (
-                      <span key={ind} className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:text-white cursor-pointer transition-all">{ind}</span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bottom Order Book spreads mirroring Image 3 */}
-                <div className="grid grid-cols-3 gap-4 bg-[#121212]/50 p-4 rounded-2xl border border-slate-800/80 font-mono text-xs items-center">
-                  <div>
-                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Total Bid</span>
-                    <span className="text-emerald-400 font-black font-mono">11.0300</span>
-                  </div>
-                  <div className="text-center">
-                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Spread</span>
-                    <span className="text-slate-300 font-bold font-mono">▲ 0.66197829 &nbsp; ▼ 0.66200929</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-slate-500 block text-[9px] uppercase font-bold">Total Ask</span>
-                    <span className="text-rose-400 font-black font-mono">13.7700</span>
-                  </div>
-                </div>
-
-                {/* Big Action button */}
-                <div className="flex justify-end pt-2">
-                  <button
-                    onClick={() => {
-                      setOptionsSubTab('Buy/Sell');
-                      setOptionsAsset('KERNEL/USDT');
-                      setOptionsPrice('0.66006');
-                      setOptionsAmount('250');
-                    }}
-                    className="bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black py-4 px-8 rounded-2xl shadow-xl transition-all transform active:scale-[0.98] text-center uppercase tracking-wider font-mono text-sm shadow-amber-500/10 w-full sm:w-64"
-                  >
-                    Trade KERNEL Spot ➔
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {optionsSubTab === 'Buy/Sell' && (
-              <div className="space-y-6 animate-fade-in">
-                
-                {/* 1-Click Quick Trade HUD (Only visible here, as requested) */}
-                <div className="bg-gradient-to-r from-[#0d0e12] via-[#14161c] to-[#0d0e12] rounded-2xl border border-amber-500/10 p-5 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-5 text-left" id="quick-trade-terminal-hud">
-                  <div className="space-y-1.5 flex-1 w-full">
-                    <div className="flex items-center space-x-2">
-                      <Zap className="w-4 h-4 text-amber-500 animate-pulse" />
-                      <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 font-mono">1-Click Quick Trade Terminal</h4>
-                    </div>
-                    <p className="text-[11px] text-slate-400">
-                      Instantly execute high-yield market contracts with pre-set allocations. Select asset and duration, then execute with a single click.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-start lg:justify-end">
-                    {/* Asset Selection */}
-                    <div className="flex flex-col space-y-1">
-                      <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Select Asset</span>
-                      <select
-                        value={optionsAsset}
-                        onChange={(e) => setOptionsAsset(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 text-xs text-white font-mono py-1.5 px-3 rounded-lg outline-none focus:border-amber-500"
-                      >
-                        <option value="BTC/USDT">BTC/USDT (Crypto)</option>
-                        <option value="ETH/USDT">ETH/USDT (Crypto)</option>
-                        <option value="SOL/USDT">SOL/USDT (Crypto)</option>
-                        <option value="XAU/USD">XAU/USD (Gold)</option>
-                        <option value="RELIANCE">RELIANCE (Stock)</option>
-                        <option value="EUR/USD">EUR/USD (Forex)</option>
-                      </select>
-                    </div>
-
-                    {/* Duration Selection */}
-                    <div className="flex flex-col space-y-1">
-                      <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Select Duration</span>
-                      <select
-                        value={quickTradeDuration}
-                        onChange={(e) => setQuickTradeDuration(e.target.value)}
-                        className="bg-slate-950 border border-slate-800 text-xs text-white font-mono py-1.5 px-3 rounded-lg outline-none focus:border-amber-500"
-                      >
-                        <option value="60s">60 Seconds (+85%)</option>
-                        <option value="3m">3 Minutes (+105%)</option>
-                        <option value="5m">5 Minutes (+128%)</option>
-                        <option value="15m">15 Minutes (+195%)</option>
-                        <option value="1h">1 Hour (+350%)</option>
-                        <option value="1D">1 Day (+1450%)</option>
-                      </select>
-                    </div>
-
-                    {/* Preset Buttons */}
-                    <div className="flex flex-col space-y-1 w-full sm:w-auto">
-                      <span className="text-[8px] uppercase tracking-widest text-slate-500 font-black font-mono">Instant INR Market Buy</span>
-                      <div className="flex items-center space-x-2">
-                        {[1000, 5000, 10000].map((presetAmt) => (
-                          <button
-                            key={presetAmt}
-                            onClick={() => handleExecuteQuickTrade(presetAmt)}
-                            className="bg-gradient-to-b from-amber-500/10 to-amber-500/5 hover:from-amber-500 hover:to-amber-600 hover:text-slate-950 text-amber-500 border border-amber-500/30 hover:border-amber-500 font-mono text-[11px] font-black px-4 py-1.5 rounded-lg transition-all transform active:scale-95 shadow-sm flex-1 sm:flex-initial"
-                          >
-                            ₹{presetAmt.toLocaleString()}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* High Fidelity Image 1 Replication Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-[#0b0e14] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl">
-                  
-                  {/* Left Column: Order Entry (lg:col-span-7) */}
-                  <div className="lg:col-span-7 space-y-5 text-left">
-                    {/* Header line for Active Asset */}
-                    <div className="flex items-center justify-between border-b border-slate-900 pb-3">
-                      <div className="flex items-center space-x-2">
-                        <Bitcoin className="w-6 h-6 text-amber-500" />
-                        <span className="text-lg font-black font-mono text-slate-100">{optionsAsset}</span>
-                        <span className="text-xs text-slate-500">▼</span>
-                        <span className="text-xs font-bold text-emerald-400 font-mono">+{optionsBtcChange.toFixed(2)}%</span>
-                      </div>
-                      <div className="flex items-center space-x-3 text-slate-500">
-                        <span className="cursor-pointer hover:text-slate-200 text-sm">📊</span>
-                        <span className="cursor-pointer hover:text-slate-200 text-sm">•••</span>
-                      </div>
-                    </div>
-
-                    {/* Buy/Sell Toggles & Margin Switch */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex bg-[#181a20] p-1 rounded-xl border border-slate-900 w-48">
-                        <button
-                          onClick={() => setOptionsActiveSide('Buy')}
-                          className={`flex-1 py-2.5 rounded-lg text-xs font-black font-mono transition-all text-center block ${
-                            optionsActiveSide === 'Buy' ? 'bg-[#10b981] text-white shadow-lg' : 'text-slate-500 hover:text-slate-300 bg-[#181a20]'
-                          }`}
-                        >
-                          Buy
-                        </button>
-                        <button
-                          onClick={() => setOptionsActiveSide('Sell')}
-                          className={`flex-1 py-2.5 rounded-lg text-xs font-black font-mono transition-all text-center block ${
-                            optionsActiveSide === 'Sell' ? 'bg-[#f43f5e] text-white shadow-lg' : 'text-slate-500 hover:text-slate-300 bg-[#181a20]'
-                          }`}
-                        >
-                          Sell
-                        </button>
-                      </div>
-
-                      {/* Margin toggle */}
-                      <div className="flex items-center space-x-2 text-xs font-mono">
-                        <span className="text-slate-400">Margin</span>
-                        <button
-                          onClick={() => setOptionsMargin(!optionsMargin)}
-                          className={`w-9 h-5 rounded-full p-0.5 transition-all duration-300 focus:outline-none ${
-                            optionsMargin ? 'bg-[#10b981]' : 'bg-slate-800'
-                          }`}
-                        >
-                          <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-all duration-300 ${
-                            optionsMargin ? 'translate-x-4' : 'translate-x-0'
-                          }`} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Limit Order Dropdown Selection */}
-                    <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-900 text-xs text-slate-400 font-mono">
-                      <div className="flex items-center space-x-2">
-                        <Info className="w-3.5 h-3.5 text-slate-500" />
-                        <span>Order Type</span>
-                      </div>
-                      <select
-                        value={optionsOrderType}
-                        onChange={(e) => setOptionsOrderType(e.target.value as any)}
-                        className="bg-transparent border-none text-white font-bold outline-none cursor-pointer focus:ring-0"
-                      >
-                        <option value="Limit">Limit</option>
-                        <option value="Market">Market</option>
-                      </select>
-                    </div>
-
-                    {/* Price Input Form Field */}
-                    <div className="space-y-1.5">
-                      <span className="text-[10px] uppercase font-bold text-slate-500 font-mono block">Price (USDT)</span>
-                      <div className="flex items-center justify-between bg-slate-950 rounded-xl border border-slate-900 overflow-hidden font-mono text-sm px-3 py-2">
-                        <button 
-                          onClick={() => setOptionsPrice(p => (Math.max(1, parseFloat(p) - 10)).toFixed(2))}
-                          className="text-slate-500 hover:text-white px-2 py-1 text-lg font-bold"
-                        >
-                          −
-                        </button>
-                        <input
-                          type="text"
-                          value={optionsPrice}
-                          onChange={(e) => setOptionsPrice(e.target.value)}
-                          className="bg-transparent text-center text-white font-black w-full outline-none border-none text-sm focus:ring-0"
-                        />
-                        <button 
-                          onClick={() => setOptionsPrice(p => (parseFloat(p) + 10).toFixed(2))}
-                          className="text-slate-500 hover:text-white px-2 py-1 text-lg font-bold"
-                        >
-                          +
-                        </button>
-                        <span className="bg-slate-900 border border-slate-800 text-[10px] text-[#f0b90b] px-2.5 py-1 rounded-md font-black cursor-pointer hover:bg-slate-800 transition-all">BBO</span>
-                      </div>
-                    </div>
-
-                    {/* Amount Input Form Field */}
-                    <div className="space-y-1.5">
-                      <span className="text-[10px] uppercase font-bold text-slate-500 font-mono block">Amount (BTC)</span>
-                      <div className="flex items-center justify-between bg-slate-950 rounded-xl border border-slate-900 overflow-hidden font-mono text-sm px-3 py-2">
-                        <button 
-                          onClick={() => setOptionsAmount(a => (Math.max(0.001, parseFloat(a) - 0.005)).toFixed(3))}
-                          className="text-slate-500 hover:text-white px-2 py-1 text-lg font-bold"
-                        >
-                          −
-                        </button>
-                        <input
-                          type="text"
-                          value={optionsAmount}
-                          onChange={(e) => setOptionsAmount(e.target.value)}
-                          className="bg-transparent text-center text-white font-black w-full outline-none border-none text-sm focus:ring-0"
-                        />
-                        <button 
-                          onClick={() => setOptionsAmount(a => (parseFloat(a) + 0.005).toFixed(3))}
-                          className="text-slate-500 hover:text-white px-2 py-1 text-lg font-bold"
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      {/* Slider Dots (0%, 25%, 50%, 75%, 100%) */}
-                      <div className="pt-2">
-                        <div className="relative h-1 bg-slate-950 rounded-full flex items-center justify-between">
-                          <div className="absolute top-0 left-0 h-1 bg-[#10b981] rounded-full" style={{ width: '25%' }}></div>
-                          {[0, 25, 50, 75, 100].map((pct) => (
-                            <button
-                              key={pct}
-                              onClick={() => {
-                                const totalVal = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-                                const allowedUsdt = (totalVal / 87.5) * (pct / 100);
-                                const btcAmt = allowedUsdt / optionsBtcPrice;
-                                setOptionsAmount(btcAmt.toFixed(4));
-                              }}
-                              className={`w-3.5 h-3.5 rounded-full border-2 focus:outline-none transition-all ${
-                                pct === 25 ? 'bg-[#10b981] border-[#10b981]' : 'bg-slate-950 border-slate-800 hover:border-slate-400'
-                              }`}
-                              title={`${pct}% Balance Allocation`}
-                            />
-                          ))}
-                        </div>
-                        <div className="flex justify-between text-[9px] text-slate-500 font-mono pt-1">
-                          <span>0%</span>
-                          <span>25%</span>
-                          <span>50%</span>
-                          <span>75%</span>
-                          <span>100%</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Dynamic Total calculation */}
-                    <div className="bg-[#121212]/50 p-4 rounded-xl border border-slate-900 flex justify-between items-center text-xs font-mono text-slate-400">
-                      <span>Total Value (USDT)</span>
-                      <span className="text-white font-black">
-                        {(parseFloat(optionsPrice) * parseFloat(optionsAmount) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDT
-                      </span>
-                    </div>
-
-                    {/* TP/SL and Iceberg checkboxes */}
-                    <div className="flex items-center space-x-6 text-xs text-slate-400 font-mono">
-                      <label className="flex items-center space-x-2 cursor-pointer group">
-                        <input
-                          type="checkbox"
-                          checked={optionsTpsl}
-                          onChange={(e) => setOptionsTpsl(e.target.checked)}
-                          className="rounded border-slate-800 bg-slate-950 text-[#10b981] focus:ring-[#10b981]"
-                        />
-                        <span className="border-b border-dashed border-slate-600 group-hover:border-slate-300">TP/SL</span>
-                      </label>
-
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={optionsIceberg}
-                          onChange={(e) => setOptionsIceberg(e.target.checked)}
-                          className="rounded border-slate-800 bg-slate-950 text-[#10b981] focus:ring-[#10b981]"
-                        />
-                        <span>Iceberg</span>
-                      </label>
-                    </div>
-
-                    {/* Available balances stats */}
-                    <div className="bg-[#121212]/50 p-4 rounded-xl border border-slate-900 space-y-1 text-xs font-mono text-slate-400">
-                      <div className="flex justify-between items-center">
-                        <span>Available Balance (USDT)</span>
-                        <div className="flex items-center space-x-1.5 font-black text-slate-200">
-                          <span>₹{((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)).toLocaleString()}</span>
-                          <span className="text-slate-500 font-normal">({(((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)) / 87.5).toFixed(2)} USDT)</span>
-                          <button 
-                            type="button"
-                            onClick={() => onNavigateToWallet?.('deposit')}
-                            className="text-[#f0b90b] hover:text-yellow-400 text-sm font-black transition-colors px-1"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>Max Market Acquisition</span>
-                        <span className="text-slate-200 font-black">
-                          {((((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)) / 87.5) / optionsBtcPrice).toFixed(6)} BTC
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Primary BUY/SELL Button (Replaces "Log In") */}
-                    <button
-                      onClick={handleExecuteOptionsTrade}
-                      className={`w-full py-4 rounded-2xl font-black text-white font-mono text-sm tracking-wide transition-all transform active:scale-[0.98] shadow-lg text-center ${
-                        optionsActiveSide === 'Buy' 
-                          ? 'bg-[#10b981] hover:bg-emerald-400 shadow-emerald-500/10 hover:shadow-emerald-500/20' 
-                          : 'bg-[#f43f5e] hover:bg-rose-400 shadow-rose-500/10 hover:shadow-rose-500/20'
-                      }`}
-                    >
-                      {optionsActiveSide === 'Buy' ? 'Buy BTC' : 'Sell BTC'}
-                    </button>
-                  </div>
-
-                  {/* Right Column: High Fidelity Order Book (lg:col-span-5) */}
-                  <div className="lg:col-span-5 bg-slate-950/40 p-4 rounded-2xl border border-slate-900 text-left font-mono text-xs flex flex-col justify-between space-y-4">
-                    <div className="space-y-3">
-                      {/* Column titles */}
-                      <div className="flex justify-between text-[10px] text-slate-500 uppercase tracking-widest font-black">
-                        <span>Price (USDT)</span>
-                        <span>Amount (BTC)</span>
-                      </div>
-
-                      {/* Ask Prices (Red, Counting down to mid-price) */}
-                      <div className="space-y-1">
-                        {optionsAsks.map((ask, idx) => (
-                          <div key={`ask-${idx}`} className="flex justify-between hover:bg-rose-500/5 px-1 py-0.5 rounded transition-colors">
-                            <span className="text-rose-400 font-black">{ask.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                            <span className="text-slate-300 font-medium">{ask.amount.toFixed(5)}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Middle Current Price Section */}
-                      <div className="py-2.5 my-2 border-y border-[#1e2026] text-center space-y-0.5">
-                        <div className="text-xl font-black text-emerald-400 flex items-center justify-center space-x-1.5">
-                          <span>{optionsBtcPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                          <span className="text-xs">▲</span>
-                        </div>
-                        <div className="text-[10px] text-slate-500">
-                          ≈ ${optionsBtcPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </div>
-                      </div>
-
-                      {/* Bid Prices (Green, Listing down) */}
-                      <div className="space-y-1">
-                        {optionsBids.map((bid, idx) => (
-                          <div key={`bid-${idx}`} className="flex justify-between hover:bg-emerald-500/5 px-1 py-0.5 rounded transition-colors">
-                            <span className="text-emerald-400 font-black">{bid.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                            <span className="text-slate-300 font-medium">{bid.amount.toFixed(5)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Progress representation and decimals settings */}
-                    <div className="space-y-2 border-t border-[#1e2026] pt-3">
-                      <div className="flex items-center justify-between text-[10px] text-slate-500">
-                        <span>Buy Ratio (97.59%)</span>
-                        <span>Sell Ratio (2.41%)</span>
-                      </div>
-                      {/* Ratio slide bar */}
-                      <div className="h-1.5 w-full bg-rose-500/40 rounded-full overflow-hidden flex">
-                        <div className="bg-[#10b981] h-full" style={{ width: '97.59%' }}></div>
-                        <div className="bg-[#f43f5e] h-full" style={{ width: '2.41%' }}></div>
-                      </div>
-
-                      {/* Decimals Dropdown indicator */}
-                      <div className="flex justify-between items-center text-[10px] text-slate-400 pt-1">
-                        <span className="bg-slate-950 border border-slate-900 px-2 py-1 rounded">0.01 ▾</span>
-                        <span>📊 Grid Mode</span>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Open Orders / Holdings / Bots sub-tabs */}
-                <div className="bg-[#181a20] rounded-2xl border border-slate-800/80 p-5 text-left space-y-4">
-                  <div className="flex space-x-6 border-b border-slate-900 pb-3 text-xs font-mono font-black text-slate-400">
-                    <span className="text-[#f0b90b] border-b-2 border-[#f0b90b] pb-3 cursor-pointer">Open Orders (0)</span>
-                    <span className="hover:text-slate-200 cursor-pointer">Holdings (0)</span>
-                    <span className="hover:text-slate-200 cursor-pointer">Trading Bots</span>
-                  </div>
-                  <div className="py-6 text-center text-xs text-slate-500 font-mono">
-                    No active positions found in standard margin allocations.
-                  </div>
-                </div>
-
-                {/* Copy Trading Recommendation Banner mirroring bottom of Image 1 */}
-                <div className="bg-[#181a20] rounded-3xl border border-slate-800 p-5 text-left space-y-3.5">
-                  <span className="text-[10px] uppercase font-black tracking-widest text-slate-500 font-mono block">You may be interested in - Copy</span>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-950/60 p-4 rounded-2xl border border-slate-900">
-                    <div className="flex items-center space-x-3.5">
-                      <div className="bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl text-amber-500">
-                        ⭐
-                      </div>
-                      <div>
-                        <span className="text-xs font-black text-white font-mono block">cross-sectional-relative-strength-system</span>
-                        <span className="text-[10px] text-slate-500 font-mono">Elite Copier • 91 / 300 Followers</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-6">
-                      <div className="text-right">
-                        <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider font-mono">30D PnL</span>
-                        <span className="text-xs font-black text-emerald-400 font-mono font-bold">+7,541.37 USD</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider font-mono">30D ROI</span>
-                        <span className="text-xs font-black text-emerald-400 font-mono font-bold">+3.53%</span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setSelectedTrader({ name: 'Cross-Sectional RSS' });
-                          setCopyAmount('5000');
-                        }}
-                        className="bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black font-mono text-[11px] px-4 py-2 rounded-xl transition-all shadow-md transform active:scale-95"
-                      >
-                        Copy
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            )}
-          </motion.div>
-        ) : activeHeaderTab === 'Grow' ? (
-          <motion.div
-            key="grow-tab-content"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="space-y-6 text-left"
-          >
-            {/* ETH APR Banner */}
-            <div className="bg-gradient-to-r from-indigo-950 via-slate-950 to-indigo-950 border border-indigo-500/20 rounded-3xl p-6 relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-6">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
-              <div className="space-y-2 relative z-10">
-                <span className="text-[9px] font-extrabold text-[#f0b90b] bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full uppercase tracking-widest">Stake Node</span>
-                <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight font-geist">Earn 2.36% APR on ETH</h4>
-                <p className="text-xs text-slate-400 max-w-xl">
-                  Automated staking protocols with auto-liquid yield distribution. Compound rewards deposited directly into wallet profit vaults.
-                </p>
-              </div>
-              <button
-                onClick={() => onNavigateToWallet?.('deposit')}
-                className="bg-[#f0b90b] hover:bg-amber-400 text-slate-950 font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition-all whitespace-nowrap shadow-lg shadow-amber-500/20"
-              >
-                Setup Wallet
-              </button>
-            </div>
-
-            {/* Start Earning cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { asset: 'USDC', apr: '6.81% Max APR', desc: 'Secure yield compounding with fiat stablecoins.', color: 'text-blue-400', border: 'border-blue-500/20', bg: 'from-blue-950/20 to-transparent' },
-                { asset: 'ETH', apr: '102.53% Max APR', desc: 'Leveraged on-chain validators node staking.', color: 'text-[#f0b90b]', border: 'border-amber-500/20', bg: 'from-amber-950/20 to-transparent' },
-                { asset: 'SOL', apr: '41.5% Max APR', desc: 'High concurrency Solana network pools.', color: 'text-purple-400', border: 'border-purple-500/20', bg: 'from-purple-950/20 to-transparent' },
-                { asset: 'HANA', apr: '124.8% Max APR', desc: 'High performance Hana Network yield staking.', color: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'from-emerald-950/20 to-transparent' },
-              ].map(item => (
-                <div
-                  key={item.asset}
-                  className={`bg-gradient-to-b ${item.bg} bg-slate-950 border ${item.border} rounded-2xl p-5 flex flex-col justify-between space-y-4`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h5 className="text-sm font-black text-white tracking-tight">{item.asset} Saving</h5>
-                      <p className="text-[11px] text-slate-500 mt-1">{item.desc}</p>
-                    </div>
-                    <span className="text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded font-mono font-bold">Flexible</span>
-                  </div>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <span className="text-[9px] text-slate-500 uppercase font-bold block">Estimated Return</span>
-                      <span className={`text-xl font-black ${item.color}`}>{item.apr}</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        const calcEl = document.getElementById('profit-calculator-section');
-                        if (calcEl) calcEl.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white"
-                    >
-                      Subscribe
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Top Traders to Copy */}
-            <div className="bg-[#121212] rounded-3xl border border-slate-800 p-5 md:p-6 shadow-2xl space-y-4">
-              <div className="flex justify-between items-center border-b border-slate-900 pb-3">
-                <h4 className="text-sm font-black text-white uppercase tracking-tight flex items-center">
-                  <Award className="w-4 h-4 mr-2 text-yellow-500" />
-                  Top Traders to Copy
-                </h4>
-                <span className="text-xs text-slate-500 font-mono">Spot & Margin Master</span>
-              </div>
-
-              <div className="divide-y divide-slate-900">
-                {[
-                  { name: '带带 (Spot)', roi: '+9.31% 7D ROI', followers: '1,421/1,500', color: 'bg-amber-500', performance: [4, 6, 5, 8, 7, 9, 10, 9.31] },
-                  { name: '心指挥头脑 (Spot)', roi: '+3.88% 7D ROI', followers: '840/1,000', color: 'bg-rose-500', performance: [1, 2, 1.8, 3, 2.5, 3.4, 3.88] },
-                  { name: 'JaBBBBi (Spot)', roi: '+2.2% 7D ROI', followers: '422/500', color: 'bg-indigo-500', performance: [0.5, 1, 1.2, 1.5, 1.8, 2, 2.2] }
-                ].map(trader => (
-                  <div key={trader.name} className="py-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-10 h-10 ${trader.color} rounded-full flex items-center justify-center font-bold text-slate-950 font-geist uppercase shadow-lg`}>
-                        {trader.name.slice(0, 2)}
-                      </div>
-                      <div>
-                        <h5 className="text-sm font-black text-white tracking-tight">{trader.name}</h5>
-                        <p className="text-xs text-slate-500">Active copying slots: {trader.followers}</p>
-                      </div>
-                    </div>
-
-                    {/* Chart Plotting for ROI */}
-                    <div className="hidden md:block h-10 w-28">
-                      <svg className="w-full h-full overflow-visible" viewBox="0 0 100 40">
-                        <path
-                          d={`M ${trader.performance.map((val, idx) => `${(idx / (trader.performance.length - 1)) * 100} ${40 - (val / 10) * 35}`).join(' L ')}`}
-                          fill="none"
-                          stroke="#10b981"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </div>
-
-                    <div className="flex items-center space-x-4 w-full md:w-auto justify-between md:justify-end">
-                      <div className="text-left md:text-right">
-                        <span className="text-[9px] text-slate-500 block uppercase font-bold">7D Yield ROI</span>
-                        <span className="text-sm font-black text-emerald-400 font-mono">{trader.roi}</span>
-                      </div>
-                      <button
-                        onClick={() => setSelectedTrader(trader)}
-                        className="bg-[#f0b90b] hover:bg-yellow-500 text-slate-950 font-black px-4 py-2.5 rounded-lg text-[10px] uppercase tracking-wider transition-all shadow-md whitespace-nowrap"
-                      >
-                        Copy Portfolio
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        ) : activeHeaderTab === 'Square' ? (
-          <motion.div
-            key="square-tab-content"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="space-y-6 text-left"
-          >
-            {/* Publisher Form */}
-            <form onSubmit={handlePostSquare} className="bg-[#121212] border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center font-bold text-slate-950 font-geist">
-                  {currentUser?.username?.slice(0, 2).toUpperCase() || 'TR'}
-                </div>
-                <textarea
-                  value={squareInput}
-                  onChange={(e) => setSquareInput(e.target.value)}
-                  placeholder="Share your trade predictions, entry logs or market alpha..."
-                  className="flex-1 bg-[#1e2026] text-white text-sm border border-slate-800 rounded-xl p-3 h-20 outline-none focus:border-[#f0b90b] resize-none transition-all"
-                />
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-slate-900">
-                <span className="text-xs text-slate-500 font-mono">Posting as {currentUser?.username || 'Guest'}</span>
-                <button
-                  type="submit"
-                  className="bg-[#f0b90b] hover:bg-yellow-500 text-slate-950 font-black px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all"
-                >
-                  Post Insight
-                </button>
-              </div>
-            </form>
-
-            {/* Social Posts lists */}
-            <div className="space-y-4">
-              {squarePosts.map(post => (
-                <div key={post.id} className="bg-[#121212] border border-slate-800 rounded-3xl p-5 md:p-6 space-y-4 shadow-xl">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-9 h-9 ${post.avatarColor} rounded-xl flex items-center justify-center font-bold text-white text-xs uppercase`}>
-                        {post.author.slice(1, 3)}
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-black text-white">{post.author}</span>
-                          <span className="text-[9px] bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded font-mono font-bold uppercase">{post.role}</span>
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-mono">{post.time}</span>
-                      </div>
-                    </div>
-                    <MoreVertical className="w-4 h-4 text-slate-500 cursor-pointer hover:text-white" />
-                  </div>
-
-                  <p className="text-xs text-slate-300 leading-relaxed font-sans">{post.content}</p>
-
-                  <div className="flex items-center space-x-6 pt-3 border-t border-slate-900 text-slate-500 text-xs">
-                    <button 
-                      onClick={() => handleLikePost(post.id)}
-                      className={`flex items-center space-x-2 transition-all hover:text-amber-400 ${post.liked ? 'text-amber-400 font-bold' : ''}`}
-                    >
-                      <ThumbsUp className={`w-4 h-4 ${post.liked ? 'fill-amber-500' : ''}`} />
-                      <span>{post.likes}</span>
-                    </button>
-                    <div className="flex items-center space-x-2 cursor-pointer hover:text-white">
-                      <MessageSquare className="w-4 h-4" />
-                      <span>{post.comments} Comments</span>
-                    </div>
-                    <div className="flex items-center space-x-2 cursor-pointer hover:text-white ml-auto">
-                      <Share2 className="w-4 h-4" />
-                      <span className="hidden sm:inline">Share</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        ) : activeHeaderTab === 'Data' ? (
-          <motion.div
-            key="data-tab-content"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="space-y-6 text-left"
-          >
-            {/* Upper Grid row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* BTC Sentiment Bar */}
-              <div className="bg-[#121212] border border-slate-800 rounded-3xl p-5 md:p-6 shadow-xl space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-900 pb-3">
-                  <h5 className="text-xs font-mono text-slate-400 uppercase tracking-widest font-black">BTC Sentiment Index</h5>
-                  <span className="text-[10px] text-emerald-400 font-mono">+1.30% ($65,465.50)</span>
-                </div>
-                
-                <div className="flex flex-col items-center justify-center py-6 space-y-4">
-                  {/* Big speedometer mockup */}
-                  <div className="relative w-40 h-20 overflow-hidden flex items-end justify-center">
-                    <div className="absolute inset-0 border-8 border-slate-800 rounded-full border-b-transparent"></div>
-                    {/* Golden segment */}
-                    <div className="absolute inset-0 border-8 border-amber-500 rounded-full border-b-transparent rotate-[45deg] transition-all"></div>
-                    <div className="text-center relative z-10">
-                      <span className="text-3xl font-black text-white font-mono">7.67</span>
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Strong Positive Sentiment</span>
-                  <p className="text-[10px] text-slate-500 text-center max-w-xs font-mono">Cumulative indices extracted from 1,420 automated spot tracking tickers in real-time.</p>
-                </div>
-              </div>
-
-              {/* Price Change Distribution */}
-              <div className="bg-[#121212] border border-slate-800 rounded-3xl p-5 md:p-6 shadow-xl space-y-4 flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-center border-b border-slate-900 pb-3 mb-4">
-                    <h5 className="text-xs font-mono text-slate-400 uppercase tracking-widest font-black">Price Change Distribution</h5>
-                    <span className="text-xs text-slate-500 font-mono">Total Traded: 994</span>
-                  </div>
-                  <p className="text-xs text-slate-400">Total coin assets distributed across positive vs negative yield trends over past 24 hours.</p>
-                </div>
-
-                <div className="space-y-3 py-4">
-                  <div className="flex justify-between text-xs font-mono">
-                    <span className="text-emerald-400 font-bold">Up: 627 (63%)</span>
-                    <span className="text-rose-400 font-bold">Down: 367 (37%)</span>
-                  </div>
-                  <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden flex border border-slate-900">
-                    <div className="bg-emerald-500 h-full transition-all" style={{ width: '63%' }}></div>
-                    <div className="bg-rose-500 h-full transition-all" style={{ width: '37%' }}></div>
-                  </div>
-                </div>
-
-                <div className="text-[10px] text-slate-500 font-mono border-t border-slate-900 pt-3">
-                  Institutional accumulation ratio high. Bullish outlook maintained.
-                </div>
-              </div>
-
-            </div>
-
-            {/* Colored Grid Heatmap Tiles */}
-            <div className="bg-[#121212] border border-slate-800 rounded-3xl p-5 md:p-6 shadow-xl space-y-4">
-              <h5 className="text-xs font-mono text-slate-400 uppercase tracking-widest font-black border-b border-slate-900 pb-3">Market Volatility Heatmap</h5>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-left">
-                {[
-                  { symbol: 'BTCUSDT', price: '65,437.10', change: '+1.46%', isUp: true, size: 'col-span-2 row-span-2 h-28 bg-emerald-950/40 border-emerald-500/30' },
-                  { symbol: 'ETHUSDT', price: '1,899.02', change: '+1.59%', isUp: true, size: 'h-28 bg-emerald-950/30 border-emerald-500/20' },
-                  { symbol: 'BTCUSDC', price: '65,441.20', change: '+1.47%', isUp: true, size: 'h-28 bg-emerald-950/30 border-emerald-500/20' },
-                  { symbol: 'SNDK', price: '1,428.06', change: '+5.19%', isUp: true, size: 'h-24 bg-emerald-950/20 border-emerald-500/20' },
-                  { symbol: 'AAPL', price: '325.41', change: '-2.43%', isUp: false, size: 'h-24 bg-rose-950/30 border-rose-500/20' },
-                  { symbol: 'NVDA', price: '205.79', change: '+1.51%', isUp: true, size: 'h-24 bg-emerald-950/20 border-emerald-500/10' },
-                  { symbol: 'META', price: '647.14', change: '+0.33%', isUp: true, size: 'h-24 bg-emerald-950/10 border-emerald-500/5' }
-                ].map((tile, idx) => (
-                  <div
-                    key={idx}
-                    className={`${tile.size} rounded-xl border p-4 flex flex-col justify-between transition-all hover:scale-[1.02] cursor-pointer`}
-                  >
-                    <div>
-                      <span className="text-xs font-black text-white">{tile.symbol}</span>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{tile.price}</p>
-                    </div>
-                    <span className={`text-xs font-black ${tile.isUp ? 'text-emerald-400' : 'text-rose-400'}`}>{tile.change}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Money Flow segment distribution */}
-            <div className="bg-[#121212] border border-slate-800 rounded-3xl p-5 md:p-6 shadow-xl space-y-4">
-              <h5 className="text-xs font-mono text-slate-400 uppercase tracking-widest font-black border-b border-slate-900 pb-3">Money Flow Over Past 15m</h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div className="relative w-44 h-44 mx-auto">
-                  {/* Decorative pie donut via conic-gradient */}
-                  <div className="absolute inset-0 rounded-full" style={{ background: 'conic-gradient(#10b981 0% 46%, #ef4444 46% 73%, #f59e0b 73% 87%, #3b82f6 87% 100%)' }}></div>
-                  <div className="absolute inset-6 bg-[#121212] rounded-full flex flex-col items-center justify-center text-center">
-                    <span className="text-xs text-slate-500 font-mono block">Volume Flow</span>
-                    <span className="text-lg font-black text-white font-mono">₹4.11B</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2.5 font-mono text-xs">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-3 h-3 bg-emerald-500 rounded"></span>
-                      <span className="text-slate-400">Large Buyer Inflow</span>
-                    </div>
-                    <span className="text-white font-bold">46.12%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-3 h-3 bg-rose-500 rounded"></span>
-                      <span className="text-slate-400">Large Seller Outflow</span>
-                    </div>
-                    <span className="text-white font-bold">27.06%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-3 h-3 bg-amber-500 rounded"></span>
-                      <span className="text-slate-400">Medium Net Outflow</span>
-                    </div>
-                    <span className="text-white font-bold">13.89%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-3 h-3 bg-blue-500 rounded"></span>
-                      <span className="text-slate-400">Retail Balance Flow</span>
-                    </div>
-                    <span className="text-white font-bold">12.93%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ) : activeHeaderTab === 'Market' ? (
-          <motion.div
-            key="market-tab-content"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="space-y-6 text-left"
-          >
-            {/* Live market chart & assets lists side-by-side inside the Trade Terminal */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <LiveMarketChart />
-              </div>
-              <div className="space-y-6">
-                <MarketAssetList />
-              </div>
-            </div>
-          </motion.div>
-        ) : null}
-
-      </AnimatePresence>
-
-      {/* 3. Interactive Profit Calculator Section (Moved to Bottom) */}
-      <section 
-        className={`bg-gradient-to-b from-[#0e172a] to-[#090e1a] rounded-3xl p-6 md:p-8 border shadow-xl transition-all duration-500 ${
-          activeHeaderTab === 'Grow' 
-            ? 'border-[#f0b90b] shadow-[#f0b90b]/10 ring-1 ring-[#f0b90b]/20 scale-[1.01]' 
-            : 'border-slate-800'
-        }`} 
-        id="profit-calculator-section"
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col items-center text-center space-y-2 mb-8">
-            <div className="p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-400">
-              <Calculator className="w-6 h-6" />
-            </div>
-            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight font-geist">Profit Projection Calculator</h3>
-            <p className="text-slate-400 text-xs md:text-sm max-w-xl">
-              Simulate potential earnings based on plan yields and duration.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-            {/* Input Form Controls */}
-            <div className="space-y-5 bg-slate-950/60 p-5 rounded-2xl border border-slate-800 flex flex-col justify-center">
-              {/* Dropdown Plan Select */}
-              <div className="flex flex-col text-left">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Select Plan</label>
-                <div className="relative">
-                  <select
-                    id="calc-plan-select"
-                    value={selectedPlanId}
-                    onChange={(e) => setSelectedPlanId(e.target.value)}
-                    className="w-full bg-[#0d1222] text-white font-bold text-sm border border-slate-800 rounded-lg py-3 px-4 outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer"
-                  >
-                    {INVESTMENT_PLANS.map(plan => (
-                      <option key={plan.id} value={plan.id}>
-                        {plan.category} — ₹{plan.amount.toLocaleString()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Selector Buttons for Days */}
-              <div className="flex flex-col text-left mt-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Select Duration</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[7, 15, 30].map(days => (
-                    <button
-                      key={days}
-                      id={`calc-duration-${days}`}
-                      onClick={() => setSelectedDuration(days)}
-                      type="button"
-                      className={`py-3 px-3 rounded-lg font-bold text-xs uppercase tracking-wider border transition-all ${
-                        selectedDuration === days
-                          ? 'bg-[#f0b90b] text-[#070b15] border-[#f0b90b] shadow-lg'
-                          : 'bg-[#0d1222] text-slate-300 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      {days} Days
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Return Visual Cards */}
-            <div className="bg-[#040813] border border-emerald-500/20 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between h-full space-y-6 text-left">
-              {/* Premium Glow line */}
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-400 to-emerald-500"></div>
-
-              {/* Header Details */}
-              <div className="flex justify-between items-start text-left">
-                <div>
-                  <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">PROJECTED RETURN</h4>
-                  <p className="text-[10px] text-slate-400">{selectedDuration} Days investment simulation</p>
-                </div>
-                <div className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20 font-mono">
-                  +{principal > 0 ? ((netProfit / principal) * 100).toFixed(0) : '0'}% ROI
-                </div>
-              </div>
-
-              {/* Math Display */}
-              <div className="space-y-3.5 text-left">
-                <div>
-                  <span className="text-[9px] text-slate-500 uppercase font-bold block">Principal</span>
-                  <span className="text-lg font-bold text-slate-300 font-mono">{formatIndianCurrency(principal)}</span>
-                </div>
-                <div>
-                  <span className="text-[9px] text-slate-500 uppercase font-bold block">Net Profit</span>
-                  <span className="text-xl font-black text-emerald-400 font-mono">+{formatIndianCurrency(netProfit)}</span>
-                </div>
-                <div className="pt-2.5 border-t border-slate-800">
-                  <span className="text-[9px] text-emerald-500 uppercase block font-bold">Total Payout</span>
-                  <span className="text-2xl font-extrabold text-white tracking-tight font-mono">
-                    {formatIndianCurrency(totalReturn)}
-                  </span>
-                </div>
-              </div>
-
-              {onInvestSelect && (
-                <button
-                  onClick={() => onInvestSelect(selectedPlan)}
-                  className="w-full bg-[#f0b90b] hover:bg-yellow-500 text-[#070b15] font-black text-xs uppercase tracking-widest py-3 rounded-lg transition-all"
-                >
-                  Invest Now
-                </button>
-              )}
-            </div>
-          </div>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center justify-between gap-1 flex-nowrap mb-4 px-2">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide flex-1">
+          {FILTER_TABS.map(filter => (
+            <button
+              key={filter}
+              onClick={() => setCurrentFilter(filter)}
+              className={`px-3 py-1 rounded-md text-[10px] font-black transition-all whitespace-nowrap border ${
+                currentFilter === filter ? 'bg-[#2b3139] text-white border-transparent' : 'text-[#848e9c] border-[#2b3139] hover:text-white'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
         </div>
-      </section>
+        <button className="p-1.5 ml-2 text-[#848e9c] hover:text-white transition-all bg-[#1e232c] rounded-md">
+          <Menu className="w-4 h-4" />
+        </button>
+      </div>
 
-      {/* MODAL 1: HIGH FIDELITY BINANCE-STYLE TRADING SHEET */}
-      <AnimatePresence>
-        {selectedAsset && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 text-left overflow-y-auto"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="bg-[#121212] w-full max-w-4xl sm:rounded-3xl border border-slate-800 overflow-hidden flex flex-col md:flex-row h-full md:h-[90vh] shadow-2xl relative"
-            >
-              
-              {/* Back button and detail content */}
-              <div className="flex-1 p-5 md:p-6 overflow-y-auto space-y-5 border-b md:border-b-0 md:border-r border-slate-800">
-                {/* Modal Header */}
-                <div className="flex justify-between items-center">
-                  <button
-                    onClick={() => setSelectedAsset(null)}
-                    className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <div className="text-center">
-                    <h4 className="text-base font-black text-white font-mono tracking-tight">{activeAsset.symbol}</h4>
-                    <span className="text-[10px] text-slate-500 font-mono">{activeAsset.label} Spot Rate</span>
-                  </div>
-                  <button className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-yellow-500 transition-all">
-                    <Star className="w-5 h-5 fill-yellow-500" />
-                  </button>
-                </div>
+      {/* Main Content Body */}
+      <div className="flex-grow overflow-hidden flex flex-col min-h-0">
+        {currentView === 'usdm' || currentView === 'coinm' || currentView === 'options' ? (
+          <div className="flex-grow overflow-y-auto scrollbar-hide py-2">
+            <FuturesDashboard 
+              currentUser={currentUser || null} 
+              onExecuteTrade={onExecuteTrade} 
+              selectedAsset={selectedAsset} 
+              setSelectedAsset={(asset) => setSelectedAssetSymbol(asset.symbol)}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col h-full overflow-hidden">
+            <div className="grid grid-cols-[2fr_1.2fr_0.9fr_0.8fr] px-2 py-1.5 border-b border-[#2b3139] text-[9px] font-black text-[#848e9c] uppercase tracking-widest bg-[#181a20]/30 flex-shrink-0">
+              <div className="flex items-center gap-1.5">
+                <ChevronDown className="w-2.5 h-2.5 opacity-60" />
+                Name / Vol
+              </div>
+              <div className="text-right">Last Price</div>
+              <div className="text-right">24h Chg</div>
+              <div className="text-right opacity-40"><Star className="w-2.5 h-2.5 ml-auto" /></div>
+            </div>
 
-                {/* Big Price Ticker Block */}
-                <div className="flex justify-between items-end bg-[#181a20] p-4 rounded-2xl border border-slate-800/80">
-                  <div>
-                    <span className={`text-3xl md:text-4xl font-mono font-black ${activeAsset.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {formatCryptoPrice(activeAsset.price)}
-                    </span>
-                    <span className={`text-xs font-mono font-bold ml-2 ${activeAsset.change >= 0 ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'} px-2 py-0.5 rounded`}>
-                      {activeAsset.change >= 0 ? '+' : ''}{activeAsset.change.toFixed(2)}%
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] text-slate-500 text-right">
-                    <span>24h High</span>
-                    <span className="text-slate-300">{formatCryptoPrice(activeAsset.price * 1.025)}</span>
-                    <span>24h Low</span>
-                    <span className="text-slate-300">{formatCryptoPrice(activeAsset.price * 0.981)}</span>
-                    <span>24h Vol</span>
-                    <span className="text-slate-300">{activeAsset.extra}</span>
-                  </div>
-                </div>
-
-                {/* Chart Options Header */}
-                <div className="flex justify-between items-center border-b border-slate-900 pb-2 overflow-x-auto">
-                  <div className="flex space-x-3 text-xs font-bold text-slate-500">
-                    {(['Time', '15m', '1h', '4h', '1D', 'More'] as const).map(tf => (
-                      <button
-                        key={tf}
-                        onClick={() => setChartTimeframe(tf)}
-                        className={`pb-2 px-1 transition-all ${chartTimeframe === tf ? 'text-[#f0b90b] border-b-2 border-[#f0b90b]' : 'hover:text-white'}`}
+            {/* Table Body */}
+            <div className="flex-grow overflow-y-auto custom-scrollbar">
+              <AnimatePresence mode="popLayout">
+                {filteredData.length > 0 ? (
+                  filteredData.map((item, index) => (
+                    <motion.div
+                      layout
+                      key={`${item.symbol}-${index}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => {
+                        setSelectedAssetSymbol(item.symbol);
+                        setCurrentView('usdm');
+                      }}
+                      className="grid grid-cols-[2fr_1.2fr_0.9fr_0.8fr] items-center px-2 py-2 border-b border-[#1e232c] hover:bg-[#1a1f28] transition-colors group cursor-pointer"
+                    >
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-1 font-black text-xs text-[#eaecef] uppercase">
+                          {item.symbol}
+                          <span className="text-[7px] font-normal bg-[#2b3139] text-[#848e9c] px-1 py-0.5 rounded uppercase tracking-tighter">
+                            {currentView === 'spot' ? 'Spot' : currentView === 'usdm' ? 'USDⓂ' : currentView === 'coinm' ? 'COINⓂ' : 'Option'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-[9px] text-[#848e9c] mt-0.5">
+                          <span className="truncate max-w-[50px]">{item.name}</span>
+                          <span className="text-[#5e6673]">{item.vol && item.vol !== '—' ? `${item.vol}` : '—'}</span>
+                        </div>
+                      </div>
+                      <div className="text-right font-bold text-xs text-[#eaecef]">
+                        {formatPrice(item.price)}
+                      </div>
+                      <div className="flex justify-end">
+                        <div className={`text-[10px] font-black px-2 py-0.5 rounded min-w-[55px] text-center ${
+                          item.change > 0 ? 'text-[#0ecb81] bg-[#0ecb81]/10' : 
+                          item.change < 0 ? 'text-[#f6465d] bg-[#f6465d]/10' : 
+                          'text-[#848e9c] bg-[#848e9c]/10'
+                        }`}>
+                          {item.change > 0 ? '+' : ''}{item.change.toFixed(2)}%
+                        </div>
+                      </div>
+                      <div 
+                        className="text-right cursor-pointer" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(item.symbol);
+                        }}
                       >
-                        {tf}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex space-x-1.5 text-[10px] font-mono text-slate-500">
-                    {(['MA', 'EMA', 'BOLL', 'VOL', 'RSI'] as const).map(ind => (
-                      <button
-                        key={ind}
-                        onClick={() => setIndicatorMode(ind as any)}
-                        className={`px-1.5 py-0.5 rounded border transition-all ${indicatorMode === ind ? 'bg-slate-800 text-amber-400 border-slate-700' : 'border-transparent hover:text-white'}`}
-                      >
-                        {ind}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Advanced Multi-layer Golden Chart rendering */}
-                <div className="relative h-48 md:h-60 bg-[#0d0e12] rounded-2xl border border-slate-900/80 p-3 overflow-hidden flex flex-col justify-between">
-                  <div className="absolute top-2 left-2 text-[8px] font-mono text-slate-600 uppercase">
-                    MA(5): {formatCryptoPrice(activeAsset.price * 1.002)} | MA(10): {formatCryptoPrice(activeAsset.price * 0.997)} | MA(60): {formatCryptoPrice(activeAsset.price * 1.005)}
-                  </div>
-
-                  {/* Golden area chart SVG */}
-                  <div className="w-full h-2/3 mt-4 relative">
-                    <svg className="w-full h-full overflow-visible" viewBox="0 0 400 120" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="modalGoldGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f0b90b" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#f0b90b" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-                      {/* Grid guidelines */}
-                      <line x1="0" y1="20" x2="400" y2="20" stroke="#1c1c1e" strokeWidth="1" />
-                      <line x1="0" y1="60" x2="400" y2="60" stroke="#1c1c1e" strokeWidth="1" />
-                      <line x1="0" y1="100" x2="400" y2="100" stroke="#1c1c1e" strokeWidth="1" />
-
-                      {/* Smooth gold area and line path */}
-                      <path d="M 0 80 Q 80 40 160 90 T 320 20 T 400 50 L 400 120 L 0 120 Z" fill="url(#modalGoldGrad)" />
-                      <path d="M 0 80 Q 80 40 160 90 T 320 20 T 400 50" fill="none" stroke="#f0b90b" strokeWidth="2.5" />
-                      
-                      {/* Moving average pink/blue line indicators */}
-                      <path d="M 0 90 C 80 60, 160 85, 240 40, 320 50, 400 30" fill="none" stroke="#ec4899" strokeWidth="1" strokeDasharray="2" />
-                      <path d="M 0 70 C 100 45, 200 95, 300 30, 400 40" fill="none" stroke="#3b82f6" strokeWidth="1" />
-                    </svg>
-                  </div>
-
-                  {/* Volume Candle Bar at the bottom */}
-                  <div className="w-full h-1/4 flex items-end space-x-1.5 pb-1">
-                    {[12, 18, 15, 8, 22, 14, 30, 25, 45, 10, 15, 35, 12, 28, 20].map((v, i) => (
-                      <div
-                        key={i}
-                        className={`flex-1 rounded-sm ${i % 3 === 0 ? 'bg-rose-500/40' : 'bg-emerald-500/40'}`}
-                        style={{ height: `${v}%` }}
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Buy / Sell pressure bar */}
-                <div className="space-y-1 bg-slate-950 p-3.5 rounded-xl border border-slate-900 text-xs font-mono">
-                  <div className="flex justify-between font-bold">
-                    <span className="text-emerald-400">Buy Ratio: 76.74%</span>
-                    <span className="text-rose-400">Sell Ratio: 23.26%</span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex border border-slate-900">
-                    <div className="bg-emerald-500 h-full transition-all" style={{ width: '76.74%' }}></div>
-                    <div className="bg-rose-500 h-full transition-all" style={{ width: '23.26%' }}></div>
-                  </div>
-                </div>
-
-                {/* Sub info tabs Order Book mockup */}
-                <div className="space-y-3 bg-[#181a20] p-4 rounded-xl border border-slate-800 text-xs font-mono">
-                  <div className="flex justify-between text-slate-500 font-bold border-b border-slate-900 pb-2">
-                    <span>Bid Size (USDT)</span>
-                    <span className="text-center">Bid / Ask (Price)</span>
-                    <span className="text-right">Ask Size (USDT)</span>
-                  </div>
-                  <div className="space-y-1.5 font-mono text-[11px]">
-                    <div className="flex justify-between">
-                      <span className="text-emerald-400/80">0.0520</span>
-                      <span className="text-emerald-400 font-bold">{formatCryptoPrice(activeAsset.price * 1.0001)}</span>
-                      <span className="text-slate-500">-</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-emerald-400/60">0.1412</span>
-                      <span className="text-emerald-400 font-bold">{formatCryptoPrice(activeAsset.price * 0.9998)}</span>
-                      <span className="text-slate-500">-</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">-</span>
-                      <span className="text-rose-400 font-bold">{formatCryptoPrice(activeAsset.price * 1.0005)}</span>
-                      <span className="text-rose-400/80">0.0891</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">-</span>
-                      <span className="text-rose-400 font-bold">{formatCryptoPrice(activeAsset.price * 1.0012)}</span>
-                      <span className="text-rose-400/60">1.4121</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Order Placement Controller Form (Right Side panel) */}
-              <div className="w-full md:w-80 bg-[#181a20] p-5 md:p-6 flex flex-col justify-between">
-                <div>
-                  <h4 className="text-sm font-black text-white uppercase tracking-wider mb-4 font-mono flex items-center justify-between">
-                    <span>Position Allocator</span>
-                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold font-mono">SECURE</span>
-                  </h4>
-
-                  {/* Buy / Sell main trigger toggle */}
-                  <div className="grid grid-cols-2 bg-[#0d0e12] p-1 rounded-xl border border-slate-900 mb-4">
-                    <button
-                      type="button"
-                      onClick={() => setTradeType('BUY')}
-                      className={`py-2.5 text-xs font-black rounded-lg transition-all ${
-                        tradeType === 'BUY' ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      BUY
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTradeType('SELL')}
-                      className={`py-2.5 text-xs font-black rounded-lg transition-all ${
-                        tradeType === 'SELL' ? 'bg-rose-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      SELL
-                    </button>
-                  </div>
-
-                  {/* Position configuration forms */}
-                  <form onSubmit={handleTradeSubmit} className="space-y-4">
-                    {/* Order Type */}
-                    <div className="text-left">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Order Type</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {(['LIMIT', 'MARKET'] as const).map(ot => (
-                          <button
-                            key={ot}
-                            type="button"
-                            onClick={() => setOrderType(ot)}
-                            className={`py-2 text-[10px] font-bold rounded border transition-all ${
-                              orderType === ot 
-                                ? 'bg-slate-800 text-white border-slate-700' 
-                                : 'bg-[#0d0e12] text-slate-400 border-transparent hover:border-slate-800'
-                            }`}
-                          >
-                            {ot}
-                          </button>
-                        ))}
+                        <Star className={`w-3 h-3 ml-auto transition-colors ${favorites.has(item.symbol) ? 'text-[#f0b90b] fill-[#f0b90b]' : 'text-[#5e6673] hover:text-[#f0b90b]'}`} />
                       </div>
-                    </div>
-
-                    {/* Limit Price Input if LIMIT selected */}
-                    {orderType === 'LIMIT' && (
-                      <div className="text-left">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Target Limit Price</label>
-                        <input
-                          type="text"
-                          value={limitPrice}
-                          onChange={(e) => setLimitPrice(e.target.value)}
-                          className="w-full bg-[#0d0e12] border border-slate-800 rounded-lg py-2.5 px-3 text-xs text-white font-mono outline-none focus:border-[#f0b90b]"
-                        />
-                      </div>
-                    )}
-
-                    {/* Capital Amount size */}
-                    <div className="text-left">
-                      <div className="flex justify-between items-center mb-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Allocation Size</label>
-                        <span className="text-[10px] text-slate-500 font-mono">INR Format</span>
-                      </div>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          value={tradeAmountInput}
-                          onChange={(e) => setTradeAmountInput(e.target.value)}
-                          className="w-full bg-[#0d0e12] border border-slate-800 rounded-lg py-2.5 px-3 text-xs text-white font-mono outline-none focus:border-[#f0b90b]"
-                        />
-                        <span className="absolute right-3 top-2.5 text-[10px] font-bold text-slate-500">₹</span>
-                      </div>
-
-                      {/* Prefill percentage options */}
-                      <div className="grid grid-cols-4 gap-1.5 mt-2 font-mono">
-                        {['25%', '50%', '75%', '100%'].map(percent => (
-                          <button
-                            key={percent}
-                            type="button"
-                            onClick={() => {
-                              const avail = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-                              const factor = parseInt(percent) / 100;
-                              setTradeAmountInput(Math.round(avail * factor || 5000).toString());
-                            }}
-                            className="bg-slate-900 hover:bg-slate-800 text-[9px] text-slate-400 border border-slate-800 py-1 rounded"
-                          >
-                            {percent}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Trade maturity countdown window choice */}
-                    <div className="text-left">
-                      <div className="flex justify-between items-center mb-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Cycle Window Duration</label>
-                        <span className="text-[9px] text-amber-500 font-mono font-bold animate-pulse">High Multiplier</span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-1.5 font-mono">
-                        {[
-                          { label: '60s', rate: '+85%' },
-                          { label: '3m', rate: '+105%' },
-                          { label: '5m', rate: '+128%' },
-                          { label: '15m', rate: '+195%' },
-                          { label: '1h', rate: '+350%' },
-                          { label: '1D', rate: '+1450%' }
-                        ].map(dur => (
-                          <button
-                            key={dur.label}
-                            type="button"
-                            onClick={() => setTargetDuration(dur.label)}
-                            className={`py-1.5 rounded flex flex-col items-center justify-center border transition-all ${
-                              targetDuration === dur.label
-                                ? 'bg-amber-500/15 border-amber-500 text-amber-400 shadow-md'
-                                : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
-                            }`}
-                          >
-                            <span className="text-[9px] font-black">{dur.label}</span>
-                            <span className="text-[8px] text-slate-500">{dur.rate}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Capital Wallet Summary */}
-                    <div className="bg-[#0d0e12] p-3 rounded-xl border border-slate-900 space-y-1.5 text-xs text-slate-400">
-                      <div className="flex justify-between">
-                        <span>Capital reserves</span>
-                        <span className="text-white font-mono font-bold">
-                          ₹{((currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0)).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-[10px] text-slate-500 border-t border-slate-900 pt-1.5">
-                        <span>Deduction vault</span>
-                        <span>Deposit / Yield Wallet</span>
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className={`w-full py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg ${
-                        tradeType === 'BUY'
-                          ? 'bg-emerald-500 hover:bg-emerald-400 text-[#0d0e12] shadow-emerald-500/15'
-                          : 'bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/15'
-                      }`}
-                    >
-                      {tradeType === 'BUY' ? 'LAUNCH BUY CONTRACT' : 'LAUNCH SELL CONTRACT'}
-                    </button>
-                  </form>
-                </div>
-
-                {/* Secure FMoF Audit handshake logo */}
-                <div className="mt-6 pt-4 border-t border-slate-900 flex items-center justify-center space-x-2 text-[10px] text-slate-500 font-mono">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>Verified MoF Audit Security</span>
-                </div>
-
-              </div>
-              
-              <div className="w-80 p-5 md:p-6 overflow-y-auto hidden md:block">
-                <OrderBook symbol={activeAsset.symbol} />
-              </div>
-
-            </motion.div>
-          </motion.div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 text-[#5e6673]">
+                    <Inbox className="w-10 h-10 mb-3 opacity-20" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">No assets match</p>
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
 
-      {/* MODAL 2: COPY TRADER DIALOG CONTAINER */}
-      <AnimatePresence>
-        {selectedTrader && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 text-left"
+      {/* Footer Nav */}
+      <div className="flex-shrink-0 flex items-center justify-around mt-auto pt-3 border-t border-[#1e232c] bg-[#0b0e11]">
+        {[
+          { icon: <Home className="w-4 h-4" />, label: 'Home', onClick: () => onChangeTab?.('plan') },
+          { icon: <Repeat className="w-4 h-4" />, label: 'Trade', onClick: () => setCurrentView('spot'), active: currentView === 'spot' },
+          { icon: <BarChart2 className="w-4 h-4" />, label: 'Futures', onClick: () => setCurrentView('usdm'), active: currentView === 'usdm' },
+          { icon: <Wallet className="w-4 h-4" />, label: 'Assets', onClick: () => onChangeTab?.('wallet') },
+        ].map((link, i) => (
+          <button 
+            key={i} 
+            onClick={link.onClick}
+            className={`flex flex-col items-center gap-1 transition-all ${link.active ? 'text-[#f0b90b]' : 'text-[#848e9c] hover:text-[#eaecef]'}`}
           >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="bg-[#121212] w-full max-w-md rounded-2xl border border-slate-800 p-6 space-y-5 shadow-2xl"
-            >
-              <div className="flex justify-between items-center border-b border-slate-900 pb-3">
-                <h4 className="text-base font-black text-white uppercase tracking-tight">Copy Portfolio Setup</h4>
-                <button
-                  onClick={() => setSelectedTrader(null)}
-                  className="p-1 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-white transition-all"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-              </div>
+            {link.icon}
+            <span className="text-[8px] font-black uppercase tracking-tighter">{link.label}</span>
+          </button>
+        ))}
+      </div>
 
-              <div className="flex items-center space-x-3 bg-[#181a20] p-3 rounded-xl border border-slate-800">
-                <div className={`w-10 h-10 ${selectedTrader.color} rounded-full flex items-center justify-center font-bold text-slate-950 uppercase`}>
-                  {selectedTrader.name.slice(0, 2)}
-                </div>
-                <div>
-                  <h5 className="text-sm font-black text-white">{selectedTrader.name}</h5>
-                  <span className="text-xs text-[#f0b90b] font-mono font-bold">{selectedTrader.roi} Target</span>
-                </div>
-              </div>
-
-              <form onSubmit={handleCopyTraderAction} className="space-y-4">
-                <div className="text-left">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Copy Allocation Capital</label>
-                  <input
-                    type="number"
-                    value={copyAmount}
-                    onChange={(e) => setCopyAmount(e.target.value)}
-                    className="w-full bg-[#0d0e12] border border-slate-800 rounded-lg py-2.5 px-3 text-xs text-white font-mono outline-none focus:border-[#f0b90b]"
-                  />
-                  <p className="text-[9px] text-slate-500 mt-1 font-mono">Minimum size ₹5,000 for perfect portfolio synchronization.</p>
-                </div>
-
-                <div className="text-left">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Replication Block Window</label>
-                  <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-                    {['7 Days', '15 Days', '30 Days'].map(dur => (
-                      <button
-                        key={dur}
-                        type="button"
-                        onClick={() => setCopyDuration(dur)}
-                        className={`py-2 rounded border transition-all ${
-                          copyDuration === dur
-                            ? 'bg-[#f0b90b] text-[#070b15] border-[#f0b90b]'
-                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
-                        }`}
-                      >
-                        {dur}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-[#f0b90b] hover:bg-yellow-500 text-slate-950 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#f0b90b]/15"
-                >
-                  START REPLICATING POSITION
-                </button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {/* Status Bar */}
+      <div className="flex justify-between items-center mt-3 px-1 text-[8px] text-[#5e6673] font-black uppercase tracking-widest opacity-60">
+        <div className="flex items-center gap-1">
+          <span className="w-1 h-1 rounded-full bg-[#0ecb81] animate-pulse"></span>
+          Live
+        </div>
+        <div>{updateTime}</div>
+        <div>{filteredData.length} SEC</div>
+      </div>
     </div>
   );
 }

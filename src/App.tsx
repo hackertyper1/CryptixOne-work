@@ -8,7 +8,7 @@ const TradeSection = lazy(() => import('./components/TradeSection'));
 const WalletSection = lazy(() => import('./components/WalletSection'));
 const AccountSection = lazy(() => import('./components/AccountSection'));
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
-const MarketSection = lazy(() => import('./components/MarketSection'));
+const ExploreSection = lazy(() => import('./components/ExploreSection'));
 import SplashScreen from './components/SplashScreen';
 import AuthGate from './components/AuthGate';
 import Footer from './components/Footer';
@@ -120,7 +120,7 @@ const playMaturitySound = (soundEnabled: boolean) => {
 };
 
 export default function App() {
-  // Navigation State: 'home' | 'plan' | 'trade' | 'market' | 'wallet' | 'account' | 'admin'
+  // Navigation State: 'home' | 'plan' | 'trade' | 'wallet' | 'account' | 'admin'
   const [activeTab, setActiveTab] = useState<string>(() => {
     const stored = localStorage.getItem('cryptix_active_tab');
     return stored || 'home';
@@ -130,8 +130,23 @@ export default function App() {
     localStorage.setItem('cryptix_active_tab', activeTab);
   }, [activeTab]);
 
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-  const [mobileShowHome, setMobileShowHome] = useState<boolean>(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>(() => {
+    const stored = localStorage.getItem('cryptix_auth_mode');
+    return (stored as 'login' | 'signup') || 'login';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('cryptix_auth_mode', authMode);
+  }, [authMode]);
+
+  const [mobileShowHome, setMobileShowHome] = useState<boolean>(() => {
+    const stored = localStorage.getItem('cryptix_mobile_show_home');
+    return stored === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('cryptix_mobile_show_home', mobileShowHome.toString());
+  }, [mobileShowHome]);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [isApk, setIsApk] = useState<boolean>(false);
   const [showSplash, setShowSplash] = useState<boolean>(true);
@@ -745,8 +760,16 @@ export default function App() {
         toast.error('Login cancelled.');
         return;
       }
+      
+      // If the provider isn't enabled in console, we notify the user but allow fallback
       if (error?.code === 'auth/operation-not-allowed') {
-        toast.error('Social login method not enabled. Falling back to secure preview mode.');
+        console.info('Social login not enabled in Firebase Console. Using secure preview fallback.');
+        toast('Preview Mode: Social login is not configured in Firebase Console yet. Enabling secure guest access...', {
+          description: "To enable real Google login, please activate it in your Firebase Console under Authentication > Sign-in method.",
+          duration: 6000
+        });
+      } else {
+        toast.error('Authentication error occurred. Using secure preview fallback.');
       }
     }
 
@@ -1401,8 +1424,8 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'market' && (
-              <MarketSection
+            {activeTab === 'explore' && (
+              <ExploreSection
                 currentUser={currentUser}
                 onUpdateWallet={handleUpdateWallet}
                 addLog={addLog}

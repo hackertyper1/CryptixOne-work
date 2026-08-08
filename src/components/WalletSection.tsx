@@ -144,7 +144,15 @@ export default function WalletSection({
   isApk = false
 }: WalletSectionProps) {
   // Navigation internal state: 'deposit' | 'withdraw' | 'history'
-  const [internalTab, setInternalTab] = useState<'deposit' | 'withdraw' | 'history'>('deposit');
+  const [internalTab, setInternalTab] = useState<'deposit' | 'withdraw' | 'history'>(() => {
+    const stored = localStorage.getItem('wallet_internal_tab');
+    return (stored as any) || 'deposit';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('wallet_internal_tab', internalTab);
+  }, [internalTab]);
+
   const [isManualMode, setIsManualMode] = useState(false);
   const [showManualMethods, setShowManualMethods] = useState(false);
 
