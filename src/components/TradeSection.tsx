@@ -69,6 +69,7 @@ export default function TradeSection({
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [tradeAmount, setTradeAmount] = useState('100');
+  const [tradeTime, setTradeTime] = useState('01:00');
 
   const realBalance = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
   const currentBalance = isDemoMode ? demoBalance : realBalance;
@@ -192,7 +193,7 @@ export default function TradeSection({
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-grow overflow-y-auto scrollbar-hide bg-[#0b0e11]">
+      <main className="flex-grow overflow-hidden bg-[#0b0e11] relative">
         <AnimatePresence mode="wait">
           {selectedAsset ? (
             <motion.div 
@@ -200,7 +201,7 @@ export default function TradeSection({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col h-full bg-[#0b0e11] overflow-hidden"
+              className="flex flex-col h-full bg-[#0b0e11] overflow-hidden absolute inset-0"
             >
               {/* Header inside Trading View */}
               <div className="px-4 py-3 flex items-center justify-between border-b border-[#1e232c] flex-shrink-0">
@@ -270,32 +271,49 @@ export default function TradeSection({
               </div>
 
               {/* Action Controls Section */}
-              <div className="px-4 pb-6 space-y-4 flex-shrink-0 bg-[#0b0e11]">
+              <div className="px-4 pb-6 space-y-3 flex-shrink-0 bg-[#0b0e11]">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#1e232c] rounded-2xl p-3 border border-white/5 flex flex-col items-center justify-center gap-1 cursor-pointer">
-                    <span className="text-[10px] text-[#848e9c] font-bold">Amount</span>
-                    <span className="text-base font-black text-white">₹{tradeAmount}</span>
+                  <div className="bg-[#1e232c] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center gap-0.5">
+                    <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-tighter">Amount</span>
+                    <input 
+                      type="number"
+                      value={tradeAmount}
+                      onChange={(e) => setTradeAmount(e.target.value)}
+                      onFocus={(e) => e.target.select()}
+                      className="bg-transparent text-center text-base font-black text-white outline-none w-full"
+                    />
                   </div>
-                  <div className="bg-[#1e232c] rounded-2xl p-3 border border-white/5 flex flex-col items-center justify-center gap-1 cursor-pointer">
-                    <span className="text-[10px] text-[#848e9c] font-bold">Time</span>
-                    <span className="text-base font-black text-white">01:16</span>
+                  <div className="bg-[#1e232c] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center gap-0.5">
+                    <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-tighter">Time</span>
+                    <input 
+                      type="text"
+                      value={tradeTime}
+                      onChange={(e) => setTradeTime(e.target.value)}
+                      onFocus={(e) => e.target.select()}
+                      className="bg-transparent text-center text-base font-black text-white outline-none w-full"
+                      placeholder="01:00"
+                    />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 h-14">
+                <div className="grid grid-cols-2 gap-3 h-10">
                   <button
                     onClick={() => handleTrade('buy')}
-                    className="bg-[#0ecb81] rounded-2xl flex items-center justify-center gap-4 text-white shadow-lg shadow-[#0ecb81]/20 active:scale-95 transition-all"
+                    className="bg-[#0ecb81] rounded-xl flex items-center justify-center gap-2 text-white shadow-lg shadow-[#0ecb81]/20 active:scale-95 transition-all py-1 px-3"
                   >
-                    <TrendingUp className="w-6 h-6 rotate-[-45deg]" />
-                    <span className="text-lg font-black tracking-tight">₹182.00</span>
+                    <TrendingUp className="w-4 h-4 rotate-[-45deg]" />
+                    <span className="text-xs font-black tracking-tight">
+                      ₹{selectedAsset.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </button>
                   <button
                     onClick={() => handleTrade('sell')}
-                    className="bg-[#f6465d] rounded-2xl flex items-center justify-center gap-4 text-white shadow-lg shadow-[#f6465d]/20 active:scale-95 transition-all"
+                    className="bg-[#f6465d] rounded-xl flex items-center justify-center gap-2 text-white shadow-lg shadow-[#f6465d]/20 active:scale-95 transition-all py-1 px-3"
                   >
-                    <TrendingUp className="w-6 h-6 rotate-[135deg]" />
-                    <span className="text-lg font-black tracking-tight">₹182.00</span>
+                    <TrendingUp className="w-4 h-4 rotate-[135deg]" />
+                    <span className="text-xs font-black tracking-tight">
+                      ₹{selectedAsset.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -306,7 +324,7 @@ export default function TradeSection({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="p-4 space-y-4"
+              className="p-4 space-y-4 h-full overflow-y-auto scrollbar-hide absolute inset-0"
             >
               {/* Account Card */}
               <div 
@@ -406,7 +424,7 @@ export default function TradeSection({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="p-4 space-y-4"
+              className="p-4 space-y-4 h-full overflow-y-auto scrollbar-hide absolute inset-0"
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold flex items-center gap-2">
@@ -461,7 +479,7 @@ export default function TradeSection({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="p-4 space-y-4"
+              className="p-4 space-y-4 h-full overflow-y-auto scrollbar-hide absolute inset-0"
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold flex items-center gap-2">
@@ -496,7 +514,7 @@ export default function TradeSection({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="p-6"
+              className="p-6 h-full overflow-y-auto scrollbar-hide absolute inset-0"
             >
               <div className="bg-[#181a20] rounded-2xl border border-[#2b3139] p-6 space-y-4">
                 <h3 className="text-xl font-bold">About Futures Trading</h3>
