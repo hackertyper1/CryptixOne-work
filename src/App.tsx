@@ -230,35 +230,19 @@ export default function App() {
 
     // Real-time Users
     const unsubscribeUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-      const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-      setUsers(prev => {
-        const map = new Map<string, User>();
-        // Add local storage users first
-        const storedUsers = localStorage.getItem('cryptix_users');
-        if (storedUsers) {
-          try {
-            JSON.parse(storedUsers).forEach((u: User) => map.set(u.id || u.username, u));
-          } catch (e) {}
-        }
-        prev.forEach(u => map.set(u.id || u.username, u));
-        usersData.forEach(u => map.set(u.id || u.username, u));
-        const merged = Array.from(map.values());
-        localStorage.setItem('cryptix_users', JSON.stringify(merged));
-        return merged;
-      });
+      const usersData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as User));
+      setUsers(usersData);
+      localStorage.setItem('cryptix_users', JSON.stringify(usersData));
       
       // Update current user if logged in
       const storedCurrentUser = localStorage.getItem('cryptix_current_user');
       if (storedCurrentUser) {
         const parsedUser = JSON.parse(storedCurrentUser);
-        setUsers(latestUsers => {
-          const freshUser = latestUsers.find(u => u.username === parsedUser.username || u.id === parsedUser.id);
-          if (freshUser) {
-            setCurrentUser(freshUser);
-            localStorage.setItem('cryptix_current_user', JSON.stringify(freshUser));
-          }
-          return latestUsers;
-        });
+        const freshUser = usersData.find(u => u.username === parsedUser.username || u.id === parsedUser.id);
+        if (freshUser && JSON.stringify(freshUser) !== JSON.stringify(currentUser)) {
+          setCurrentUser(freshUser);
+          localStorage.setItem('cryptix_current_user', JSON.stringify(freshUser));
+        }
       }
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'users');
@@ -272,7 +256,7 @@ export default function App() {
     }
 
     // Real-time Transactions
-    const unsubscribeTransactions = onSnapshot(query(collection(db, 'transactions'), orderBy('date', 'desc'), limit(50)), (snapshot) => {
+    const unsubscribeTransactions = onSnapshot(query(collection(db, 'transactions'), orderBy('date', 'desc'), limit(200)), (snapshot) => {
       const txs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Transaction));
       setTransactions(txs);
     }, (error) => {
@@ -296,7 +280,7 @@ export default function App() {
     });
 
     // Real-time Investment Requests
-    const unsubscribeRequests = onSnapshot(query(collection(db, 'requests'), orderBy('date', 'desc'), limit(50)), (snapshot) => {
+    const unsubscribeRequests = onSnapshot(query(collection(db, 'requests'), orderBy('date', 'desc'), limit(100)), (snapshot) => {
       const reqs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as InvestmentRequest));
       setInvestmentRequests(reqs);
     }, (error) => {
@@ -669,16 +653,8 @@ export default function App() {
     pass: string
   ) => {
     const defaultSlCodes = [
-      'SL-568-725',
-      'SL-194-836',
-      'SL-807-451',
-      'SL-632-918',
-      'SL-275-604',
-      'SL-981-357',
-      'SL-416-829',
-      'SL-753-102',
-      'SL-248-690',
-      'SL-875-431'
+      'SL-568-725', 'SL-194-836', 'SL-807-451', 'SL-632-918', 'SL-275-604',
+      'SL-981-357', 'SL-416-829', 'SL-753-102', 'SL-248-690', 'SL-875-431'
     ];
     const randomSl = defaultSlCodes[Math.floor(Math.random() * defaultSlCodes.length)];
 
@@ -697,9 +673,9 @@ export default function App() {
 
     // Store password (legacy local storage just in case) and register user
     localStorage.setItem(`cryptix_pass_${newUser.username}`, pass);
-    const updatedUsers = [...users, newUser];
-    saveUsersToStorage(updatedUsers);
-    syncUser(newUser); // Persist to Firestore
+    
+    // We only need to sync to Firestore, onSnapshot will handle local state
+    syncUser(newUser); 
 
     // Automaticaly log in new signup
     setCurrentUser(newUser);
@@ -832,11 +808,11 @@ export default function App() {
       username: currentUser.username,
       userPhone: currentUser.phone,
       status: 'pending',
-      date: new Date().toLocaleString()
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp()
     };
 
-    const updated = [newTx, ...transactions];
-    saveTransactionsToStorage(updated);
+    // onSnapshot will update the local state
     syncTransaction(newTx);
     addLog(`Submitted deposit UTR claim for verification of ${tx.amount} INR`, currentUser.username);
   };
@@ -1202,7 +1178,7 @@ export default function App() {
     addLog(`Selected investment slot ${plan.category} ₹${plan.amount} - Redirected to payment form`, currentUser?.username || 'anonymous');
   };
 
-  // 13. Submit Custom Investment Request Form (not shown in user's transactions history)
+  // 13. Submit Custom Investment Request Form
   const handleInvestmentRequestSubmit = (req: Omit<InvestmentRequest, 'id' | 'userId' | 'username' | 'status' | 'date'>) => {
     if (!currentUser) return;
     const newReq: InvestmentRequest = {
@@ -1211,10 +1187,11 @@ export default function App() {
       userId: currentUser.id,
       username: currentUser.username,
       status: 'pending',
-      date: new Date().toLocaleString()
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp()
     };
-    const updated = [newReq, ...investmentRequests];
-    saveInvestmentRequestsToStorage(updated);
+    
+    // onSnapshot will update local state
     syncInvestmentRequest(newReq);
     addLog(`Submitted custom investment form for ₹${req.amount} via WhatsApp`, currentUser.username);
   };
