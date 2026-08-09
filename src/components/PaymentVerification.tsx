@@ -62,93 +62,90 @@ export default function PaymentVerification({ method, amount, upiId, address, is
 
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="space-y-6 relative z-10 pt-4"
+      className="max-w-md mx-auto space-y-3 relative z-10 py-1 overflow-hidden select-none"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Protocol: {method}</span>
-        </div>
+      {/* Top Bar: Back & Method */}
+      <div className="flex items-center justify-between px-1">
         <button 
           onClick={onCancel}
-          className="px-2 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-tight flex items-center space-x-1"
+          className="px-2.5 py-1 rounded-lg bg-slate-900 border border-white/10 text-[11px] font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-1 active:scale-95"
         >
           <span>← Back</span>
         </button>
+        <div className="flex items-center gap-2 bg-[#0b101f] border border-white/10 px-3 py-1 rounded-full">
+          {methodIcon && (
+            <img src={methodIcon} alt={method} className="w-3.5 h-3.5 object-contain" referrerPolicy="no-referrer" />
+          )}
+          <span className="text-[11px] font-black text-white uppercase tracking-wider">{method} Deposit</span>
+        </div>
       </div>
 
-      <div className="bg-[#0b101f] border border-white/5 rounded-[2rem] p-6 sm:p-8 flex flex-col items-center space-y-6 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 w-48 h-48 bg-emerald-500/5 blur-[80px] -translate-x-1/2 -mt-24" />
+      {/* Main Single Page Card */}
+      <div className="bg-[#0b101f] border border-white/10 rounded-2xl p-3.5 sm:p-4 flex flex-col items-center space-y-3 shadow-xl relative overflow-hidden">
         
-        <div className="text-center space-y-2 relative z-10">
-          {methodIcon && (
-            <div className="w-12 h-12 mx-auto mb-2 bg-white/5 rounded-xl p-2.5 flex items-center justify-center">
-              <img src={methodIcon} alt={method} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-            </div>
-          )}
-          <h4 className="text-xl font-black text-white uppercase tracking-tight leading-tight">
-            Complete your <span className="text-emerald-500">Deposit</span>
-          </h4>
-          <p className="text-[9px] text-slate-500 font-mono uppercase tracking-[0.2em] font-black">Ref: CT-{Math.random().toString(36).substring(7).toUpperCase()}</p>
+        {/* Amount Banner */}
+        <div className="w-full bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2.5 flex items-center justify-between">
+          <div className="flex flex-col text-left">
+            <span className="text-[9px] text-emerald-400/80 uppercase font-bold tracking-widest">Required Amount</span>
+            <span className="text-xl font-black text-emerald-400 font-mono">₹{amount.toLocaleString()}</span>
+          </div>
+          <div className="bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase px-2 py-1 rounded-md border border-emerald-500/30">
+            Instant UPI
+          </div>
         </div>
 
+        {/* QR Scanner */}
         {!isCrypto && qrUrl && (
-          <div className="relative group z-10">
-            <div className="absolute -inset-6 bg-emerald-500/10 blur-3xl group-hover:bg-emerald-500/15 transition-all rounded-full" />
-            <div className="relative bg-white p-5 rounded-3xl shadow-2xl overflow-hidden border-4 border-slate-900">
+          <div className="flex flex-col items-center space-y-1 my-0.5">
+            <div className="relative bg-white p-2.5 rounded-2xl shadow-lg border-2 border-slate-800">
               <img 
                 src={qrUrl} 
                 alt="Payment QR" 
-                className="w-48 h-48 sm:w-60 sm:h-60"
+                className="w-32 h-32 sm:w-36 sm:h-36 object-contain"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-x-0 h-0.5 bg-emerald-500 animate-scan top-0 opacity-50" />
+              <div className="absolute inset-x-0 h-0.5 bg-emerald-500 animate-scan top-0 opacity-70" />
             </div>
+            <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase">Scan QR Code to Pay</span>
           </div>
         )}
 
-        <div className="w-full space-y-3 relative z-10">
-          <div className="bg-slate-950/60 border border-white/5 rounded-2xl p-4 flex items-center justify-between shadow-inner">
-            <div className="flex flex-col">
-              <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest mb-0.5">Required Amount</span>
-              <span className="text-xl font-black text-white font-mono tracking-tight">₹{amount.toLocaleString()}</span>
-            </div>
-            <div className="text-right">
-              <span className="text-[8px] text-emerald-500 uppercase font-black tracking-widest block mb-0.5">System Status</span>
-              <div className="flex items-center space-x-1.5 justify-end">
-                <span className="text-[10px] font-black text-emerald-400">SYNCED</span>
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-              </div>
-            </div>
+        {/* Merchant VPA / UPI ID or Crypto Address */}
+        <div className="w-full bg-slate-950/80 border border-white/5 rounded-xl p-2.5 flex items-center justify-between gap-2">
+          <div className="flex flex-col min-w-0 text-left">
+            <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest">
+              {isCrypto ? 'Deposit Address' : 'Merchant VPA / UPI ID'}
+            </span>
+            <span className="text-xs font-black text-amber-400 truncate font-mono select-all">
+              {isCrypto ? address : upiId}
+            </span>
           </div>
-
-          <div className="bg-slate-950/60 border border-white/5 rounded-2xl p-4 flex items-center justify-between group shadow-inner">
-            <div className="flex flex-col min-w-0 pr-4">
-              <span className="text-[8px] text-slate-500 uppercase font-black tracking-widest mb-0.5">
-                {isCrypto ? 'Deposit Address' : 'Merchant VPA'}
-              </span>
-              <span className="text-[11px] font-black text-slate-300 truncate font-mono select-all">
-                {isCrypto ? address : upiId}
-              </span>
-            </div>
-            <button 
-              onClick={handleCopy}
-              className="p-2.5 bg-slate-900 border border-white/5 hover:border-emerald-500/40 rounded-xl text-slate-400 hover:text-emerald-400 transition-all shrink-0"
-            >
-              {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-            </button>
-          </div>
+          <button 
+            onClick={handleCopy}
+            className="p-2 bg-slate-900 border border-white/10 hover:border-emerald-500/50 rounded-lg text-slate-300 hover:text-emerald-400 transition-all shrink-0 active:scale-95 flex items-center gap-1 text-[10px] font-bold"
+          >
+            {copied ? (
+              <>
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="text-emerald-500">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
         </div>
-      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 animate-fadeInUp">
-        <div className="space-y-3">
-          <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">
-            {isCrypto ? 'ENTER TRANSACTION HASH (TXID)' : 'SUBMIT 12-DIGIT TRANSACTION UTR'}
-          </label>
-          <div className="relative">
+        {/* UTR Input Form */}
+        <form onSubmit={handleSubmit} className="w-full space-y-2.5 pt-1">
+          <div className="space-y-1 text-left">
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-0.5">
+              {isCrypto ? 'Transaction Hash (TXID)' : 'Enter 12-Digit UTR Number'}
+            </label>
             <input 
               type="text"
               value={utr}
@@ -157,41 +154,34 @@ export default function PaymentVerification({ method, amount, upiId, address, is
                 setUtr(val);
                 setError('');
               }}
-              className={`w-full bg-[#060b17] border-2 ${error ? 'border-rose-500/50' : 'border-slate-800 focus:border-emerald-500'} rounded-[1.5rem] py-5 px-6 text-white font-black tracking-[0.25em] outline-none transition-all placeholder:text-slate-800 text-center text-xl shadow-lg`}
-              placeholder={isCrypto ? "HASH VALUE" : "0000 0000 0000"}
+              className={`w-full bg-[#060b17] border-2 ${error ? 'border-rose-500' : 'border-slate-800 focus:border-emerald-500'} rounded-xl py-2.5 px-3 text-white font-black tracking-widest outline-none transition-all placeholder:text-slate-700 text-center text-base font-mono`}
+              placeholder={isCrypto ? "HASH VALUE" : "Enter 12 Digit UTR Number"}
             />
             <AnimatePresence>
               {error && (
                 <motion.div 
-                  initial={{ opacity: 0, y: -5 }}
+                  initial={{ opacity: 0, y: -2 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="mt-2 text-center"
+                  className="text-center pt-0.5"
                 >
-                  <span className="text-[9px] text-rose-500 font-black uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-full">
+                  <span className="text-[9px] text-rose-400 font-bold uppercase tracking-wider bg-rose-500/10 px-2 py-0.5 rounded">
                     {error}
                   </span>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-        </div>
 
-        <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 flex items-start space-x-3 shadow-inner">
-          <Info className="w-5 h-5 text-emerald-500/60 shrink-0 mt-0.5" />
-          <p className="text-[10px] text-slate-400 leading-relaxed font-medium uppercase tracking-tight">
-            Verification is processed by our <span className="text-white font-bold">HFT nodes</span>. Please ensure the {isCrypto ? 'TXID' : 'UTR'} is correct to avoid deployment delays.
-          </p>
-        </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-1.5"
+          >
+            <span>Submit Payment UTR</span>
+          </button>
+        </form>
 
-        <button
-          type="submit"
-          className="w-full py-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-[1.5rem] uppercase tracking-[0.4em] transition-all shadow-[0_10px_30px_rgba(16,185,129,0.3)] transform active:scale-[0.98] relative overflow-hidden flex items-center justify-center group"
-        >
-          <span className="relative z-10">Initiate Verification</span>
-          <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
-        </button>
-      </form>
+      </div>
     </motion.div>
 
   );

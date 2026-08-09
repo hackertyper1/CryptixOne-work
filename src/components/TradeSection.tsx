@@ -24,6 +24,7 @@ import {
   CheckCircle2,
   Clock
 } from 'lucide-react';
+import PaymentVerification from './PaymentVerification';
 import { User, ActiveTrade, SystemSettings } from '../types';
 import { toast } from 'sonner';
 import { db } from '../lib/firebase';
@@ -108,13 +109,19 @@ const FUTURES_DATA = [
 ];
 
 const DEPOSIT_METHODS = [
-  { id: 'UPI', name: 'UPI (Google Pay, PhonePe, Paytm)', icon: 'https://cdn-icons-png.flaticon.com/512/4305/4305531.png' },
-  { id: 'Bank', name: 'Bank Transfer (NEFT/IMPS)', icon: 'https://cdn-icons-png.flaticon.com/512/2830/2830284.png' },
+  { id: 'Google Pay', name: 'Google Pay', label: 'Fast UPI', subtitle: 'Instant UPI Transfer', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-pay-icon.png' },
+  { id: 'Phone Pay', name: 'Phone Pay', label: 'Auto Scan', subtitle: 'PhonePe Direct UPI', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-icon.png' },
+  { id: 'Paytm', name: 'Paytm', label: 'Business', subtitle: 'Paytm Wallet & UPI', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/paytm-icon.png' },
+  { id: 'Icash', name: 'Icash', label: 'Flexible', subtitle: 'iCash Instant Node', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/credit-card-color-icon.png' },
+  { id: 'Binance Pay', name: 'Binance Pay', label: 'Web3 Node', subtitle: 'Web3 Crypto Settlement', icon: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Binance_Logo.svg' },
+  { id: 'Ethereum (ETH)', name: 'Ethereum (ETH)', label: 'ETH Node', subtitle: 'ERC-20 Smart Contract', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/ethereum-eth-icon.png' },
+  { id: 'Gate Pay', name: 'Gate Pay', label: 'Gateway', subtitle: 'Cross-Chain Gateway', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/payment-gateway-icon.png' },
 ];
 
 export default function TradeSection({
   currentUser,
   onExecuteTrade,
+  onNavigateToWallet,
   onChangeTab,
   systemSettings,
   isDemoMode,
@@ -410,7 +417,8 @@ export default function TradeSection({
         <div className="flex items-center gap-4">
           <div 
             onClick={() => {
-              onChangeTab?.('plan');
+              setDepositStep(1);
+              setShowDepositModal(true);
             }}
             className="flex items-center gap-2 bg-[#1e2329] px-3 py-1.5 rounded-full border border-[#2b3139] cursor-pointer hover:border-[#f0b90b] transition-all"
           >
@@ -466,7 +474,8 @@ export default function TradeSection({
                 <div className="flex items-center gap-2">
                   <div 
                     onClick={() => {
-                      onChangeTab?.('plan');
+                      setDepositStep(1);
+                      setShowDepositModal(true);
                     }}
                     className="bg-[#f0b90b] p-2 rounded-xl shadow-lg shadow-[#f0b90b]/10 cursor-pointer active:scale-95 transition-transform"
                   >
@@ -617,7 +626,7 @@ export default function TradeSection({
 
               {/* Quick Actions */}
               <div className="grid grid-cols-3 gap-3">
-                <button onClick={() => onChangeTab?.('plan')} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
+                <button onClick={() => { setDepositStep(1); setShowDepositModal(true); }} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
                   <ArrowDown className="text-[#0ecb81]" />
                   <span className="text-[11px] font-bold text-[#848e9c]">Deposit</span>
                 </button>
@@ -1026,17 +1035,17 @@ export default function TradeSection({
                 </div>
 
                 {depositStep === 1 && (
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-black text-[#848e9c] uppercase tracking-widest block">Enter Amount (₹)</label>
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-[#848e9c] uppercase tracking-widest block">Enter Custom Amount (₹)</label>
                       <div className="relative">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-[#f0b90b]">₹</div>
                         <input 
                           type="number"
-                          placeholder="500"
+                          placeholder="Enter amount (min ₹100)"
                           value={depositAmount}
                           onChange={(e) => setDepositAmount(e.target.value)}
-                          className="w-full bg-[#1e2329] border border-[#2b3139] rounded-2xl py-5 pl-10 pr-4 text-2xl font-black text-white outline-none focus:border-[#f0b90b] transition-all"
+                          className="w-full bg-[#1e2329] border border-[#2b3139] rounded-2xl py-4 pl-10 pr-4 text-2xl font-black text-white outline-none focus:border-[#f0b90b] transition-all"
                         />
                       </div>
                     </div>
@@ -1054,80 +1063,95 @@ export default function TradeSection({
                     </div>
 
                     <button 
-                      onClick={() => setDepositStep(2)}
+                      onClick={() => {
+                        if (!depositAmount || parseFloat(depositAmount) < 100) {
+                          toast.error('Minimum deposit amount is ₹100');
+                          return;
+                        }
+                        setDepositStep(2);
+                      }}
                       className="w-full bg-[#f0b90b] text-black font-black py-4 rounded-2xl shadow-lg shadow-[#f0b90b]/10 active:scale-95 transition-all uppercase tracking-widest text-xs"
                     >
-                      Continue
+                      Continue to Payment
                     </button>
                   </div>
                 )}
 
                 {depositStep === 2 && (
-                  <div className="space-y-4">
+                  <div className="space-y-3 max-h-[60vh] overflow-y-auto scrollbar-hide pr-1">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-[#848e9c] uppercase tracking-widest block mb-1">Choose Deposit Method</label>
+                      <label className="text-[10px] font-black text-[#848e9c] uppercase tracking-widest block mb-1">Choose Payment Method</label>
                       <div className="flex flex-col gap-2">
                         {DEPOSIT_METHODS.map((method) => (
                           <button 
                             key={method.id}
                             onClick={() => { setDepositMethod(method.name); setDepositStep(3); }}
-                            className="bg-[#1e2329] border border-[#2b3139] p-4 rounded-2xl flex items-center justify-between hover:border-[#f0b90b] transition-all group w-full"
+                            className="bg-[#1e2329] border border-[#2b3139] p-3 rounded-2xl flex items-center justify-between hover:border-[#f0b90b] transition-all group w-full"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center p-1">
-                                <img src={method.icon} alt={method.name} className="w-full h-full object-contain" />
+                              <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center p-1.5 shadow-sm overflow-hidden shrink-0">
+                                <img src={method.icon} alt={method.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                               </div>
-                              <span className="text-xs font-black text-white uppercase tracking-widest">{method.name}</span>
+                              <div className="text-left">
+                                <span className="text-xs font-black text-white uppercase tracking-widest block">{method.name}</span>
+                                <span className="text-[9px] text-[#848e9c] font-medium">{method.subtitle}</span>
+                              </div>
                             </div>
-                            <ChevronRight className="w-4 h-4 text-[#5e6673] group-hover:text-[#f0b90b]" />
+                            <div className="flex items-center gap-2">
+                              <span className="text-[8px] text-[#848e9c] font-mono font-black uppercase group-hover:text-[#f0b90b] bg-[#141820] px-2 py-1 rounded-md border border-[#2b3139]">{method.label}</span>
+                              <ChevronRight className="w-4 h-4 text-[#5e6673] group-hover:text-[#f0b90b]" />
+                            </div>
                           </button>
                         ))}
                       </div>
                     </div>
-                    <button onClick={() => setDepositStep(1)} className="w-full py-3 text-[#848e9c] text-[10px] font-black uppercase tracking-widest border border-[#2b3139] rounded-xl hover:text-white transition-colors">
+                    <button onClick={() => setDepositStep(1)} className="w-full py-2.5 text-[#848e9c] text-[10px] font-black uppercase tracking-widest border border-[#2b3139] rounded-xl hover:text-white transition-colors">
                       BACK TO AMOUNT
                     </button>
                   </div>
                 )}
 
                 {depositStep === 3 && (
-                  <div className="space-y-4">
-                    <div className="bg-[#1e2329] p-4 rounded-2xl border border-[#2b3139] space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-[#848e9c]">UPI ID</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-black text-white">{systemSettings.upiId || 'payment@upi'}</span>
-                          <button onClick={() => { navigator.clipboard.writeText(systemSettings.upiId || 'payment@upi'); toast.success('Copied!'); }}><Copy className="w-4 h-4 text-[#f0b90b]" /></button>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-center py-2">
-                         <div className="bg-white p-2 rounded-lg">
-                           <img src={systemSettings.qrCodeUrl || "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=example"} alt="QR" className="w-32 h-32" />
-                         </div>
-                         <span className="text-[10px] text-[#848e9c] mt-2 font-bold uppercase tracking-widest">Scan and Pay</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-[#848e9c] uppercase">Enter UTR Number</label>
-                      <input 
-                        type="text"
-                        placeholder="12 digit UTR"
-                        value={depositUTR}
-                        onChange={(e) => setDepositUTR(e.target.value)}
-                        className="w-full bg-[#1e2329] border border-[#2b3139] rounded-2xl p-4 text-base font-black outline-none focus:border-[#f0b90b]"
-                      />
-                    </div>
-
-                    <button 
-                      onClick={handleDepositSubmit}
-                      disabled={isSubmitting}
-                      className="w-full bg-[#0ecb81] text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
-                    >
-                      {isSubmitting ? 'SUBMITTING...' : 'CONFIRM DEPOSIT'}
-                    </button>
-                    <button onClick={() => setDepositStep(2)} className="w-full text-[#848e9c] text-sm font-bold">BACK</button>
-                  </div>
+                  <PaymentVerification
+                    method={depositMethod || 'Google Pay'}
+                    amount={parseFloat(depositAmount) || 0}
+                    upiId={systemSettings.upiId || 'payment@upi'}
+                    address={systemSettings.binanceAddress || systemSettings.otherCryptoAddress || '0x...'}
+                    isCrypto={Boolean(depositMethod.includes('Binance') || depositMethod.includes('Ethereum') || depositMethod.includes('Gate'))}
+                    onVerify={async (utr) => {
+                      if (!currentUser) {
+                        toast.error('Please login to deposit');
+                        return;
+                      }
+                      setIsSubmitting(true);
+                      try {
+                        await addDoc(collection(db, 'transactions'), {
+                          userId: currentUser.id,
+                          username: currentUser.username,
+                          userPhone: currentUser.phone,
+                          type: 'deposit',
+                          amount: parseFloat(depositAmount),
+                          status: 'pending',
+                          method: depositMethod || 'Google Pay',
+                          utr: utr,
+                          date: new Date().toISOString(),
+                          createdAt: serverTimestamp()
+                        });
+                        toast.success('Deposit request submitted! Wait for admin confirmation.');
+                        setShowDepositModal(false);
+                        setDepositStep(1);
+                        setDepositAmount('');
+                        setDepositUTR('');
+                      } catch (error) {
+                        console.error('Deposit Error:', error);
+                        toast.error('Failed to submit deposit request');
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                    onCancel={() => setDepositStep(2)}
+                    logoUrl={DEPOSIT_METHODS.find(m => m.name === depositMethod)?.icon}
+                  />
                 )}
               </div>
             </motion.div>
