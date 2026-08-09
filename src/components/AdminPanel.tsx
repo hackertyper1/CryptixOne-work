@@ -671,6 +671,8 @@ export default function AdminPanel({
                         <td className="py-3 px-1 uppercase font-bold">
                           {tx.type === 'deposit' ? (
                             <span className="text-cyan-400">Deposit</span>
+                          ) : tx.type === 'investment' ? (
+                            <span className="text-amber-400">Investment</span>
                           ) : (
                             <span className="text-rose-400">Withdraw</span>
                           )}

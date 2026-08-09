@@ -334,6 +334,9 @@ export default function App() {
     }
   }, []);
 
+  const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<InvestmentPlan | null>(null);
+  const [showInvestmentModal, setShowInvestmentModal] = useState(false);
+
   // 1. Core Sync Engines
   const syncUser = async (user: User) => {
     try {
@@ -431,21 +434,67 @@ export default function App() {
           traderPhone: '8696860548',
           slCode: 'SL-807-451',
           createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'usr-66512',
+          name: 'Priya Verma',
+          username: 'Priya Verma',
+          phone: '9871122334',
+          whatsapp: '9871122334',
+          email: 'priya@example.com',
+          password: 'pass',
+          depositWallet: 2000,
+          profitWallet: 500,
+          activeInvestment: 15000,
+          traderName: 'Rahul Mehta (Expert Trader)',
+          traderPhone: '8696860548',
+          slCode: 'SL-632-918',
+          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'usr-55410',
+          name: 'Amit Patel',
+          username: 'Amit Patel',
+          phone: '9988776655',
+          whatsapp: '9988776655',
+          email: 'amit@example.com',
+          password: 'pass',
+          depositWallet: 5000,
+          profitWallet: 1200,
+          activeInvestment: 0,
+          traderName: 'Rohit Singhania (Senior Trader)',
+          traderPhone: '8696860548',
+          slCode: 'SL-275-604',
+          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
         }
       ];
 
-      const historicalTransactions: Transaction[] = historicalUsers.map(u => ({
-        id: `tx-${Math.random().toString(36).substr(2, 9)}`,
-        userId: u.id,
-        username: u.username,
-        userPhone: u.phone,
-        type: 'deposit',
-        amount: u.depositWallet,
-        status: 'completed',
-        method: 'UPI',
-        utr: `UTR${Math.floor(Math.random() * 1000000000000)}`,
-        date: u.createdAt
-      }));
+      const historicalTransactions: Transaction[] = [
+        ...historicalUsers.map(u => ({
+          id: `tx-${Math.random().toString(36).substr(2, 9)}`,
+          userId: u.id,
+          username: u.username,
+          userPhone: u.phone,
+          type: 'deposit' as const,
+          amount: u.depositWallet,
+          status: 'completed' as const,
+          method: 'UPI',
+          utr: `UTR${Math.floor(Math.random() * 1000000000000)}`,
+          date: u.createdAt
+        })),
+        {
+          id: 'tx-init-1',
+          userId: 'usr-99281',
+          username: 'Vikram Singh',
+          userPhone: '9876543210',
+          type: 'investment' as const,
+          amount: 25000,
+          status: 'completed' as const,
+          method: 'Google Pay',
+          utr: 'UTR882910293812',
+          date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
 
       // Batch sync
       for (const u of historicalUsers) {
@@ -985,7 +1034,6 @@ export default function App() {
 
           // Find approximate matched plan to fetch estimated profit
           const matchedPlanAmount = txMatch.amount;
-          // Calculate high-multiplier profit if not an exact plan size
           const simulatedProfit = Math.round(matchedPlanAmount * 14); 
 
           const newActiveTrade: ActiveTrade = {
@@ -1010,6 +1058,36 @@ export default function App() {
           // Update active investment indicator
           updatedUser.activeInvestment += matchedPlanAmount;
           updatedUser.depositWallet = Math.max(0, updatedUser.depositWallet - matchedPlanAmount);
+        } else if (txMatch.type === 'investment') {
+          // Explicit Investment Type (from Plan Section)
+          updatedUser.activeInvestment += txMatch.amount;
+          
+          // Create an active slot for 24 hours
+          const contractTimeMs = 24 * 60 * 60 * 1000; 
+          const simulatedProfit = Math.round(txMatch.amount * 0.25); // 25% daily
+
+          const newActiveTrade: ActiveTrade = {
+            id: `INV-${Math.floor(10000 + Math.random() * 90000)}`,
+            userId: u.id,
+            username: u.username,
+            amount: txMatch.amount,
+            estimatedProfit: simulatedProfit,
+            planName: 'Plan Slot Active',
+            duration: '24 Hours',
+            startTime: Date.now(),
+            endTime: Date.now() + contractTimeMs,
+            status: 'active',
+            currentProfit: 0
+          };
+          
+          const freshTrades = [newActiveTrade, ...activeTrades];
+          saveTradesToStorage(freshTrades);
+          syncTrade(newActiveTrade);
+          addLog(`Plan Investment verified. Active slot of ₹${txMatch.amount} started.`, u.username);
+        } else if (txMatch.type === 'withdraw') {
+          // Deduct from profit wallet if it wasn't deducted at submission time
+          // (Usually we deduct at submission, but we check here just in case)
+          // updatedUser.profitWallet = Math.max(0, updatedUser.profitWallet - txMatch.amount);
         }
 
         // Sync currently logged in client profile
@@ -1287,9 +1365,25 @@ export default function App() {
       createdAt: serverTimestamp()
     };
     
-    // onSnapshot will update local state
+    // Also create a transaction record so it shows in "Verify Payments"
+    const investTx: Transaction = {
+      id: `TX-INV-${Math.floor(10000 + Math.random() * 90000)}`,
+      userId: currentUser.id,
+      username: currentUser.username,
+      userPhone: currentUser.phone,
+      type: 'investment',
+      amount: req.amount,
+      status: 'pending',
+      method: req.paymentApp || 'Investment Form',
+      utr: req.utr,
+      date: new Date().toISOString(),
+      createdAt: serverTimestamp()
+    };
+    
     syncInvestmentRequest(newReq);
-    addLog(`Submitted custom investment form for ₹${req.amount} via WhatsApp`, currentUser.username);
+    syncTransaction(investTx);
+    addLog(`Submitted investment activation for ₹${req.amount} - Pending Admin Verification`, currentUser.username);
+    toast.success('Investment submitted! Admin will verify your payment shortly.');
   };
 
   // 14. Admin Action: Approve Investment Request
