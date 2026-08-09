@@ -1,36 +1,22 @@
 import React from 'react';
-import { User, InvestmentPlan, SystemSettings } from '../types';
+import { InvestmentPlan, SystemSettings } from '../types';
 import { INVESTMENT_PLANS, formatIndianCurrency } from '../data';
 import { 
   Flame, 
   TrendingUp, 
   Award, 
-  Sparkles,
-  ChevronDown,
-  Wallet
+  Sparkles 
 } from 'lucide-react';
 
 interface PlanSectionProps {
   onInvestSelect: (plan: InvestmentPlan) => void;
   systemSettings: SystemSettings;
-  isDemoMode: boolean;
-  setIsDemoMode: (isDemo: boolean) => void;
-  currentUser: User | null;
-  onNavigateToWallet?: () => void;
 }
 
 export default function PlanSection({
   onInvestSelect,
-  systemSettings,
-  isDemoMode,
-  setIsDemoMode,
-  currentUser,
-  onNavigateToWallet
+  systemSettings
 }: PlanSectionProps) {
-  const realBalance = (currentUser?.depositWallet || 0) + (currentUser?.profitWallet || 0);
-  const demoBalance = 100000;
-  const currentBalance = isDemoMode ? demoBalance : realBalance;
-
   // Group plans by categories
   const todayPlans = INVESTMENT_PLANS.filter(p => p.category === 'Today');
   const smallPlans = INVESTMENT_PLANS.filter(p => p.category === 'Small');
@@ -40,48 +26,13 @@ export default function PlanSection({
   return (
     <div className="space-y-16 pb-16" id="plan-section-container">
       {/* Strategic Header */}
-      <div className="flex flex-col items-center gap-6 pt-8" id="plan-section-header">
-        {/* Account Switcher for Plan Section */}
-        <div className="flex items-center gap-4 bg-[#0b1222]/60 p-2 rounded-2xl border border-white/5 backdrop-blur-xl">
-          <div className="flex flex-col px-4 border-r border-white/10">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                {isDemoMode ? 'Demo account' : 'Live account'}
-              </span>
-              <button 
-                onClick={() => setIsDemoMode(!isDemoMode)}
-                className="p-1 hover:bg-white/5 rounded-lg transition-colors active:scale-95"
-              >
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              </button>
-            </div>
-            <span className="text-2xl font-black text-white">
-              ₹{currentBalance.toLocaleString()}
-            </span>
-          </div>
-          <div className="pr-4 flex items-center gap-2">
-            <div 
-              onClick={() => onNavigateToWallet?.()}
-              className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20 cursor-pointer active:scale-95"
-            >
-              <Wallet className="w-6 h-6 text-slate-950" />
-            </div>
-            {!isDemoMode && (
-              <span className="text-[10px] font-black text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded uppercase tracking-widest border border-emerald-400/20">
-                Verified
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="text-center space-y-4">
-          <h3 className="text-[28px] font-bold text-white text-center font-sans">
-            Strategic Capital Allocation
-          </h3>
-          <p className="text-slate-400 text-base max-w-2xl mx-auto">
-            Choose from institutional-grade portfolios engineered for consistent capital growth.
-          </p>
-        </div>
+      <div className="text-center space-y-4 pt-8" id="plan-section-header">
+        <h3 className="text-[28px] font-bold text-white text-center font-sans">
+          Strategic Capital Allocation
+        </h3>
+        <p className="text-slate-400 text-base max-w-2xl mx-auto">
+          Choose from institutional-grade portfolios engineered for consistent capital growth.
+        </p>
       </div>
 
       {/* Main Slots Section */}

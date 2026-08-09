@@ -108,13 +108,8 @@ const FUTURES_DATA = [
 ];
 
 const DEPOSIT_METHODS = [
-  { id: 'Google Pay', name: 'Google Pay', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-pay-icon.png', label: 'Instant UPI' },
-  { id: 'Phone Pay', name: 'Phone Pay', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/phonepe-icon.png', label: 'Auto Scan' },
-  { id: 'Paytm', name: 'Paytm', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/paytm-icon.png', label: 'Business' },
-  { id: 'Icash', name: 'Icash', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/credit-card-color-icon.png', label: 'Flexible' },
-  { id: 'Binance Pay', name: 'Binance Pay', icon: 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Binance_Logo.svg', label: 'Crypto Web3' },
-  { id: 'Ethereum (ETH)', name: 'Ethereum (ETH)', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/ethereum-eth-icon.png', label: 'ETH Node' },
-  { id: 'Gate Pay', name: 'Gate Pay', icon: 'https://uxwing.com/wp-content/themes/uxwing/download/e-commerce-currency-shopping/payment-gateway-icon.png', label: 'Gateway' },
+  { id: 'UPI', name: 'UPI (Google Pay, PhonePe, Paytm)', icon: 'https://cdn-icons-png.flaticon.com/512/4305/4305531.png' },
+  { id: 'Bank', name: 'Bank Transfer (NEFT/IMPS)', icon: 'https://cdn-icons-png.flaticon.com/512/2830/2830284.png' },
 ];
 
 export default function TradeSection({
@@ -415,8 +410,7 @@ export default function TradeSection({
         <div className="flex items-center gap-4">
           <div 
             onClick={() => {
-              setDepositStep(1);
-              setShowDepositModal(true);
+              onChangeTab?.('plan');
             }}
             className="flex items-center gap-2 bg-[#1e2329] px-3 py-1.5 rounded-full border border-[#2b3139] cursor-pointer hover:border-[#f0b90b] transition-all"
           >
@@ -472,8 +466,7 @@ export default function TradeSection({
                 <div className="flex items-center gap-2">
                   <div 
                     onClick={() => {
-                      setDepositStep(1);
-                      setShowDepositModal(true);
+                      onChangeTab?.('plan');
                     }}
                     className="bg-[#f0b90b] p-2 rounded-xl shadow-lg shadow-[#f0b90b]/10 cursor-pointer active:scale-95 transition-transform"
                   >
@@ -624,7 +617,7 @@ export default function TradeSection({
 
               {/* Quick Actions */}
               <div className="grid grid-cols-3 gap-3">
-                <button onClick={() => setShowDepositModal(true)} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
+                <button onClick={() => onChangeTab?.('plan')} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
                   <ArrowDown className="text-[#0ecb81]" />
                   <span className="text-[11px] font-bold text-[#848e9c]">Deposit</span>
                 </button>
@@ -632,7 +625,7 @@ export default function TradeSection({
                   <InfinityIcon className="text-[#f0b90b]" />
                   <span className="text-[11px] font-bold text-[#848e9c]">Futures</span>
                 </button>
-                <button onClick={() => setShowWithdrawModal(true)} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
+                <button onClick={() => onNavigateToWallet?.('withdraw')} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
                   <ArrowUp className="text-[#f6465d]" />
                   <span className="text-[11px] font-bold text-[#848e9c]">Withdraw</span>
                 </button>
@@ -1070,7 +1063,7 @@ export default function TradeSection({
                 )}
 
                 {depositStep === 2 && (
-                  <div className="space-y-4 max-h-[60vh] overflow-y-auto scrollbar-hide pr-1">
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-[#848e9c] uppercase tracking-widest block mb-1">Choose Deposit Method</label>
                       <div className="flex flex-col gap-2">
@@ -1078,16 +1071,13 @@ export default function TradeSection({
                           <button 
                             key={method.id}
                             onClick={() => { setDepositMethod(method.name); setDepositStep(3); }}
-                            className="bg-[#1e2329] border border-[#2b3139] p-3 rounded-2xl flex items-center justify-between hover:border-[#f0b90b] transition-all group w-full"
+                            className="bg-[#1e2329] border border-[#2b3139] p-4 rounded-2xl flex items-center justify-between hover:border-[#f0b90b] transition-all group w-full"
                           >
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center p-1.5 shadow-sm overflow-hidden shrink-0">
+                              <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center p-1">
                                 <img src={method.icon} alt={method.name} className="w-full h-full object-contain" />
                               </div>
-                              <div className="text-left">
-                                <span className="text-xs font-black text-white uppercase tracking-widest block">{method.name}</span>
-                                <span className="text-[9px] text-[#848e9c] font-medium">{method.label}</span>
-                              </div>
+                              <span className="text-xs font-black text-white uppercase tracking-widest">{method.name}</span>
                             </div>
                             <ChevronRight className="w-4 h-4 text-[#5e6673] group-hover:text-[#f0b90b]" />
                           </button>

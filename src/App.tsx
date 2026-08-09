@@ -144,6 +144,8 @@ export default function App() {
     return (stored as 'login' | 'signup') || 'login';
   });
 
+  const [walletSubTab, setWalletSubTab] = useState<'deposit' | 'withdraw' | 'history'>('deposit');
+
   useEffect(() => {
     localStorage.setItem('cryptix_auth_mode', authMode);
   }, [authMode]);
@@ -1410,10 +1412,6 @@ export default function App() {
               <PlanSection
                 onInvestSelect={handleInvestSelect}
                 systemSettings={systemSettings}
-                isDemoMode={isDemoMode}
-                setIsDemoMode={setIsDemoMode}
-                currentUser={currentUser}
-                onNavigateToWallet={() => setActiveTab('wallet')}
               />
             )}
 
@@ -1427,7 +1425,7 @@ export default function App() {
                 setIsDemoMode={setIsDemoMode}
                 onNavigateToWallet={(subTab) => {
                   setActiveTab('wallet');
-                  // We can add logic to set the specific subtab in WalletSection if needed
+                  if (subTab) setWalletSubTab(subTab as any);
                 }}
                 onNavigateToHome={() => {
                   setActiveTab('account');
@@ -1468,6 +1466,7 @@ export default function App() {
                 onNavigateToPlans={() => setActiveTab('plan')}
                 onInvestmentRequestSubmit={handleInvestmentRequestSubmit}
                 isApk={isApk}
+                initialTab={walletSubTab}
               />
             )}
 

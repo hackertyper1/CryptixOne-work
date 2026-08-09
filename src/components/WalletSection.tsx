@@ -124,6 +124,7 @@ interface WalletSectionProps {
   onNavigateToPlans: () => void;
   onInvestmentRequestSubmit: (req: Omit<InvestmentRequest, 'id' | 'userId' | 'username' | 'status' | 'date'>) => void;
   isApk?: boolean;
+  initialTab?: 'deposit' | 'withdraw' | 'history';
 }
 
 export default function WalletSection({
@@ -141,13 +142,21 @@ export default function WalletSection({
   onNavigateToTrade,
   onNavigateToPlans,
   onInvestmentRequestSubmit,
-  isApk = false
+  isApk = false,
+  initialTab
 }: WalletSectionProps) {
   // Navigation internal state: 'deposit' | 'withdraw' | 'history'
   const [internalTab, setInternalTab] = useState<'deposit' | 'withdraw' | 'history'>(() => {
+    if (initialTab) return initialTab;
     const stored = localStorage.getItem('wallet_internal_tab');
     return (stored as any) || 'deposit';
   });
+
+  useEffect(() => {
+    if (initialTab) {
+      setInternalTab(initialTab);
+    }
+  }, [initialTab]);
 
   useEffect(() => {
     localStorage.setItem('wallet_internal_tab', internalTab);
