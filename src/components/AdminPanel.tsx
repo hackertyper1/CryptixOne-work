@@ -52,6 +52,7 @@ interface AdminPanelProps {
   onSendMessage: (msg: Omit<AdminMessage, 'id' | 'timestamp' | 'sender' | 'read'>) => void;
   onPushComplianceMessage: (userId: string, message: string) => void;
   onUpdateUsersBatch: (updatedUsers: User[]) => void;
+  onSeedData?: () => void;
 }
 
 export default function AdminPanel({
@@ -71,6 +72,7 @@ export default function AdminPanel({
   onDeleteInvestmentRequest,
   onClearAllRejectedTransactions,
   onPurgeDatabase,
+  onSeedData,
   adminMessages,
   onSendMessage,
   onPushComplianceMessage
@@ -451,6 +453,33 @@ export default function AdminPanel({
           </div>
           <h2 className="text-xl md:text-3xl font-black text-white tracking-tight font-geist">Main Admin Control Terminal</h2>
           <p className="text-xs text-slate-400">Review claims, edit user limits, manage assigned traders, and update website configs.</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            <span className="text-[10px] text-emerald-400 font-mono font-bold uppercase tracking-wider">Live Network Sync Active (Auto-Refresh)</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {onSeedData && (
+            <button 
+              onClick={() => {
+                if (confirm("Sync historical backup data to database?")) {
+                  onSeedData();
+                }
+              }}
+              className="px-3 py-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-500/20 transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Import History
+            </button>
+          )}
+          <button 
+            onClick={() => setIsAdminAuthenticated(false)}
+            className="px-3 py-2 bg-slate-800 text-slate-400 rounded-lg hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
+          >
+            <Lock className="w-3 h-3" />
+            Logout
+          </button>
         </div>
 
         {/* Navigation Tabs */}

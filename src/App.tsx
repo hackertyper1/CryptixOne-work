@@ -27,7 +27,8 @@ import {
   orderBy, 
   limit,
   getDocs,
-  getDoc
+  getDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 
 enum OperationType {
@@ -333,10 +334,13 @@ export default function App() {
     }
   }, []);
 
-  // Sync balances and users to Firestore on changes
+  // 1. Core Sync Engines
   const syncUser = async (user: User) => {
     try {
-      await setDoc(doc(db, 'users', user.id), user, { merge: true });
+      await setDoc(doc(db, 'users', user.id), {
+        ...user,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `users/${user.id}`);
     }
@@ -344,7 +348,10 @@ export default function App() {
 
   const syncTransaction = async (tx: Transaction) => {
     try {
-      await setDoc(doc(db, 'transactions', tx.id), tx, { merge: true });
+      await setDoc(doc(db, 'transactions', tx.id), {
+        ...tx,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `transactions/${tx.id}`);
     }
@@ -352,7 +359,10 @@ export default function App() {
 
   const syncTrade = async (trade: ActiveTrade) => {
     try {
-      await setDoc(doc(db, 'trades', trade.id), trade, { merge: true });
+      await setDoc(doc(db, 'trades', trade.id), {
+        ...trade,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `trades/${trade.id}`);
     }
@@ -360,9 +370,96 @@ export default function App() {
 
   const syncInvestmentRequest = async (req: InvestmentRequest) => {
     try {
-      await setDoc(doc(db, 'requests', req.id), req, { merge: true });
+      await setDoc(doc(db, 'requests', req.id), {
+        ...req,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
     } catch (e) {
       handleFirestoreError(e, OperationType.WRITE, `requests/${req.id}`);
+    }
+  };
+
+  // Seeding historical data
+  const seedHistoricalData = async () => {
+    toast.loading('Importing historical client database...', { id: 'seed-data' });
+    try {
+      const historicalUsers: User[] = [
+        {
+          id: 'usr-99281',
+          name: 'Vikram Singh',
+          username: 'Vikram Singh',
+          phone: '9876543210',
+          whatsapp: '9876543210',
+          email: 'vikram@example.com',
+          password: 'pass',
+          depositWallet: 45000,
+          profitWallet: 12500,
+          activeInvestment: 25000,
+          traderName: 'Rohit Singhania (Senior Trader)',
+          traderPhone: '8696860548',
+          slCode: 'SL-568-725',
+          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'usr-88273',
+          name: 'Anjali Sharma',
+          username: 'Anjali Sharma',
+          phone: '9822334455',
+          whatsapp: '9822334455',
+          email: 'anjali@example.com',
+          password: 'pass',
+          depositWallet: 12000,
+          profitWallet: 3400,
+          activeInvestment: 5000,
+          traderName: 'Rohit Singhania (Senior Trader)',
+          traderPhone: '8696860548',
+          slCode: 'SL-194-836',
+          createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          id: 'usr-77621',
+          name: 'Deepak Kumar',
+          username: 'Deepak Kumar',
+          phone: '9112233445',
+          whatsapp: '9112233445',
+          email: 'deepak@example.com',
+          password: 'pass',
+          depositWallet: 85000,
+          profitWallet: 42000,
+          activeInvestment: 10000,
+          traderName: 'Rohit Singhania (Senior Trader)',
+          traderPhone: '8696860548',
+          slCode: 'SL-807-451',
+          createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+
+      const historicalTransactions: Transaction[] = historicalUsers.map(u => ({
+        id: `tx-${Math.random().toString(36).substr(2, 9)}`,
+        userId: u.id,
+        username: u.username,
+        userPhone: u.phone,
+        type: 'deposit',
+        amount: u.depositWallet,
+        status: 'completed',
+        method: 'UPI',
+        utr: `UTR${Math.floor(Math.random() * 1000000000000)}`,
+        date: u.createdAt
+      }));
+
+      // Batch sync
+      for (const u of historicalUsers) {
+        await syncUser(u);
+      }
+      for (const t of historicalTransactions) {
+        await syncTransaction(t);
+      }
+      
+      addLog('Imported 3 historical client records and ledger entries', 'admin');
+      toast.success('Historical data imported successfully!', { id: 'seed-data' });
+    } catch (error) {
+      console.error('Seeding Error:', error);
+      toast.error('Failed to import historical data', { id: 'seed-data' });
     }
   };
 
@@ -374,13 +471,12 @@ export default function App() {
     }
   };
 
+  // 2. State Management Helpers
   const saveUsersToStorage = async (updatedUsers: User[]) => {
     setUsers(updatedUsers);
-    localStorage.setItem('cryptix_users', JSON.stringify(updatedUsers));
+    // Sync all to ensure DB is source of truth
     for (const u of updatedUsers) {
-      if (u && u.id) {
-        syncUser(u);
-      }
+      if (u?.id) syncUser(u);
     }
   };
 
@@ -1487,6 +1583,7 @@ export default function App() {
                 onDeleteInvestmentRequest={handleDeleteInvestmentRequest}
                 onClearAllRejectedTransactions={handleClearAllRejectedTransactions}
                 onPurgeDatabase={handlePurgeDatabase}
+                onSeedData={seedHistoricalData}
                 adminMessages={adminMessages}
                 onSendMessage={handleSendMessage}
               />

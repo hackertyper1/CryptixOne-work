@@ -72,6 +72,8 @@ export interface Transaction {
     profession: string;
     dob: string;
   };
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 export interface SystemSettings {
@@ -145,6 +147,8 @@ export interface InvestmentRequest {
   planCategory: string;
   date: string;
   status: 'pending' | 'approved' | 'rejected';
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 export interface ActivityLog {
