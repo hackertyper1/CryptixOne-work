@@ -130,6 +130,15 @@ export default function App() {
     localStorage.setItem('cryptix_active_tab', activeTab);
   }, [activeTab]);
 
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(() => {
+    const stored = localStorage.getItem('cryptix_demo_mode');
+    return stored !== 'false'; // Default to true
+  });
+
+  useEffect(() => {
+    localStorage.setItem('cryptix_demo_mode', isDemoMode.toString());
+  }, [isDemoMode]);
+
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(() => {
     const stored = localStorage.getItem('cryptix_auth_mode');
     return (stored as 'login' | 'signup') || 'login';
@@ -1401,6 +1410,10 @@ export default function App() {
               <PlanSection
                 onInvestSelect={handleInvestSelect}
                 systemSettings={systemSettings}
+                isDemoMode={isDemoMode}
+                setIsDemoMode={setIsDemoMode}
+                currentUser={currentUser}
+                onNavigateToWallet={() => setActiveTab('wallet')}
               />
             )}
 
@@ -1410,6 +1423,8 @@ export default function App() {
                 isLoggedIn={!!currentUser}
                 currentUser={currentUser}
                 onExecuteTrade={handleExecuteTrade}
+                isDemoMode={isDemoMode}
+                setIsDemoMode={setIsDemoMode}
                 onNavigateToWallet={(subTab) => {
                   setActiveTab('wallet');
                   // We can add logic to set the specific subtab in WalletSection if needed
