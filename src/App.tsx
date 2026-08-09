@@ -504,7 +504,7 @@ export default function App() {
         await syncTransaction(t);
       }
       
-      addLog('Imported 3 historical client records and ledger entries', 'admin');
+      addLog('Imported 5 historical client records and ledger entries', 'admin');
       toast.success('Historical data imported successfully!', { id: 'seed-data' });
     } catch (error) {
       console.error('Seeding Error:', error);

@@ -50,12 +50,16 @@ export interface Transaction {
   userId: string;
   username: string;
   userPhone: string;
-  type: 'deposit' | 'withdrawal' | 'investment' | 'trade' | 'profit' | 'loss';
+  type: 'deposit' | 'withdrawal' | 'withdraw' | 'investment' | 'trade' | 'profit' | 'loss';
   amount: number;
   status: 'pending' | 'completed' | 'rejected' | 'approved';
   date: string;
   description?: string; // For trade/investment details
   utr?: string;
+  method?: string; // e.g. "UPI", "Bank", "GPay"
+  paymentApp?: string; // e.g. "PhonePe", "Google Pay"
+  createdAt?: any;
+  updatedAt?: any;
   bankDetails?: {
     accountNo: string;
     bankName: string;
@@ -72,8 +76,6 @@ export interface Transaction {
     profession: string;
     dob: string;
   };
-  createdAt?: any;
-  updatedAt?: any;
 }
 
 export interface SystemSettings {
