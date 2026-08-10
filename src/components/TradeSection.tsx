@@ -17,6 +17,7 @@ import {
   PieChart,
   TrendingUp,
   Sliders,
+  ShieldCheck,
   Copy,
   X,
   MessageSquare,
@@ -214,11 +215,10 @@ export default function TradeSection({
 
   // --- Chart Drawing Logic ---
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const desktopCanvasRef = useRef<HTMLCanvasElement>(null);
+
   useEffect(() => {
-    if (!canvasRef.current) return;
-    
-    const drawChart = () => {
-      const canvas = canvasRef.current;
+    const drawToCanvas = (canvas: HTMLCanvasElement | null) => {
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
@@ -276,8 +276,13 @@ export default function TradeSection({
       ctx.fill();
     };
 
-    drawChart();
-    const interval = setInterval(drawChart, 3000);
+    const drawAll = () => {
+      drawToCanvas(canvasRef.current);
+      drawToCanvas(desktopCanvasRef.current);
+    };
+
+    drawAll();
+    const interval = setInterval(drawAll, 3000);
     return () => clearInterval(interval);
   }, [activeTab, selectedAsset]);
 
@@ -400,541 +405,838 @@ export default function TradeSection({
 
   return (
     <div className="flex flex-col h-full bg-[#0b0e11] text-[#eaecef] font-sans select-none overflow-hidden" id="full-trade-dashboard">
-      {/* App Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-[#2b3139] bg-[#0b0e11] flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => selectedAsset ? setSelectedAsset(null) : onChangeTab?.('plan')}
-            className="p-1 text-[#848e9c] hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-black text-[#f0b90b]">F<span className="text-white">utures</span></span>
-            <span className="text-[9px] bg-[#f0b90b] text-black px-2 py-0.5 rounded-full font-bold">PRO</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div 
-            onClick={() => {
-              setDepositStep(1);
-              setShowDepositModal(true);
-            }}
-            className="flex items-center gap-2 bg-[#1e2329] px-3 py-1.5 rounded-full border border-[#2b3139] cursor-pointer hover:border-[#f0b90b] transition-all"
-          >
-            <Wallet className="w-4 h-4 text-[#f0b90b]" />
-            <span className="text-xs font-bold text-[#0ecb81]">₹{realBalance.toLocaleString()}</span>
-          </div>
-          <button 
-            onClick={() => setShowNotifications(true)}
-            className="text-[#848e9c] hover:text-white relative"
-          >
-            <Bell className="w-6 h-6" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#0b0e11]">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="flex-grow overflow-hidden bg-[#0b0e11] relative">
-        <AnimatePresence mode="wait">
-          {selectedAsset ? (
-            <motion.div 
-              key="trading-view"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col h-full bg-[#0b0e11] overflow-hidden absolute inset-0"
+      {/* MOBILE LAYOUT */}
+      <div className="lg:hidden flex flex-col h-full overflow-hidden">
+        {/* App Header */}
+        <header className="flex items-center justify-between px-4 py-3 border-b border-[#2b3139] bg-[#0b0e11] flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => selectedAsset ? setSelectedAsset(null) : onChangeTab?.('plan')}
+              className="p-1 text-[#848e9c] hover:text-white transition-colors"
             >
-              {/* Header inside Trading View */}
-              <div className="px-4 py-3 flex items-center justify-between border-b border-[#1e232c] flex-shrink-0">
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setSelectedAsset(null)} className="p-1">
-                    <ArrowLeft className="w-6 h-6 text-[#848e9c]" />
-                  </button>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px] text-[#848e9c] font-bold">
-                        {isDemoMode ? 'Demo account' : 'Live account'}
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-black text-[#f0b90b]">F<span className="text-white">utures</span></span>
+              <span className="text-[9px] bg-[#f0b90b] text-black px-2 py-0.5 rounded-full font-bold">PRO</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div 
+              onClick={() => {
+                setDepositStep(1);
+                setShowDepositModal(true);
+              }}
+              className="flex items-center gap-2 bg-[#1e2329] px-3 py-1.5 rounded-full border border-[#2b3139] cursor-pointer hover:border-[#f0b90b] transition-all"
+            >
+              <Wallet className="w-4 h-4 text-[#f0b90b]" />
+              <span className="text-xs font-bold text-[#0ecb81]">₹{realBalance.toLocaleString()}</span>
+            </div>
+            <button 
+              onClick={() => setShowNotifications(true)}
+              className="text-[#848e9c] hover:text-white relative"
+            >
+              <Bell className="w-6 h-6" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#0b0e11]">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </header>
+
+        {/* Main Content Area (Mobile) */}
+        <main className="flex-grow overflow-hidden bg-[#0b0e11] relative">
+          <AnimatePresence mode="wait">
+            {selectedAsset ? (
+              <motion.div 
+                key="trading-view"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="flex flex-col h-full bg-[#0b0e11] overflow-hidden absolute inset-0"
+              >
+                {/* Header inside Trading View */}
+                <div className="px-4 py-3 flex items-center justify-between border-b border-[#1e232c] flex-shrink-0">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setSelectedAsset(null)} className="p-1">
+                      <ArrowLeft className="w-6 h-6 text-[#848e9c]" />
+                    </button>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-[#848e9c] font-bold">
+                          {isDemoMode ? 'Demo account' : 'Live account'}
+                        </span>
+                        <button 
+                          onClick={() => setIsDemoMode(!isDemoMode)}
+                          className="p-0.5 hover:bg-white/10 rounded transition-colors active:scale-95"
+                        >
+                          <ChevronDown className="w-3 h-3 text-[#848e9c]" />
+                        </button>
+                      </div>
+                      <span className="text-xl font-black text-white">₹{currentBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      onClick={() => {
+                        setDepositStep(1);
+                        setShowDepositModal(true);
+                      }}
+                      className="bg-[#f0b90b] p-2 rounded-xl shadow-lg shadow-[#f0b90b]/10 cursor-pointer active:scale-95 transition-transform"
+                    >
+                      <Wallet className="w-5 h-5 text-black" />
+                    </div>
+                    <div className="w-9 h-9 rounded-full border-2 border-slate-700 p-0.5 overflow-hidden cursor-pointer">
+                      <img src="https://i.ibb.co/f4pXh6S/logo.png" alt="Profile" className="w-full h-full rounded-full object-cover" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chart Area */}
+                <div className="flex-grow relative mt-2 min-h-0">
+                  <canvas ref={canvasRef} className="w-full h-full" />
+                  
+                  {/* Time Labels Bottom */}
+                  <div className="absolute bottom-2 left-0 w-full px-4 flex justify-between text-[8px] font-bold text-[#5e6673] pointer-events-none">
+                    <span>1:05:20 AM</span>
+                    <span>1:05:40 AM</span>
+                    <span>1:06 AM</span>
+                    <span>1:06:20 AM</span>
+                  </div>
+
+                  {/* Floating Tools Toolbar */}
+                  <div className="absolute bottom-10 left-0 w-full flex justify-center">
+                    <div className="flex items-center gap-2 bg-[#1e232c]/80 backdrop-blur-md rounded-2xl p-1.5 border border-white/5">
+                      <div className="p-2 text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"><PieChart className="w-4 h-4" /></div>
+                      <div className="flex flex-col items-center gap-0.5 px-3 py-1 bg-white/5 rounded-xl border border-white/10 cursor-pointer">
+                        <span className="text-[10px] font-black text-white">1s</span>
+                        <div className="w-1.5 h-1.5 bg-[#f0b90b] rounded-full"></div>
+                      </div>
+                      <div className="p-2 text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"><TrendingUp className="w-4 h-4" /></div>
+                      <div className="p-2 text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"><Sliders className="w-4 h-4" /></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Controls Section */}
+                <div className="px-4 pb-6 space-y-3 flex-shrink-0 bg-[#0b0e11]">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-[#1e232c] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center gap-0.5">
+                      <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-tighter">Amount</span>
+                      <input 
+                        type="number"
+                        value={tradeAmount}
+                        onChange={(e) => setTradeAmount(e.target.value)}
+                        onFocus={(e) => e.target.select()}
+                        className="bg-transparent text-center text-base font-black text-white outline-none w-full"
+                      />
+                    </div>
+                    <div className="bg-[#1e232c] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center gap-0.5">
+                      <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-tighter">Time</span>
+                      <input 
+                        type="text"
+                        value={tradeTime}
+                        onChange={(e) => setTradeTime(e.target.value)}
+                        onFocus={(e) => e.target.select()}
+                        className="bg-transparent text-center text-base font-black text-white outline-none w-full"
+                        placeholder="01:00"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 h-10">
+                    <button
+                      onClick={() => handleTrade('buy')}
+                      className="bg-[#0ecb81] rounded-xl flex items-center justify-center gap-2 text-white shadow-lg shadow-[#0ecb81]/20 active:scale-95 transition-all py-1 px-3"
+                    >
+                      <TrendingUp className="w-4 h-4 rotate-[-45deg]" />
+                      <span className="text-xs font-black tracking-tight">
+                        ₹{currentAsset?.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
-                      <button 
-                        onClick={() => setIsDemoMode(!isDemoMode)}
-                        className="p-0.5 hover:bg-white/10 rounded transition-colors active:scale-95"
-                      >
-                        <ChevronDown className="w-3 h-3 text-[#848e9c]" />
-                      </button>
+                    </button>
+                    <button
+                      onClick={() => handleTrade('sell')}
+                      className="bg-[#f6465d] rounded-xl flex items-center justify-center gap-2 text-white shadow-lg shadow-[#f6465d]/20 active:scale-95 transition-all py-1 px-3"
+                    >
+                      <TrendingUp className="w-4 h-4 rotate-[135deg]" />
+                      <span className="text-xs font-black tracking-tight">
+                        ₹{currentAsset?.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ) : activeTab === 'home' ? (
+              <motion.div 
+                key="home-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-4 space-y-4 h-full overflow-y-auto scrollbar-hide absolute inset-0"
+              >
+                {/* Account Card */}
+                <div 
+                  className="bg-gradient-to-br from-[#1a1f2a] to-[#0f1219] p-6 rounded-2xl border border-[#2b3139] relative overflow-hidden group hover:border-[#f0b90b]/30 transition-all"
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-[#848e9c] uppercase font-bold tracking-wider">
+                        {isDemoMode ? 'Demo Account' : 'Live Account'}
+                      </span>
+                      <span className={`text-[8px] px-2 py-0.5 rounded-full font-black ${isDemoMode ? 'bg-[#f0b90b] text-black' : 'bg-[#0ecb81] text-white'}`}>
+                        {isDemoMode ? 'DEMO' : 'LIVE'}
+                      </span>
                     </div>
-                    <span className="text-xl font-black text-white">₹{currentBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsDemoMode(!isDemoMode);
+                      }}
+                      className="p-1 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+                    >
+                      <ChevronDown className="w-5 h-5 text-[#848e9c] hover:text-white" />
+                    </button>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div 
-                    onClick={() => {
-                      setDepositStep(1);
-                      setShowDepositModal(true);
-                    }}
-                    className="bg-[#f0b90b] p-2 rounded-xl shadow-lg shadow-[#f0b90b]/10 cursor-pointer active:scale-95 transition-transform"
-                  >
-                    <Wallet className="w-5 h-5 text-black" />
+                  <div className="text-3xl font-black">
+                    <span className="text-[#848e9c] text-lg font-bold mr-1">₹</span>
+                    {currentBalance.toLocaleString()}
                   </div>
-                  <div className="w-9 h-9 rounded-full border-2 border-slate-700 p-0.5 overflow-hidden cursor-pointer">
-                    <img src="https://i.ibb.co/f4pXh6S/logo.png" alt="Profile" className="w-full h-full rounded-full object-cover" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Chart Area */}
-              <div className="flex-grow relative mt-2 min-h-0">
-                <canvas ref={canvasRef} className="w-full h-full" />
-                
-                {/* Time Labels Bottom */}
-                <div className="absolute bottom-2 left-0 w-full px-4 flex justify-between text-[8px] font-bold text-[#5e6673] pointer-events-none">
-                  <span>1:05:20 AM</span>
-                  <span>1:05:40 AM</span>
-                  <span>1:06 AM</span>
-                  <span>1:06:20 AM</span>
-                </div>
-
-                {/* Floating Tools Toolbar (exactly as in image) */}
-                <div className="absolute bottom-10 left-0 w-full flex justify-center">
-                  <div className="flex items-center gap-2 bg-[#1e232c]/80 backdrop-blur-md rounded-2xl p-1.5 border border-white/5">
-                    <div className="p-2 text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"><PieChart className="w-4 h-4" /></div>
-                    <div className="flex flex-col items-center gap-0.5 px-3 py-1 bg-white/5 rounded-xl border border-white/10 cursor-pointer">
-                      <span className="text-[10px] font-black text-white">1s</span>
-                      <div className="w-1.5 h-1.5 bg-[#f0b90b] rounded-full"></div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="bg-[#1e2329] px-4 py-1 rounded-full border border-[#2b3139] flex items-center gap-2">
+                      <span className="text-sm font-black text-[#f0b90b]">82%</span>
+                      <span className="text-[10px] text-[#848e9c] font-bold">Crypto IDX</span>
+                      <div className="w-12 h-1 bg-[#2b3139] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#f0b90b] w-[82%]" />
+                      </div>
                     </div>
-                    <div className="p-2 text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"><TrendingUp className="w-4 h-4" /></div>
-                    <div className="p-2 text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"><Sliders className="w-4 h-4" /></div>
+                    <div className="text-xs font-bold text-[#0ecb81]">
+                      <ArrowUp className="w-3 h-3 inline mr-0.5" /> 2.41%
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Action Controls Section */}
-              <div className="px-4 pb-6 space-y-3 flex-shrink-0 bg-[#0b0e11]">
+                {/* Chart Summary */}
+                <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139]">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-sm font-bold">BTC/USDT <span className="text-[#848e9c] text-[10px]">Perpetual</span></span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold">₹64,182.50</span>
+                      <span className="text-xs font-bold text-[#0ecb81]">+2.34%</span>
+                    </div>
+                  </div>
+                  <div className="h-24">
+                     <canvas ref={canvasRef} className="w-full h-full" />
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="grid grid-cols-3 gap-3">
+                  <button onClick={() => { setDepositStep(1); setShowDepositModal(true); }} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
+                    <ArrowDown className="text-[#0ecb81]" />
+                    <span className="text-[11px] font-bold text-[#848e9c]">Deposit</span>
+                  </button>
+                  <button onClick={() => setActiveTab('futures')} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
+                    <InfinityIcon className="text-[#f0b90b]" />
+                    <span className="text-[11px] font-bold text-[#848e9c]">Futures</span>
+                  </button>
+                  <button onClick={() => onNavigateToWallet?.('withdraw')} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
+                    <ArrowUp className="text-[#f6465d]" />
+                    <span className="text-[11px] font-bold text-[#848e9c]">Withdraw</span>
+                  </button>
+                </div>
+
+                {/* Dashboard Metrics */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#1e232c] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center gap-0.5">
-                    <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-tighter">Amount</span>
+                  <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139] space-y-1">
+                    <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-wider">Total Balance</span>
+                    <div className="text-lg font-black text-[#0ecb81]">₹{currentBalance.toLocaleString()}</div>
+                    <div className="text-[10px] text-[#848e9c]">+2.41% today</div>
+                  </div>
+                  <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139] space-y-1">
+                    <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-wider">Open P&L</span>
+                    <div className="text-lg font-black text-[#f6465d]">-₹342.10</div>
+                    <div className="text-[10px] text-[#848e9c]">-2.59%</div>
+                  </div>
+                  <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139] space-y-1">
+                    <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-wider">24h Volume</span>
+                    <div className="text-lg font-black text-[#f0b90b]">₹2.14B</div>
+                    <div className="text-[10px] text-[#848e9c]">+12.3%</div>
+                  </div>
+                  <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139] space-y-1">
+                    <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-wider">Active Positions</span>
+                    <div className="text-lg font-black text-blue-400">4</div>
+                    <div className="text-[10px] text-[#848e9c]">2 long · 2 short</div>
+                  </div>
+                </div>
+
+                {/* Top Gainers */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold">
+                    <TrendingUp className="w-3.5 h-3.5 text-[#0ecb81] rotate-[-45deg]" />
+                    <span className="text-[#eaecef]">Top Gainers</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {topGainers.map((item, i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => setSelectedAsset(item)}
+                        className="bg-[#181a20] border border-[#2b3139] p-3 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#0ecb81]/50 transition-colors"
+                      >
+                        <span className="text-[10px] font-bold text-[#eaecef]">{item.pair}</span>
+                        <span className="text-[10px] font-black text-[#0ecb81]">+{item.change}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Top Losers */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold">
+                    <TrendingUp className="w-3.5 h-3.5 text-[#f6465d] rotate-[135deg]" />
+                    <span className="text-[#eaecef]">Top Losers</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {topLosers.map((item, i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => setSelectedAsset(item)}
+                        className="bg-[#181a20] border border-[#2b3139] p-3 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#f6465d]/50 transition-colors"
+                      >
+                        <span className="text-[10px] font-bold text-[#eaecef]">{item.pair}</span>
+                        <span className="text-[10px] font-black text-[#f6465d]">{item.change}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Explore Futures Bar */}
+                <button 
+                  onClick={() => setActiveTab('futures')}
+                  className="w-full bg-[#181a20] border border-[#2b3139] px-4 py-3 rounded-xl flex justify-between items-center group hover:border-[#f0b90b] transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-5 h-5 text-[#f0b90b]" />
+                    <span className="text-sm font-bold text-white uppercase tracking-wider">Explore Futures</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[#f0b90b] text-xs font-bold">
+                    View all <ChevronRight className="w-4 h-4" />
+                  </div>
+                </button>
+
+                {/* Watchlist */}
+                <div className="bg-[#181a20] rounded-2xl border border-[#2b3139] overflow-hidden">
+                  <div className="px-4 py-3 border-b border-[#2b3139] flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-[#f0b90b]" />
+                      <span className="text-xs font-bold text-[#848e9c]">Watchlist</span>
+                    </div>
+                    <button onClick={() => setActiveTab('futures')} className="text-[#f0b90b] text-[10px] font-bold">View all</button>
+                  </div>
+                  <div className="divide-y divide-[#2b3139]">
+                    {futuresData.slice(0, 4).map((s, i) => (
+                      <div 
+                        key={i} 
+                        onClick={() => setSelectedAsset(s)}
+                        className="px-4 py-3 flex justify-between items-center hover:bg-white/5 cursor-pointer transition-colors"
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold">{s.base} <span className="text-[10px] text-[#848e9c]">/{s.quote}</span></span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold">₹{s.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                          <div className={`text-[10px] font-bold ${s.change >= 0 ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
+                            {s.change >= 0 ? '+' : ''}{s.change}%
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ) : activeTab === 'defi' ? (
+              <motion.div 
+                key="defi-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col h-full overflow-hidden absolute inset-0 bg-[#0b0e11]"
+              >
+                {/* DeFi View Sub-Header */}
+                <div className="flex items-center gap-1 px-4 py-2 border-b border-[#1e2329] overflow-x-auto scrollbar-hide shrink-0">
+                  {['Spot', 'USD-M', 'COIN-M', 'Options'].map((view) => (
+                    <button 
+                      key={view}
+                      onClick={() => setActiveDeFiView(view)}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                        activeDeFiView === view ? 'bg-[#1e2329] text-[#f0b90b]' : 'text-[#848e9c] hover:text-white'
+                      }`}
+                    >
+                      {view}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto scrollbar-hide shrink-0 bg-[#14171a]">
+                  {['all', 'new', 'defi', 'metaverse', 'payment', 'pow', 'storage', 'ai'].map((cat) => (
+                    <button 
+                      key={cat}
+                      onClick={() => setActiveDeFiCategory(cat)}
+                      className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                        activeDeFiCategory === cat ? 'bg-[#f0b90b] text-black shadow-lg shadow-[#f0b90b]/10' : 'bg-[#1e2329] text-[#5e6673] border border-[#2b3139]'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex-grow overflow-y-auto scrollbar-hide">
+                  <div className="grid grid-cols-[2fr_1.2fr_1fr_0.5fr] px-4 py-3 text-[9px] text-[#5e6673] font-black uppercase tracking-widest border-b border-[#1e2329] sticky top-0 bg-[#0b0e11] z-10">
+                    <span>Name / Vol</span>
+                    <span className="text-right">Price</span>
+                    <span className="text-right">24h Chg</span>
+                    <span className="text-right opacity-30"><Star className="w-3 h-3 ml-auto" /></span>
+                  </div>
+                  
+                  <div className="divide-y divide-[#1e2329]">
+                    {defiData
+                      .filter(d => {
+                        const matchesSearch = d.symbol.toLowerCase().includes(searchQuery.toLowerCase()) || d.name.toLowerCase().includes(searchQuery.toLowerCase());
+                        const matchesCategory = activeDeFiCategory === 'all' || d.category === activeDeFiCategory;
+                        return matchesSearch && matchesCategory;
+                      })
+                      .map((d, i) => {
+                        const isFav = defiFavorites.includes(d.symbol);
+                        return (
+                          <div 
+                            key={i} 
+                            onClick={() => setSelectedAsset(d)}
+                            className="grid grid-cols-[2fr_1.2fr_1fr_0.5fr] px-4 py-4 items-center hover:bg-[#1e232c] cursor-pointer transition-colors group"
+                          >
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-black text-white group-hover:text-[#f0b90b] transition-colors">{d.symbol}</span>
+                                <span className="text-[9px] bg-[#1e2329] text-[#848e9c] px-1.5 py-0.5 rounded font-black tracking-tighter">SPOT</span>
+                              </div>
+                              <span className="text-[10px] text-[#5e6673] font-bold mt-0.5">{d.name} <span className="opacity-50 ml-1">Vol {d.vol}</span></span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-black text-white tracking-tight">₹{d.price.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}</div>
+                              <div className="text-[10px] text-[#5e6673] font-medium">$ {d.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                            </div>
+                            <div className="flex justify-end">
+                              <div className={`text-[11px] font-black min-w-[56px] text-center py-1.5 rounded-lg ${
+                                d.change >= 0 ? 'text-[#0ecb81] bg-[#0ecb81]/10' : 'text-[#f6465d] bg-[#f6465d]/10'
+                              }`}>
+                                {d.change >= 0 ? '+' : ''}{d.change}%
+                              </div>
+                            </div>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDefiFavorites(prev => prev.includes(d.symbol) ? prev.filter(s => s !== d.symbol) : [...prev, d.symbol]);
+                              }}
+                              className="flex justify-end pl-2"
+                            >
+                              <Star className={`w-4 h-4 transition-colors ${isFav ? 'text-[#f0b90b] fill-[#f0b90b]' : 'text-[#2b3139] hover:text-[#f0b90b]'}`} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </motion.div>
+            ) : activeTab === 'futures' ? (
+              <motion.div 
+                key="futures-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-4 space-y-4 h-full overflow-y-auto scrollbar-hide absolute inset-0"
+              >
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <InfinityIcon className="w-6 h-6 text-[#f0b90b]" /> Futures Market
+                  </h2>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {futuresData.map((s, i) => (
+                    <div 
+                      key={i} 
+                      onClick={() => setSelectedAsset(s)}
+                      className="bg-[#181a20] p-4 rounded-xl border border-[#2b3139] cursor-pointer hover:border-[#f0b90b] transition-all active:scale-95 relative overflow-hidden group"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                         <div className="flex flex-col">
+                            <span className="text-sm font-bold">{s.base} <span className="text-[#848e9c] text-[10px]">/{s.quote}</span></span>
+                         </div>
+                         <span className="text-[8px] bg-[#2b3139] px-1.5 rounded text-[#848e9c] font-bold">PERP</span>
+                      </div>
+                      <div className="text-base font-bold">₹{s.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                      <div className={`text-xs font-bold ${s.change >= 0 ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
+                         {s.change >= 0 ? '+' : ''}{s.change}%
+                      </div>
+                      <div className="mt-2 text-[10px] text-[#5e6673]">Vol {s.vol}</div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            ) : (
+               <motion.div 
+                key="info-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-6 h-full overflow-y-auto scrollbar-hide absolute inset-0"
+              >
+                <div className="bg-[#181a20] rounded-2xl border border-[#2b3139] p-6 space-y-4">
+                  <h3 className="text-xl font-bold">About Futures Trading</h3>
+                  <p className="text-sm text-[#848e9c] leading-relaxed">
+                    Futures trading allows you to speculate on the price movement of crypto assets without owning the underlying asset. 
+                    Trade with leverage, go long or short, and manage your risk with stop-loss and take-profit orders.
+                  </p>
+                  <div className="pt-4 border-t border-[#2b3139] space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-[#0ecb81]">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#0ecb81]" /> All prices are market real-time
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[#0ecb81]">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#0ecb81]" /> Buy/Sell matched with wallet balance
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+
+        {/* Bottom Navigation (Mobile) */}
+        <nav className="flex justify-around items-center h-16 border-t border-[#2b3139] bg-[#0b0e11] flex-shrink-0 px-2">
+          {[
+            { id: 'home', icon: <Home className="w-6 h-6" />, label: 'Home' },
+            { id: 'defi', icon: <Coins className="w-6 h-6" />, label: 'DeFi' },
+            { id: 'futures', icon: <InfinityIcon className="w-6 h-6" />, label: 'Futures' },
+            { id: 'info', icon: <Info className="w-6 h-6" />, label: 'Info' }
+          ].map((tab) => (
+            <button 
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id as InternalTab);
+                setSelectedAsset(null);
+              }}
+              className={`flex flex-col items-center justify-center gap-0.5 px-4 py-2 transition-all relative ${
+                activeTab === tab.id ? 'text-[#f0b90b]' : 'text-[#5e6673] hover:text-[#848e9c]'
+              }`}
+            >
+              {tab.icon}
+              <span className="text-[10px] font-bold">{tab.label}</span>
+              {activeTab === tab.id && (
+                <motion.div 
+                  layoutId="nav-dot-mobile"
+                  className="absolute top-1 right-3 w-1.5 h-1.5 bg-[#f0b90b] rounded-full"
+                />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* DESKTOP LAYOUT */}
+      <div className="hidden lg:flex flex-col h-full overflow-hidden bg-[#0b0e11]">
+        {/* Desktop Header */}
+        <header className="flex items-center justify-between px-6 py-4 border-b border-[#2b3139] bg-[#0b0e11] shrink-0">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-black text-[#f0b90b]">F<span className="text-white">utures</span></span>
+              <span className="text-[10px] bg-[#f0b90b] text-black px-2 py-0.5 rounded-full font-bold">DESKTOP</span>
+            </div>
+            <nav className="flex items-center gap-1 bg-[#1e2329] p-1 rounded-xl border border-[#2b3139]">
+              {[
+                { id: 'home', icon: <Home className="w-4 h-4" />, label: 'Market Overview' },
+                { id: 'defi', icon: <Coins className="w-4 h-4" />, label: 'DeFi / Spot' },
+                { id: 'futures', icon: <InfinityIcon className="w-4 h-4" />, label: 'Futures Pro' },
+                { id: 'info', icon: <Info className="w-4 h-4" />, label: 'Resources' }
+              ].map((tab) => (
+                <button 
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as InternalTab)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    activeTab === tab.id ? 'bg-[#2b3139] text-[#f0b90b]' : 'text-[#848e9c] hover:text-white'
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#848e9c] font-bold">Total Margin Balance</span>
+                <div className={`w-2 h-2 rounded-full ${isDemoMode ? 'bg-[#f0b90b]' : 'bg-[#0ecb81]'}`} />
+              </div>
+              <div className="text-xl font-black text-white">₹{currentBalance.toLocaleString()}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => { setDepositStep(1); setShowDepositModal(true); }}
+                className="bg-[#f0b90b] text-black px-6 py-2.5 rounded-xl font-black text-sm shadow-lg shadow-[#f0b90b]/10 hover:scale-105 transition-all"
+              >
+                Deposit
+              </button>
+              <button 
+                onClick={() => onNavigateToWallet?.('withdraw')}
+                className="bg-[#1e2329] border border-[#2b3139] text-white px-6 py-2.5 rounded-xl font-black text-sm hover:border-white transition-all"
+              >
+                Withdraw
+              </button>
+            </div>
+            <button 
+              onClick={() => setShowNotifications(true)}
+              className="p-3 bg-[#1e2329] rounded-xl text-[#848e9c] hover:text-white transition-colors relative"
+            >
+              <Bell className="w-6 h-6" />
+              {unreadCount > 0 && <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />}
+            </button>
+          </div>
+        </header>
+
+        {/* Desktop Main Content */}
+        <div className="flex-grow flex overflow-hidden p-4 gap-4">
+          {/* Column 1: Asset Selection (Left) */}
+          <div className="w-[350px] flex flex-col bg-[#181a20] rounded-2xl border border-[#2b3139] overflow-hidden shrink-0">
+            <div className="p-4 border-b border-[#2b3139]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5e6673]" />
+                <input 
+                  type="text"
+                  placeholder="Search pairs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#0b0e11] border border-[#2b3139] rounded-xl py-2.5 pl-10 pr-4 text-sm font-bold text-white outline-none focus:border-[#f0b90b]"
+                />
+              </div>
+            </div>
+            <div className="flex-grow overflow-y-auto scrollbar-hide">
+              <div className="grid grid-cols-2 px-4 py-3 text-[10px] text-[#5e6673] font-black uppercase tracking-widest border-b border-[#2b3139] sticky top-0 bg-[#181a20] z-10">
+                <span>Pair</span>
+                <span className="text-right">Last Price / Chg</span>
+              </div>
+              <div className="divide-y divide-[#2b3139]">
+                {(activeTab === 'defi' ? defiData : futuresData)
+                  .filter(a => (a.symbol || a.pair).toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((asset, i) => (
+                    <div 
+                      key={i} 
+                      onClick={() => setSelectedAsset(asset)}
+                      className={`px-4 py-4 flex justify-between items-center cursor-pointer transition-all ${
+                        (selectedAsset?.symbol === asset.symbol || selectedAsset?.pair === asset.pair) ? 'bg-[#2b3139] border-l-4 border-[#f0b90b]' : 'hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-sm font-black text-white">{asset.symbol || asset.pair}</span>
+                        <span className="text-[10px] text-[#5e6673] font-bold">Vol {asset.vol}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-black text-white">₹{asset.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                        <div className={`text-[10px] font-black ${asset.change >= 0 ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
+                          {asset.change >= 0 ? '+' : ''}{asset.change}%
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2: Chart & Statistics (Middle) */}
+          <div className="flex-grow flex flex-col gap-4 overflow-hidden">
+            <div className="flex-grow bg-[#181a20] rounded-2xl border border-[#2b3139] flex flex-col overflow-hidden relative">
+              {/* Asset Title Bar */}
+              <div className="p-6 border-b border-[#2b3139] flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-black text-white">{selectedAsset?.symbol || selectedAsset?.pair || 'BTC/USDT'}</span>
+                    <span className="text-xs text-[#848e9c] font-bold">Institutional Trading Pair</span>
+                  </div>
+                  <div className="h-10 w-px bg-[#2b3139]" />
+                  <div className="flex gap-8">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#848e9c] font-black uppercase tracking-widest">Mark Price</span>
+                      <span className="text-base font-black text-[#0ecb81]">₹{(selectedAsset?.price || 64182).toLocaleString()}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#848e9c] font-black uppercase tracking-widest">24h High</span>
+                      <span className="text-base font-black text-white">₹{(selectedAsset?.high || 64800).toLocaleString()}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#848e9c] font-black uppercase tracking-widest">24h Low</span>
+                      <span className="text-base font-black text-white">₹{(selectedAsset?.low || 63600).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button className="px-4 py-2 bg-[#2b3139] rounded-xl text-xs font-black text-white hover:bg-white/10 transition-all border border-white/5">Order Book</button>
+                  <button className="px-4 py-2 bg-[#2b3139] rounded-xl text-xs font-black text-[#f0b90b] transition-all border border-[#f0b90b]/30">Live Chart</button>
+                </div>
+              </div>
+              
+              {/* Chart Body */}
+              <div className="flex-grow relative p-6 bg-[#0b0e11]/50">
+                <canvas ref={desktopCanvasRef} className="w-full h-full" />
+                
+                {/* Floating Indicators Overlay */}
+                <div className="absolute top-10 right-10 flex flex-col gap-3">
+                  <div className="bg-[#181a20]/80 backdrop-blur-md p-4 rounded-2xl border border-white/5 space-y-2">
+                    <div className="flex justify-between items-center gap-8">
+                      <span className="text-[10px] text-[#848e9c] font-black uppercase tracking-widest">RSI (14)</span>
+                      <span className="text-xs font-black text-[#f0b90b]">58.42</span>
+                    </div>
+                    <div className="flex justify-between items-center gap-8">
+                      <span className="text-[10px] text-[#848e9c] font-black uppercase tracking-widest">MACD</span>
+                      <span className="text-xs font-black text-[#0ecb81]">+124.5</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Panel: Positions & Open Orders */}
+            <div className="h-[250px] bg-[#181a20] rounded-2xl border border-[#2b3139] flex flex-col overflow-hidden">
+              <div className="px-6 py-4 border-b border-[#2b3139] flex items-center gap-6">
+                <button className="text-sm font-black text-[#f0b90b] border-b-2 border-[#f0b90b] pb-4">Open Positions (4)</button>
+                <button className="text-sm font-bold text-[#5e6673] hover:text-white pb-4 transition-colors">Trade History</button>
+                <button className="text-sm font-bold text-[#5e6673] hover:text-white pb-4 transition-colors">Order Logs</button>
+              </div>
+              <div className="flex-grow overflow-y-auto scrollbar-hide">
+                <table className="w-full text-left">
+                  <thead className="text-[10px] text-[#5e6673] font-black uppercase tracking-widest border-b border-[#2b3139] sticky top-0 bg-[#181a20]">
+                    <tr>
+                      <th className="px-6 py-3">Symbol / Type</th>
+                      <th className="px-6 py-3">Size</th>
+                      <th className="px-6 py-3">Entry Price</th>
+                      <th className="px-6 py-3">Liquidation</th>
+                      <th className="px-6 py-3 text-right">Unrealized P&L</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2b3139]">
+                    {[
+                      { pair: 'BTC/USDT', side: 'Long', size: '0.42 BTC', entry: '₹62,140', liq: '₹58,400', pnl: '+₹12,450', green: true },
+                      { pair: 'ETH/USDT', side: 'Short', size: '2.5 ETH', entry: '₹3,520', liq: '₹3,890', pnl: '-₹3,210', green: false },
+                      { pair: 'SOL/USDT', side: 'Long', size: '150 SOL', entry: '₹178.50', liq: '₹152.00', pnl: '+₹4,890', green: true },
+                    ].map((pos, i) => (
+                      <tr key={i} className="hover:bg-white/5 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-black text-white">{pos.pair}</span>
+                            <span className={`text-[9px] px-2 py-0.5 rounded font-black ${pos.side === 'Long' ? 'bg-[#0ecb81]/20 text-[#0ecb81]' : 'bg-[#f6465d]/20 text-[#f6465d]'}`}>{pos.side}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-bold text-[#eaecef]">{pos.size}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-[#eaecef]">{pos.entry}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-[#f6465d]">{pos.liq}</td>
+                        <td className={`px-6 py-4 text-sm font-black text-right ${pos.green ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>{pos.pnl}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Column 3: Execution Panel (Right) */}
+          <div className="w-[380px] flex flex-col bg-[#181a20] rounded-2xl border border-[#2b3139] overflow-hidden shrink-0">
+            <div className="p-6 border-b border-[#2b3139] flex justify-between items-center">
+              <span className="text-base font-black text-white">Execute Order</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-[#848e9c] font-black uppercase">Leverage</span>
+                <span className="text-xs font-black text-[#f0b90b] px-2 py-1 bg-[#2b3139] rounded-lg border border-white/5">20x</span>
+              </div>
+            </div>
+            
+            <div className="p-6 flex-grow space-y-6 overflow-y-auto scrollbar-hide">
+              {/* Buy/Sell Switch */}
+              <div className="flex gap-2 bg-[#0b0e11] p-1 rounded-2xl border border-[#2b3139]">
+                <button className="flex-1 py-3 rounded-xl bg-[#0ecb81] text-white font-black text-sm shadow-lg shadow-[#0ecb81]/10">Buy / Long</button>
+                <button className="flex-1 py-3 rounded-xl text-[#5e6673] hover:text-white font-black text-sm transition-all">Sell / Short</button>
+              </div>
+
+              {/* Order Settings */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-black text-[#848e9c] uppercase tracking-widest">Entry Amount (₹)</label>
+                    <span className="text-[10px] text-[#f0b90b] font-bold">Max: ₹{currentBalance.toLocaleString()}</span>
+                  </div>
+                  <div className="relative">
                     <input 
                       type="number"
                       value={tradeAmount}
                       onChange={(e) => setTradeAmount(e.target.value)}
-                      onFocus={(e) => e.target.select()}
-                      className="bg-transparent text-center text-base font-black text-white outline-none w-full"
+                      className="w-full bg-[#0b0e11] border border-[#2b3139] rounded-xl py-4 px-5 text-xl font-black text-white outline-none focus:border-[#f0b90b] transition-all"
                     />
-                  </div>
-                  <div className="bg-[#1e232c] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center gap-0.5">
-                    <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-tighter">Time</span>
-                    <input 
-                      type="text"
-                      value={tradeTime}
-                      onChange={(e) => setTradeTime(e.target.value)}
-                      onFocus={(e) => e.target.select()}
-                      className="bg-transparent text-center text-base font-black text-white outline-none w-full"
-                      placeholder="01:00"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 h-10">
-                  <button
-                    onClick={() => handleTrade('buy')}
-                    className="bg-[#0ecb81] rounded-xl flex items-center justify-center gap-2 text-white shadow-lg shadow-[#0ecb81]/20 active:scale-95 transition-all py-1 px-3"
-                  >
-                    <TrendingUp className="w-4 h-4 rotate-[-45deg]" />
-                    <span className="text-xs font-black tracking-tight">
-                      ₹{currentAsset?.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => handleTrade('sell')}
-                    className="bg-[#f6465d] rounded-xl flex items-center justify-center gap-2 text-white shadow-lg shadow-[#f6465d]/20 active:scale-95 transition-all py-1 px-3"
-                  >
-                    <TrendingUp className="w-4 h-4 rotate-[135deg]" />
-                    <span className="text-xs font-black tracking-tight">
-                      ₹{currentAsset?.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ) : activeTab === 'home' ? (
-            <motion.div 
-              key="home-view"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="p-4 space-y-4 h-full overflow-y-auto scrollbar-hide absolute inset-0"
-            >
-              {/* Account Card */}
-              <div 
-                className="bg-gradient-to-br from-[#1a1f2a] to-[#0f1219] p-6 rounded-2xl border border-[#2b3139] relative overflow-hidden group hover:border-[#f0b90b]/30 transition-all"
-              >
-                <div className="flex justify-between items-center mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-[#848e9c] uppercase font-bold tracking-wider">
-                      {isDemoMode ? 'Demo Account' : 'Live Account'}
-                    </span>
-                    <span className={`text-[8px] px-2 py-0.5 rounded-full font-black ${isDemoMode ? 'bg-[#f0b90b] text-black' : 'bg-[#0ecb81] text-white'}`}>
-                      {isDemoMode ? 'DEMO' : 'LIVE'}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsDemoMode(!isDemoMode);
-                    }}
-                    className="p-1 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
-                  >
-                    <ChevronDown className="w-5 h-5 text-[#848e9c] hover:text-white" />
-                  </button>
-                </div>
-                <div className="text-3xl font-black">
-                  <span className="text-[#848e9c] text-lg font-bold mr-1">₹</span>
-                  {currentBalance.toLocaleString()}
-                </div>
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="bg-[#1e2329] px-4 py-1 rounded-full border border-[#2b3139] flex items-center gap-2">
-                    <span className="text-sm font-black text-[#f0b90b]">82%</span>
-                    <span className="text-[10px] text-[#848e9c] font-bold">Crypto IDX</span>
-                    <div className="w-12 h-1 bg-[#2b3139] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#f0b90b] w-[82%]" />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
+                      {['25%', '50%', '100%'].map(p => (
+                        <button key={p} className="text-[9px] font-black text-[#5e6673] hover:text-white px-2 py-1 bg-[#1e2329] rounded border border-white/5">{p}</button>
+                      ))}
                     </div>
                   </div>
-                  <div className="text-xs font-bold text-[#0ecb81]">
-                    <ArrowUp className="w-3 h-3 inline mr-0.5" /> 2.41%
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-[#848e9c] uppercase tracking-widest">Contract Duration</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['1m', '5m', '15m'].map(t => (
+                      <button key={t} className={`py-3 rounded-xl text-xs font-black border transition-all ${t === '1m' ? 'bg-[#f0b90b] text-black border-[#f0b90b]' : 'bg-[#1e2329] text-[#848e9c] border-[#2b3139] hover:border-white'}`}>
+                        {t}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
 
-              {/* Chart Summary */}
-              <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139]">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm font-bold">BTC/USDT <span className="text-[#848e9c] text-[10px]">Perpetual</span></span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold">₹64,182.50</span>
-                    <span className="text-xs font-bold text-[#0ecb81]">+2.34%</span>
-                  </div>
+              {/* Summary */}
+              <div className="bg-[#0b0e11] p-4 rounded-2xl border border-white/5 space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-[#848e9c] font-bold">Cost (Margin)</span>
+                  <span className="text-white font-black">₹{tradeAmount}</span>
                 </div>
-                <div className="h-24">
-                   <canvas ref={canvasRef} className="w-full h-full" />
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-[#848e9c] font-bold">Trading Fee (0.1%)</span>
+                  <span className="text-white font-black">₹{(parseFloat(tradeAmount) * 0.001 || 0).toFixed(2)}</span>
                 </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="grid grid-cols-3 gap-3">
-                <button onClick={() => { setDepositStep(1); setShowDepositModal(true); }} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
-                  <ArrowDown className="text-[#0ecb81]" />
-                  <span className="text-[11px] font-bold text-[#848e9c]">Deposit</span>
-                </button>
-                <button onClick={() => setActiveTab('futures')} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
-                  <InfinityIcon className="text-[#f0b90b]" />
-                  <span className="text-[11px] font-bold text-[#848e9c]">Futures</span>
-                </button>
-                <button onClick={() => onNavigateToWallet?.('withdraw')} className="bg-[#181a20] border border-[#2b3139] p-4 rounded-xl flex flex-col items-center gap-1 hover:border-[#f0b90b] transition-all active:scale-95">
-                  <ArrowUp className="text-[#f6465d]" />
-                  <span className="text-[11px] font-bold text-[#848e9c]">Withdraw</span>
-                </button>
-              </div>
-
-              {/* New Dashboard Metrics Section */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139] space-y-1">
-                  <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-wider">Total Balance</span>
-                  <div className="text-lg font-black text-[#0ecb81]">₹{currentBalance.toLocaleString()}</div>
-                  <div className="text-[10px] text-[#848e9c]">+2.41% today</div>
-                </div>
-                <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139] space-y-1">
-                  <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-wider">Open P&L</span>
-                  <div className="text-lg font-black text-[#f6465d]">-₹342.10</div>
-                  <div className="text-[10px] text-[#848e9c]">-2.59%</div>
-                </div>
-                <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139] space-y-1">
-                  <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-wider">24h Volume</span>
-                  <div className="text-lg font-black text-[#f0b90b]">₹2.14B</div>
-                  <div className="text-[10px] text-[#848e9c]">+12.3%</div>
-                </div>
-                <div className="bg-[#181a20] p-4 rounded-2xl border border-[#2b3139] space-y-1">
-                  <span className="text-[9px] text-[#848e9c] font-bold uppercase tracking-wider">Active Positions</span>
-                  <div className="text-lg font-black text-blue-400">4</div>
-                  <div className="text-[10px] text-[#848e9c]">2 long · 2 short</div>
+                <div className="h-px bg-white/5" />
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[#848e9c] font-bold">Est. Profit (82%)</span>
+                  <span className="text-[#0ecb81] font-black">+₹{(parseFloat(tradeAmount) * 0.82 || 0).toFixed(2)}</span>
                 </div>
               </div>
 
-              {/* Top Gainers */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold">
-                  <TrendingUp className="w-3.5 h-3.5 text-[#0ecb81] rotate-[-45deg]" />
-                  <span className="text-[#eaecef]">Top Gainers</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {topGainers.map((item, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => setSelectedAsset(item)}
-                      className="bg-[#181a20] border border-[#2b3139] p-3 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#0ecb81]/50 transition-colors"
-                    >
-                      <span className="text-[10px] font-bold text-[#eaecef]">{item.pair}</span>
-                      <span className="text-[10px] font-black text-[#0ecb81]">+{item.change}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Top Losers */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold">
-                  <TrendingUp className="w-3.5 h-3.5 text-[#f6465d] rotate-[135deg]" />
-                  <span className="text-[#eaecef]">Top Losers</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {topLosers.map((item, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => setSelectedAsset(item)}
-                      className="bg-[#181a20] border border-[#2b3139] p-3 rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#f6465d]/50 transition-colors"
-                    >
-                      <span className="text-[10px] font-bold text-[#eaecef]">{item.pair}</span>
-                      <span className="text-[10px] font-black text-[#f6465d]">{item.change}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Explore Futures Bar */}
+              {/* Action Button */}
               <button 
-                onClick={() => setActiveTab('futures')}
-                className="w-full bg-[#181a20] border border-[#2b3139] px-4 py-3 rounded-xl flex justify-between items-center group hover:border-[#f0b90b] transition-all"
+                onClick={() => handleTrade('buy')}
+                className="w-full py-5 bg-[#0ecb81] text-white font-black rounded-2xl shadow-xl shadow-[#0ecb81]/10 hover:scale-[1.02] active:scale-95 transition-all text-base uppercase tracking-wider"
               >
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="w-5 h-5 text-[#f0b90b]" />
-                  <span className="text-sm font-bold text-white uppercase tracking-wider">Explore Futures</span>
-                </div>
-                <div className="flex items-center gap-1 text-[#f0b90b] text-xs font-bold">
-                  View all <ChevronRight className="w-4 h-4" />
-                </div>
+                Open Long Position
               </button>
+            </div>
 
-              {/* Watchlist */}
-              <div className="bg-[#181a20] rounded-2xl border border-[#2b3139] overflow-hidden">
-                <div className="px-4 py-3 border-b border-[#2b3139] flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-[#f0b90b]" />
-                    <span className="text-xs font-bold text-[#848e9c]">Watchlist</span>
-                  </div>
-                  <button onClick={() => setActiveTab('futures')} className="text-[#f0b90b] text-[10px] font-bold">View all</button>
+            <div className="p-6 bg-[#0b0e11]/30 border-t border-[#2b3139]">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#f0b90b]/10 flex items-center justify-center border border-[#f0b90b]/20">
+                  <ShieldCheck className="w-6 h-6 text-[#f0b90b]" />
                 </div>
-                <div className="divide-y divide-[#2b3139]">
-                  {futuresData.slice(0, 4).map((s, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => setSelectedAsset(s)}
-                      className="px-4 py-3 flex justify-between items-center hover:bg-white/5 cursor-pointer transition-colors"
-                    >
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold">{s.base} <span className="text-[10px] text-[#848e9c]">/{s.quote}</span></span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-bold">₹{s.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                        <div className={`text-[10px] font-bold ${s.change >= 0 ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
-                          {s.change >= 0 ? '+' : ''}{s.change}%
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex flex-col">
+                  <span className="text-xs font-black text-white">Institutional Grade Security</span>
+                  <span className="text-[10px] text-[#5e6673] font-bold">All trades are secured by CryptixOne Nodes</span>
                 </div>
               </div>
-            </motion.div>
-          ) : activeTab === 'defi' ? (
-            <motion.div 
-              key="defi-view"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col h-full overflow-hidden absolute inset-0 bg-[#0b0e11]"
-            >
-              {/* Secondary DeFi Navigation */}
-              <div className="flex items-center gap-1 px-4 py-2 border-b border-[#1e2329] overflow-x-auto scrollbar-hide shrink-0">
-                {['Spot', 'USD-M', 'COIN-M', 'Options'].map((view) => (
-                  <button 
-                    key={view}
-                    onClick={() => setActiveDeFiView(view)}
-                    className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                      activeDeFiView === view ? 'bg-[#1e2329] text-[#f0b90b]' : 'text-[#848e9c] hover:text-white'
-                    }`}
-                  >
-                    {view}
-                  </button>
-                ))}
-              </div>
-
-              {/* Category Filters */}
-              <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto scrollbar-hide shrink-0 bg-[#14171a]">
-                {['all', 'new', 'defi', 'metaverse', 'payment', 'pow', 'storage', 'ai'].map((cat) => (
-                  <button 
-                    key={cat}
-                    onClick={() => setActiveDeFiCategory(cat)}
-                    className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                      activeDeFiCategory === cat ? 'bg-[#f0b90b] text-black shadow-lg shadow-[#f0b90b]/10' : 'bg-[#1e2329] text-[#5e6673] border border-[#2b3139]'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              {/* DeFi Asset List */}
-              <div className="flex-grow overflow-y-auto scrollbar-hide">
-                <div className="grid grid-cols-[2fr_1.2fr_1fr_0.5fr] px-4 py-3 text-[9px] text-[#5e6673] font-black uppercase tracking-widest border-b border-[#1e2329] sticky top-0 bg-[#0b0e11] z-10">
-                  <span>Name / Vol</span>
-                  <span className="text-right">Price</span>
-                  <span className="text-right">24h Chg</span>
-                  <span className="text-right opacity-30"><Star className="w-3 h-3 ml-auto" /></span>
-                </div>
-                
-                <div className="divide-y divide-[#1e2329]">
-                  {defiData
-                    .filter(d => {
-                      const matchesSearch = d.symbol.toLowerCase().includes(searchQuery.toLowerCase()) || d.name.toLowerCase().includes(searchQuery.toLowerCase());
-                      const matchesCategory = activeDeFiCategory === 'all' || d.category === activeDeFiCategory;
-                      return matchesSearch && matchesCategory;
-                    })
-                    .map((d, i) => {
-                      const isFav = defiFavorites.includes(d.symbol);
-                      return (
-                        <div 
-                          key={i} 
-                          onClick={() => setSelectedAsset(d)}
-                          className="grid grid-cols-[2fr_1.2fr_1fr_0.5fr] px-4 py-4 items-center hover:bg-[#1e232c] cursor-pointer transition-colors group"
-                        >
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-black text-white group-hover:text-[#f0b90b] transition-colors">{d.symbol}</span>
-                              <span className="text-[9px] bg-[#1e2329] text-[#848e9c] px-1.5 py-0.5 rounded font-black tracking-tighter">SPOT</span>
-                            </div>
-                            <span className="text-[10px] text-[#5e6673] font-bold mt-0.5">{d.name} <span className="opacity-50 ml-1">Vol {d.vol}</span></span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm font-black text-white tracking-tight">₹{d.price.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}</div>
-                            <div className="text-[10px] text-[#5e6673] font-medium">$ {d.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                          </div>
-                          <div className="flex justify-end">
-                            <div className={`text-[11px] font-black min-w-[56px] text-center py-1.5 rounded-lg ${
-                              d.change >= 0 ? 'text-[#0ecb81] bg-[#0ecb81]/10' : 'text-[#f6465d] bg-[#f6465d]/10'
-                            }`}>
-                              {d.change >= 0 ? '+' : ''}{d.change}%
-                            </div>
-                          </div>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDefiFavorites(prev => prev.includes(d.symbol) ? prev.filter(s => s !== d.symbol) : [...prev, d.symbol]);
-                            }}
-                            className="flex justify-end pl-2"
-                          >
-                            <Star className={`w-4 h-4 transition-colors ${isFav ? 'text-[#f0b90b] fill-[#f0b90b]' : 'text-[#2b3139] hover:text-[#f0b90b]'}`} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            </motion.div>
-          ) : activeTab === 'futures' ? (
-            <motion.div 
-              key="futures-view"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="p-4 space-y-4 h-full overflow-y-auto scrollbar-hide absolute inset-0"
-            >
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <InfinityIcon className="w-6 h-6 text-[#f0b90b]" /> Futures Market
-                </h2>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {futuresData.map((s, i) => (
-                  <div 
-                    key={i} 
-                    onClick={() => setSelectedAsset(s)}
-                    className="bg-[#181a20] p-4 rounded-xl border border-[#2b3139] cursor-pointer hover:border-[#f0b90b] transition-all active:scale-95 relative overflow-hidden group"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                       <div className="flex flex-col">
-                          <span className="text-sm font-bold">{s.base} <span className="text-[#848e9c] text-[10px]">/{s.quote}</span></span>
-                       </div>
-                       <span className="text-[8px] bg-[#2b3139] px-1.5 rounded text-[#848e9c] font-bold">PERP</span>
-                    </div>
-                    <div className="text-base font-bold">₹{s.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                    <div className={`text-xs font-bold ${s.change >= 0 ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
-                       {s.change >= 0 ? '+' : ''}{s.change}%
-                    </div>
-                    <div className="mt-2 text-[10px] text-[#5e6673]">Vol {s.vol}</div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          ) : (
-             <motion.div 
-              key="info-view"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="p-6 h-full overflow-y-auto scrollbar-hide absolute inset-0"
-            >
-              <div className="bg-[#181a20] rounded-2xl border border-[#2b3139] p-6 space-y-4">
-                <h3 className="text-xl font-bold">About Futures Trading</h3>
-                <p className="text-sm text-[#848e9c] leading-relaxed">
-                  Futures trading allows you to speculate on the price movement of crypto assets without owning the underlying asset. 
-                  Trade with leverage, go long or short, and manage your risk with stop-loss and take-profit orders.
-                </p>
-                <div className="pt-4 border-t border-[#2b3139] space-y-2">
-                  <div className="flex items-center gap-2 text-xs text-[#0ecb81]">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#0ecb81]" /> All prices are market real-time
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-[#0ecb81]">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#0ecb81]" /> Buy/Sell matched with wallet balance
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-
-      {/* Bottom Navigation */}
-      <nav className="flex justify-around items-center h-16 border-t border-[#2b3139] bg-[#0b0e11] flex-shrink-0 px-2">
-        {[
-          { id: 'home', icon: <Home className="w-6 h-6" />, label: 'Home' },
-          { id: 'defi', icon: <Coins className="w-6 h-6" />, label: 'DeFi' },
-          { id: 'futures', icon: <InfinityIcon className="w-6 h-6" />, label: 'Futures' },
-          { id: 'info', icon: <Info className="w-6 h-6" />, label: 'Info' }
-        ].map((tab) => (
-          <button 
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id as InternalTab);
-              setSelectedAsset(null);
-            }}
-            className={`flex flex-col items-center justify-center gap-0.5 px-4 py-2 transition-all relative ${
-              activeTab === tab.id ? 'text-[#f0b90b]' : 'text-[#5e6673] hover:text-[#848e9c]'
-            }`}
-          >
-            {tab.icon}
-            <span className="text-[10px] font-bold">{tab.label}</span>
-            {activeTab === tab.id && (
-              <motion.div 
-                layoutId="nav-dot"
-                className="absolute top-1 right-3 w-1.5 h-1.5 bg-[#f0b90b] rounded-full"
-              />
-            )}
-          </button>
-        ))}
-      </nav>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Notifications Modal */}
       <AnimatePresence>
