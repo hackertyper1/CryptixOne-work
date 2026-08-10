@@ -126,7 +126,8 @@ export default function TradeSection({
   onChangeTab,
   systemSettings,
   isDemoMode,
-  setIsDemoMode
+  setIsDemoMode,
+  activeTrades
 }: TradeSectionProps) {
   const [activeTab, setActiveTab] = useState<InternalTab>('home');
   const [demoBalance, setDemoBalance] = useState(80000);
@@ -134,6 +135,10 @@ export default function TradeSection({
   const [searchQuery, setSearchQuery] = useState('');
   const [tradeAmount, setTradeAmount] = useState('100');
   const [tradeTime, setTradeTime] = useState('01:00');
+  const [tradeDuration, setTradeDuration] = useState('1m');
+  const [tradeSide, setTradeSide] = useState<'buy' | 'sell'>('buy');
+  const [desktopBottomTab, setDesktopBottomTab] = useState<'positions' | 'orderHistory' | 'tradeHistory'>('positions');
+  const [userTransactions, setUserTransactions] = useState<any[]>([]);
   const [futuresData, setFuturesData] = useState(FUTURES_DATA);
   const [defiData, setDefiData] = useState(DEFI_DATA);
 
@@ -179,6 +184,27 @@ export default function TradeSection({
       }));
       setNotifications(msgs);
       setUnreadCount(msgs.filter((m: any) => !m.read).length);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  // Fetch User Transactions for History/Logs
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const txQuery = query(
+      collection(db, 'transactions'),
+      where('userId', '==', currentUser.id),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(txQuery, (snapshot) => {
+      const txs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setUserTransactions(txs);
     });
 
     return () => unsubscribe();
@@ -293,17 +319,30 @@ export default function TradeSection({
       return;
     }
 
-    if (type === 'buy' && amount > currentBalance) {
+    if (amount > currentBalance) {
       toast.error('Insufficient balance');
       return;
     }
 
     if (isDemoMode) {
-      setDemoBalance(prev => type === 'buy' ? prev - amount : prev + amount);
+      setDemoBalance(prev => prev - amount);
+      // Simulate a demo trade being added to a local list or just toast
       toast.success(`${type.toUpperCase()} executed (Demo)`);
+      
+      // Add a fake completed demo trade to history for show
+      const demoTx = {
+        id: `DEMO-${Math.floor(1000 + Math.random() * 9000)}`,
+        type: 'trade',
+        amount: amount,
+        status: 'completed',
+        date: new Date().toLocaleString(),
+        description: `Opened ${selectedAsset?.pair || selectedAsset?.name || 'Asset'} demo trade (${tradeDuration})`,
+        isDemo: true
+      };
+      setUserTransactions(prev => [demoTx, ...prev]);
     } else {
       if (onExecuteTrade && selectedAsset) {
-        onExecuteTrade(amount, amount * 1.82, selectedAsset.pair || selectedAsset.name, '1m');
+        onExecuteTrade(amount, amount * 1.82, selectedAsset.pair || selectedAsset.name, tradeDuration);
       }
     }
   };
@@ -1105,43 +1144,164 @@ export default function TradeSection({
 
             {/* Bottom Panel: Positions & Open Orders */}
             <div className="h-[250px] bg-[#181a20] rounded-2xl border border-[#2b3139] flex flex-col overflow-hidden">
-              <div className="px-6 py-4 border-b border-[#2b3139] flex items-center gap-6">
-                <button className="text-sm font-black text-[#f0b90b] border-b-2 border-[#f0b90b] pb-4">Open Positions (4)</button>
-                <button className="text-sm font-bold text-[#5e6673] hover:text-white pb-4 transition-colors">Trade History</button>
-                <button className="text-sm font-bold text-[#5e6673] hover:text-white pb-4 transition-colors">Order Logs</button>
+              <div className="px-6 border-b border-[#2b3139] flex items-center gap-6 shrink-0 bg-[#1e2329]">
+                <button 
+                  onClick={() => setDesktopBottomTab('positions')}
+                  className={`py-4 text-xs font-black uppercase tracking-widest transition-all relative ${desktopBottomTab === 'positions' ? 'text-[#f0b90b]' : 'text-[#848e9c] hover:text-white'}`}
+                >
+                  Open Positions ({activeTrades.length})
+                  {desktopBottomTab === 'positions' && <motion.div layoutId="desktopTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f0b90b]" />}
+                </button>
+                <button 
+                  onClick={() => setDesktopBottomTab('tradeHistory')}
+                  className={`py-4 text-xs font-black uppercase tracking-widest transition-all relative ${desktopBottomTab === 'tradeHistory' ? 'text-[#f0b90b]' : 'text-[#848e9c] hover:text-white'}`}
+                >
+                  Trade History
+                  {desktopBottomTab === 'tradeHistory' && <motion.div layoutId="desktopTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f0b90b]" />}
+                </button>
+                <button 
+                  onClick={() => setDesktopBottomTab('orderHistory')}
+                  className={`py-4 text-xs font-black uppercase tracking-widest transition-all relative ${desktopBottomTab === 'orderHistory' ? 'text-[#f0b90b]' : 'text-[#848e9c] hover:text-white'}`}
+                >
+                  Order Logs
+                  {desktopBottomTab === 'orderHistory' && <motion.div layoutId="desktopTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#f0b90b]" />}
+                </button>
               </div>
+
               <div className="flex-grow overflow-y-auto scrollbar-hide">
-                <table className="w-full text-left">
-                  <thead className="text-[10px] text-[#5e6673] font-black uppercase tracking-widest border-b border-[#2b3139] sticky top-0 bg-[#181a20]">
-                    <tr>
-                      <th className="px-6 py-3">Symbol / Type</th>
-                      <th className="px-6 py-3">Size</th>
-                      <th className="px-6 py-3">Entry Price</th>
-                      <th className="px-6 py-3">Liquidation</th>
-                      <th className="px-6 py-3 text-right">Unrealized P&L</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#2b3139]">
-                    {[
-                      { pair: 'BTC/USDT', side: 'Long', size: '0.42 BTC', entry: '₹62,140', liq: '₹58,400', pnl: '+₹12,450', green: true },
-                      { pair: 'ETH/USDT', side: 'Short', size: '2.5 ETH', entry: '₹3,520', liq: '₹3,890', pnl: '-₹3,210', green: false },
-                      { pair: 'SOL/USDT', side: 'Long', size: '150 SOL', entry: '₹178.50', liq: '₹152.00', pnl: '+₹4,890', green: true },
-                    ].map((pos, i) => (
-                      <tr key={i} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-black text-white">{pos.pair}</span>
-                            <span className={`text-[9px] px-2 py-0.5 rounded font-black ${pos.side === 'Long' ? 'bg-[#0ecb81]/20 text-[#0ecb81]' : 'bg-[#f6465d]/20 text-[#f6465d]'}`}>{pos.side}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm font-bold text-[#eaecef]">{pos.size}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-[#eaecef]">{pos.entry}</td>
-                        <td className="px-6 py-4 text-sm font-bold text-[#f6465d]">{pos.liq}</td>
-                        <td className={`px-6 py-4 text-sm font-black text-right ${pos.green ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>{pos.pnl}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {desktopBottomTab === 'positions' && (
+                  <div className="p-0">
+                    {activeTrades.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-[#5e6673]">
+                        <InfinityIcon className="w-10 h-10 mb-2 opacity-10" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">No active positions</span>
+                      </div>
+                    ) : (
+                      <table className="w-full text-left border-collapse">
+                        <thead className="sticky top-0 bg-[#181a20] z-10">
+                          <tr className="text-[9px] text-[#5e6673] font-black uppercase tracking-widest border-b border-[#2b3139]">
+                            <th className="px-6 py-3">Asset</th>
+                            <th className="px-6 py-3">Amount</th>
+                            <th className="px-6 py-3">Entry Price</th>
+                            <th className="px-6 py-3">Duration</th>
+                            <th className="px-6 py-3">Time Left</th>
+                            <th className="px-6 py-3 text-right">P&L</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#1e2329]">
+                          {activeTrades.map((t) => {
+                            const timeLeft = Math.max(0, t.endTime - Date.now());
+                            const mins = Math.floor(timeLeft / 60000);
+                            const secs = Math.floor((timeLeft % 60000) / 1000);
+                            return (
+                              <tr key={t.id} className="text-xs hover:bg-[#1e232c] transition-colors group">
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-col">
+                                    <span className="font-black text-white group-hover:text-[#f0b90b] transition-colors">{t.planName}</span>
+                                    <span className="text-[9px] text-[#848e9c] font-bold">Futures</span>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 font-black text-white">₹{t.amount.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-[#848e9c] font-bold">Market</td>
+                                <td className="px-6 py-4">
+                                  <span className="px-2 py-0.5 bg-[#1e2329] rounded border border-white/5 font-black text-[#848e9c]">{t.duration}</span>
+                                </td>
+                                <td className="px-6 py-4 text-[#f0b90b] font-black tabular-nums">
+                                  {mins}:{secs.toString().padStart(2, '0')}
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  <span className="text-[#0ecb81] font-black">+₹{(t.amount * 0.15).toFixed(2)}</span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )}
+
+                {desktopBottomTab === 'tradeHistory' && (
+                  <div className="p-0">
+                    {userTransactions.filter(tx => tx.type === 'trade' || tx.type === 'profit' || tx.type === 'loss').length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-[#5e6673]">
+                        <Clock className="w-10 h-10 mb-2 opacity-10" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">No trade history</span>
+                      </div>
+                    ) : (
+                      <table className="w-full text-left border-collapse">
+                        <thead className="sticky top-0 bg-[#181a20] z-10">
+                          <tr className="text-[9px] text-[#5e6673] font-black uppercase tracking-widest border-b border-[#2b3139]">
+                            <th className="px-6 py-3">Date</th>
+                            <th className="px-6 py-3">Description</th>
+                            <th className="px-6 py-3">Amount</th>
+                            <th className="px-6 py-3">Status</th>
+                            <th className="px-6 py-3 text-right">Account</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#1e2329]">
+                          {userTransactions.filter(tx => tx.type === 'trade' || tx.type === 'profit' || tx.type === 'loss').map((tx) => (
+                            <tr key={tx.id} className="text-xs hover:bg-[#1e232c] transition-colors group">
+                              <td className="px-6 py-4 text-[#848e9c] font-bold">{tx.date}</td>
+                              <td className="px-6 py-4 font-black text-white">{tx.description}</td>
+                              <td className="px-6 py-4 font-black text-white">₹{tx.amount.toLocaleString()}</td>
+                              <td className="px-6 py-4">
+                                <span className="text-[#0ecb81] font-black uppercase text-[10px]">Completed</span>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <span className={`text-[9px] px-2 py-0.5 rounded font-black ${tx.isDemo ? 'bg-[#f0b90b] text-black' : 'bg-[#0ecb81] text-white'}`}>
+                                  {tx.isDemo ? 'DEMO' : 'LIVE'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )}
+
+                {desktopBottomTab === 'orderHistory' && (
+                  <div className="p-0">
+                    {userTransactions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-[#5e6673]">
+                        <MessageSquare className="w-10 h-10 mb-2 opacity-10" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">No order logs</span>
+                      </div>
+                    ) : (
+                      <table className="w-full text-left border-collapse">
+                        <thead className="sticky top-0 bg-[#181a20] z-10">
+                          <tr className="text-[9px] text-[#5e6673] font-black uppercase tracking-widest border-b border-[#2b3139]">
+                            <th className="px-6 py-3">ID</th>
+                            <th className="px-6 py-3">Type</th>
+                            <th className="px-6 py-3">Amount</th>
+                            <th className="px-6 py-3">Method</th>
+                            <th className="px-6 py-3">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#1e2329]">
+                          {userTransactions.map((tx) => (
+                            <tr key={tx.id} className="text-xs hover:bg-[#1e232c] transition-colors">
+                              <td className="px-6 py-4 text-[#848e9c] font-bold">#{tx.id.slice(-6).toUpperCase()}</td>
+                              <td className="px-6 py-4">
+                                <span className={`font-black uppercase text-[10px] ${tx.type === 'trade' ? 'text-blue-400' : tx.type === 'deposit' ? 'text-[#0ecb81]' : 'text-red-400'}`}>
+                                  {tx.type}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 font-black text-white">₹{tx.amount.toLocaleString()}</td>
+                              <td className="px-6 py-4 text-[#848e9c]">{tx.method || 'Internal'}</td>
+                              <td className="px-6 py-4">
+                                <span className={`font-black uppercase text-[10px] ${tx.status === 'completed' || tx.status === 'approved' ? 'text-[#0ecb81]' : 'text-[#f0b90b]'}`}>
+                                  {tx.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1159,8 +1319,18 @@ export default function TradeSection({
             <div className="p-6 flex-grow space-y-6 overflow-y-auto scrollbar-hide">
               {/* Buy/Sell Switch */}
               <div className="flex gap-2 bg-[#0b0e11] p-1 rounded-2xl border border-[#2b3139]">
-                <button className="flex-1 py-3 rounded-xl bg-[#0ecb81] text-white font-black text-sm shadow-lg shadow-[#0ecb81]/10">Buy / Long</button>
-                <button className="flex-1 py-3 rounded-xl text-[#5e6673] hover:text-white font-black text-sm transition-all">Sell / Short</button>
+                <button 
+                  onClick={() => setTradeSide('buy')}
+                  className={`flex-1 py-3 rounded-xl font-black text-sm transition-all ${tradeSide === 'buy' ? 'bg-[#0ecb81] text-white shadow-lg shadow-[#0ecb81]/10' : 'text-[#5e6673] hover:text-white'}`}
+                >
+                  Buy / Long
+                </button>
+                <button 
+                  onClick={() => setTradeSide('sell')}
+                  className={`flex-1 py-3 rounded-xl font-black text-sm transition-all ${tradeSide === 'sell' ? 'bg-[#f6465d] text-white shadow-lg shadow-[#f6465d]/10' : 'text-[#5e6673] hover:text-white'}`}
+                >
+                  Sell / Short
+                </button>
               </div>
 
               {/* Order Settings */}
@@ -1178,8 +1348,14 @@ export default function TradeSection({
                       className="w-full bg-[#0b0e11] border border-[#2b3139] rounded-xl py-4 px-5 text-xl font-black text-white outline-none focus:border-[#f0b90b] transition-all"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
-                      {['25%', '50%', '100%'].map(p => (
-                        <button key={p} className="text-[9px] font-black text-[#5e6673] hover:text-white px-2 py-1 bg-[#1e2329] rounded border border-white/5">{p}</button>
+                      {[25, 50, 100].map(p => (
+                        <button 
+                          key={p} 
+                          onClick={() => setTradeAmount((currentBalance * (p / 100)).toFixed(2))}
+                          className="text-[9px] font-black text-[#5e6673] hover:text-white px-2 py-1 bg-[#1e2329] rounded border border-white/5"
+                        >
+                          {p}%
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -1189,7 +1365,11 @@ export default function TradeSection({
                   <label className="text-[10px] font-black text-[#848e9c] uppercase tracking-widest">Contract Duration</label>
                   <div className="grid grid-cols-3 gap-2">
                     {['1m', '5m', '15m'].map(t => (
-                      <button key={t} className={`py-3 rounded-xl text-xs font-black border transition-all ${t === '1m' ? 'bg-[#f0b90b] text-black border-[#f0b90b]' : 'bg-[#1e2329] text-[#848e9c] border-[#2b3139] hover:border-white'}`}>
+                      <button 
+                        key={t} 
+                        onClick={() => setTradeDuration(t)}
+                        className={`py-3 rounded-xl text-xs font-black border transition-all ${tradeDuration === t ? 'bg-[#f0b90b] text-black border-[#f0b90b]' : 'bg-[#1e2329] text-[#848e9c] border-[#2b3139] hover:border-white'}`}
+                      >
                         {t}
                       </button>
                     ))}
@@ -1210,16 +1390,20 @@ export default function TradeSection({
                 <div className="h-px bg-white/5" />
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-[#848e9c] font-bold">Est. Profit (82%)</span>
-                  <span className="text-[#0ecb81] font-black">+₹{(parseFloat(tradeAmount) * 0.82 || 0).toFixed(2)}</span>
+                  <span className={`font-black ${tradeSide === 'buy' ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
+                    +₹{(parseFloat(tradeAmount) * 0.82 || 0).toFixed(2)}
+                  </span>
                 </div>
               </div>
 
               {/* Action Button */}
               <button 
-                onClick={() => handleTrade('buy')}
-                className="w-full py-5 bg-[#0ecb81] text-white font-black rounded-2xl shadow-xl shadow-[#0ecb81]/10 hover:scale-[1.02] active:scale-95 transition-all text-base uppercase tracking-wider"
+                onClick={() => handleTrade(tradeSide)}
+                className={`w-full py-4 rounded-2xl shadow-xl transition-all text-sm font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 ${
+                  tradeSide === 'buy' ? 'bg-[#0ecb81] text-white shadow-[#0ecb81]/10' : 'bg-[#f6465d] text-white shadow-[#f6465d]/10'
+                }`}
               >
-                Open Long Position
+                {tradeSide === 'buy' ? 'Open Long' : 'Open Short'}
               </button>
             </div>
 

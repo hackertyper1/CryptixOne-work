@@ -1548,7 +1548,7 @@ export default function App() {
       <div className="flex-grow w-full">
         {/* Main Content Area */}
         {(!showSplash || !isApk) && (!isApk || currentUser || activeTab === 'admin' || activeTab === 'account') && (
-          <main className={activeTab === 'trade' ? "w-full h-screen overflow-hidden" : "max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8"}>
+          <main style={{ marginTop: '37px' }} className={activeTab === 'trade' ? "w-full h-screen overflow-hidden" : "max-w-7xl mx-auto px-4 py-8 pb-24 md:pb-8"}>
             {/* Desktop or Mobile view */}
             <Suspense fallback={
               <div className="flex items-center justify-center min-h-[50vh]">
