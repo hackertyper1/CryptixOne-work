@@ -9,7 +9,6 @@ const WalletSection = lazy(() => import('./components/WalletSection'));
 const AccountSection = lazy(() => import('./components/AccountSection'));
 const AdminPanel = lazy(() => import('./components/AdminPanel'));
 const ExploreSection = lazy(() => import('./components/ExploreSection'));
-import GoogleAd from './components/GoogleAd';
 import SplashScreen from './components/SplashScreen';
 import AuthGate from './components/AuthGate';
 import Footer from './components/Footer';
@@ -1684,7 +1683,6 @@ export default function App() {
               />
             )}
             </Suspense>
-            <GoogleAd />
         </main>
       )}
       </div>
